@@ -1,5 +1,5 @@
 #platform/core
-/platform/themes
+#platform/themes
 /platform/packages
 /platform/plugins
 #public
