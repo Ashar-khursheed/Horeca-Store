@@ -1,5 +1,5 @@
 /platform
-/public
+#public
 storage
 /database
 /vendor
