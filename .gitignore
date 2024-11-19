@@ -1,4 +1,7 @@
-/platform
+#platform/core
+/platform/themes
+/platform/packages
+/platform/plugins
 #public
 storage
 /database
