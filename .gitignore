@@ -4,7 +4,7 @@
 #platform/plugins
 #public
 storage
-/database
+#database
 /vendor
 /node_modules
 /public/hot
