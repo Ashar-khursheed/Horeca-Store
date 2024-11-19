@@ -1,6 +1,6 @@
 #platform/core
 #platform/themes
-/platform/packages
+#platform/packages
 /platform/plugins
 #public
 storage
