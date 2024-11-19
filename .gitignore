@@ -1,7 +1,7 @@
 #platform/core
 #platform/themes
 #platform/packages
-/platform/plugins
+#platform/plugins
 #public
 storage
 /database
