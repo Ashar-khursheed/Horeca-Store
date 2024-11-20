@@ -3,7 +3,7 @@
 #platform/packages
 #platform/plugins
 #public
-storage
+#storage/app/chunks
 #database
 /vendor
 /node_modules
