@@ -5,12 +5,21 @@
 #public
 #storage/app/chunks
 #storage/app/data-synchronize
+#storage/app/ecommerce
+#storage/app/public
+#storage/app/purifier
+#storage/app/temp
 #database
+#storage/debugbar
+#storage/fonts
+#storage/framework
+#logs
+
 /vendor
 /node_modules
 /public/hot
 /public/storage
-/storage/*.key
+# /storage/*.key
 /vendor
 .DS_Store
 Thumbs.db
