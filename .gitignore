@@ -4,6 +4,7 @@
 #platform/plugins
 #public
 #storage/app/chunks
+#storage/app/data-synchronize
 #database
 /vendor
 /node_modules
