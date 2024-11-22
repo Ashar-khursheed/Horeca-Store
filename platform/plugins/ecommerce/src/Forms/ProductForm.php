@@ -1088,11 +1088,13 @@ class ProductForm extends FormAbstract
             ->setValidatorClass(ProductRequest::class)
             ->setFormOption('files', true)
 
-            ->add('name', TextField::class, array_merge(NameFieldOption::make()->toArray(), [
-               'attr' => [
-                  'disabled' => true, // Disable the field
-               ],
-            ]))
+            // ->add('name', TextField::class, array_merge(NameFieldOption::make()->toArray(), [
+            //    'attr' => [
+            //       'disabled' => true, // Disable the field
+            //    ],
+            // ]))
+
+            ->add('name', TextField::class, NameFieldOption::make()->toArray())
 
             ->add('product_type', 'hidden', [
                 'value' => request()->input('product_type') ?: ProductTypeEnum::PHYSICAL,
@@ -1237,11 +1239,11 @@ class ProductForm extends FormAbstract
                 ->addAfter('brand_id', 'sku', TextField::class, TextFieldOption::make()->label(trans('plugins/ecommerce::products.sku')));
             }
 
-            // if ($productId ) {
-            //     add_filter('base_action_form_actions_extra', function () {
-            //         return view('plugins/ecommerce::forms.duplicate-action', ['product' => $this->getModel()])->render();
-            //     });
-            // }
+            if ($productId ) {
+                add_filter('base_action_form_actions_extra', function () {
+                    return view('plugins/ecommerce::forms.duplicate-action', ['product' => $this->getModel()])->render();
+                });
+            }
         }
 
 
