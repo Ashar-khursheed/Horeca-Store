@@ -676,17 +676,11 @@ class ProductController extends BaseController
     }
 
 
-
-
-
     public function update($id,
     ProductRequest $request,
     StoreProductService $service,
     StoreProductTagService $storeProductTagService ,   StoreProductTypesService $storeProductTypesService )
     {
-
-
-
         // Get the currently authenticated user
         $user = Auth::user();
 
@@ -989,11 +983,36 @@ class ProductController extends BaseController
                 ->setNextUrl(route('products.edit', $product->id))
                 ->withUpdatedSuccessMessage();
         }
+        else if(auth()->user() && DB::table('role_users')->where('user_id', auth()->user()->id)->where('role_id', 22)->exists())
+        {
 
+            if ($product) {  // Check if the product exists
+                // Manually assign values to the product's attributes
+                $product->sku = $request->sku;
+                $product->price = $request->price;
+                $product->sale_price = $request->sale_price;
+                $product->start_date = $request->start_date;
+                $product->end_date = $request->end_date;
+                $product->cost_per_item = $request->cost_per_item;
+                $product->quantity = $request->quantity;
+                $product->store_id = $request->store_id;
+                $product->minimum_order_quantity = $request->minimum_order_quantity;
+                $product->variant_requires_shipping = $request->variant_requires_shipping;
+                $product->refund = $request->refund;
+                $product->unit_of_measurement_id = $request->unit_of_measurement_id;
+                $product->delivery_days = $request->delivery_days;
+                $product->box_quantity = $request->box_quantity;
 
+                // Save the updated product
+                $product->save();
+            }
 
-
-
+            /* Return success response */
+            return $this->httpResponse()
+            ->setPreviousUrl(route('products.index'))
+            ->setNextUrl(route('products.edit', $product->id))
+            ->withUpdatedSuccessMessage();
+        }
           else {
                     // Validate incoming request data
                     $this->validate($request, [
