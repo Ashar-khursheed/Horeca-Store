@@ -4,10 +4,150 @@
     $productspec = DB::table('role_users')
         ->where('user_id', $user->id)
         ->where('role_id', 6)
-        ->exists(); 
+        ->exists();
+    $pricingUser = DB::table('role_users')
+        ->where('user_id', $user->id)
+        ->where('role_id', 22)
+        ->exists();
 @endphp
+@if($pricingUser)
+
+<div class="row price-group">
+    <input
+        class="detect-schedule d-none"
+        name="sale_type"
+        type="hidden"
+        value="{{ old('sale_type', $product ? $product->sale_type : 0) }}"
+    >
+
+    <div class="col-md-4">
+        <x-core::form.text-input
+            :label="trans('plugins/ecommerce::products.sku')"
+            name="sku"
+            :value="old('sku', $product ? $product->sku : (new Botble\Ecommerce\Models\Product()))"
+        />
+
+        @if (($isVariation && !$product) || ($product && $product->is_variation && !$product->sku))
+            <x-core::form.checkbox
+                :label="trans('plugins/ecommerce::products.form.auto_generate_sku')"
+                name="auto_generate_sku"
+            />
+        @endif
+    </div>
+
+    <div class="col-md-4">
+        <x-core::form.text-input
+            :label="trans('plugins/ecommerce::products.form.price')"
+            name="price"
+            :data-thousands-separator="EcommerceHelper::getThousandSeparatorForInputMask()"
+            :data-decimal-separator="EcommerceHelper::getDecimalSeparatorForInputMask()"
+            :value="old('price', $product ? $product->price : $originalProduct->price ?? 0)"
+            step="any"
+            class="input-mask-number"
+            :group-flat="true"
+        >
+            <x-slot:prepend>
+                <span class="input-group-text">{{ get_application_currency()->symbol }}</span>
+            </x-slot:prepend>
+        </x-core::form.text-input>
+    </div>
+    <div class="col-md-4">
+        <x-core::form.text-input
+            :label="trans('plugins/ecommerce::products.form.price_sale')"
+            class="input-mask-number"
+            name="sale_price"
+            :data-thousands-separator="EcommerceHelper::getThousandSeparatorForInputMask()"
+            :data-decimal-separator="EcommerceHelper::getDecimalSeparatorForInputMask()"
+            :value="old('sale_price', $product ? $product->sale_price : $originalProduct->sale_price ?? null)"
+            :group-flat="true"
+            :data-sale-percent-text="trans('plugins/ecommerce::products.form.price_sale_percent_helper')"
+        >
+            <x-slot:helper-text>
+                {!! trans('plugins/ecommerce::products.form.price_sale_percent_helper', ['percent' => '<strong>' . ($product ? $product->sale_percent : 0) . '%</strong>']) !!}
+            </x-slot:helper-text>
+
+            <x-slot:prepend>
+                <span class="input-group-text">{{ get_application_currency()->symbol }}</span>
+            </x-slot:prepend>
+            <x-slot:labelDescription>
+                <a
+                    class="turn-on-schedule"
+                    @style(['display: none' => old('sale_type', $product ? $product->sale_type : $originalProduct->sale_type ?? 0) == 1])
+                    href="javascript:void(0)"
+                >
+                    {{ trans('plugins/ecommerce::products.form.choose_discount_period') }}
+                </a>
+                <a
+                    class="turn-off-schedule"
+                    @style(['display: none' => old('sale_type', $product ? $product->sale_type : $originalProduct->sale_type ?? 0) == 0])
+                    href="javascript:void(0)"
+                >
+                    {{ trans('plugins/ecommerce::products.form.cancel') }}
+                </a>
+            </x-slot:labelDescription>
+        </x-core::form.text-input>
+    </div>
+
+    <div class="col-md-6 scheduled-time" @style(['display: none' => old('sale_type', $product ? $product->sale_type : $originalProduct->sale_type ?? 0) == 0])>
+        <x-core::form.text-input
+            :label="trans('plugins/ecommerce::products.form.date.start')"
+            name="start_date"
+            class="form-date-time"
+            :value="old('start_date', $product ? $product->start_date : $originalProduct->start_date ?? null)"
+            :placeholder="BaseHelper::getDateTimeFormat()"
+        />
+    </div>
+    <div class="col-md-6 scheduled-time" @style(['display: none' => old('sale_type', $product ? $product->sale_type : $originalProduct->sale_type ?? 0) == 0])>
+        <x-core::form.text-input
+            :label="trans('plugins/ecommerce::products.form.date.end')"
+            name="end_date"
+            :value="old('end_date', $product ? $product->end_date : $originalProduct->end_date ?? null)"
+            :placeholder="BaseHelper::getDateTimeFormat()"
+            class="form-date-time"
+        />
+    </div>
+
+    <div class="col-md-6">
+        <x-core::form.text-input
+            :label="trans('plugins/ecommerce::products.form.cost_per_item')"
+            name="cost_per_item"
+            :value="old('cost_per_item', $product ? $product->cost_per_item : $originalProduct->cost_per_item ?? 0)"
+            :placeholder="trans('plugins/ecommerce::products.form.cost_per_item_placeholder')"
+            step="any"
+            class="input-mask-number"
+            :group-flat="true"
+            :helper-text="trans('plugins/ecommerce::products.form.cost_per_item_helper')"
+        >
+            <x-slot:prepend>
+                <span class="input-group-text">{{ get_application_currency()->symbol }}</span>
+            </x-slot:prepend>
+        </x-core::form.text-input>
+    </div>
+    <input
+        name="product_id"
+        type="hidden"
+        value="{{ $product->id ?? null }}"
+    >
+
+    <x-core::form.fieldset class="storehouse-info" @style(['display: none' => old('with_storehouse_management', $product ? $product->with_storehouse_management : $originalProduct->with_storehouse_management ?? 0) == 0])>
+        <x-core::form.text-input
+            :label="trans('plugins/ecommerce::products.form.storehouse.quantity')"
+            name="quantity"
+            :value="old('quantity', $product ? $product->quantity : $originalProduct->quantity ?? 0)"
+            class="input-mask-number"
+        />
+
+        <x-core::form.on-off.checkbox
+            :label="trans('plugins/ecommerce::products.form.stock.allow_order_when_out')"
+            name="allow_checkout_when_out_of_stock"
+            :checked="old('allow_checkout_when_out_of_stock', $product ? $product->allow_checkout_when_out_of_stock : $originalProduct->allow_checkout_when_out_of_stock ?? 0) == 1"
+        />
+    </x-core::form.fieldset>
+</div>
+
+@else
 @if (!$productspec)
- 
+
 
 
 <div class="row price-group">
@@ -177,7 +317,9 @@
         />
     @endforeach
 </x-core::form.fieldset>
+
 @endif
+
 @if (
     ! EcommerceHelper::isEnabledSupportDigitalProducts()
     || (!$product && !$originalProduct &&  request()->input('product_type') != Botble\Ecommerce\Enums\ProductTypeEnum::DIGITAL)
@@ -188,8 +330,8 @@
             <h3>Product fields</h3>
         </legend>
         <div class="row">
-           
-            
+
+
             <div class="col-md-3 col-md-6">
                 <x-core::form.text-input
                     label="{{ trans('plugins/ecommerce::products.form.shipping.weight') }} "
@@ -206,6 +348,17 @@
                     </x-slot:prepend>
                 </x-core::form.text-input>
             </div>
+
+            <div class="col-md-3 col-md-6">
+
+                <x-core::form.label for="stock_status">
+                    {{ trans('plugins/ecommerce::products.length_unit') }}
+                </x-core::form.label>
+
+                <!-- Call the function and bind it to 'length_unit_id' -->
+                {!! ecommerce_unit_dropdown('length_unit_id', old('length_unit_id', $product->length_unit_id ?? null)) !!}
+            </div>
+
             <div class="col-md-3 col-md-6">
                 <x-core::form.text-input
                     label="{{ trans('plugins/ecommerce::products.form.shipping.length') }} "
@@ -214,12 +367,12 @@
                     class="input-mask-number"
                     :group-flat="true"
                 >
-                    <x-slot:prepend>
+                    {{-- <x-slot:prepend>
                         <!-- Call the function and bind it to 'length_unit_id' -->
                         <span class="input-group-text">
                             {!! ecommerce_unit_dropdown('length_unit_id', old('length_unit_id', $product->length_unit_id ?? null)) !!}
                         </span>
-                    </x-slot:prepend>
+                    </x-slot:prepend> --}}
                 </x-core::form.text-input>
             </div>
 
@@ -231,16 +384,16 @@
                     class="input-mask-number"
                     :group-flat="true"
                 >
-                    <x-slot:prepend>
+                    {{-- <x-slot:prepend>
                         <!-- Call the function and bind it to 'depth_unit_id' -->
                         <span class="input-group-text">
                             {!! ecommerce_unit_dropdown('depth_unit_id', old('depth_unit_id', $product->depth_unit_id ?? null)) !!}
                         </span>
-                    </x-slot:prepend>
+                    </x-slot:prepend> --}}
                 </x-core::form.text-input>
             </div>
 
-           
+
             {{-- <div class="col-md-3 col-md-6">
                 <x-core::form.text-input
                     label="{{ trans('plugins/ecommerce::products.form.shipping.depth') }} "
@@ -249,9 +402,9 @@
                     class="input-mask-number"
                     :group-flat="true"
                 >
-                
-                      
-                 <x-slot:prepend> 
+
+
+                 <x-slot:prepend>
                     <span class="input-group-text">{!! ecommerce_width_height_unit(true) !!} <!-- Render dropdown --></span>
                 </x-slot:prepend>
                 </x-core::form.text-input>
@@ -277,12 +430,12 @@
                     class="input-mask-number"
                     :group-flat="true"
                 >
-                    <x-slot:prepend>
+                    {{-- <x-slot:prepend>
                         <!-- Call the function and bind it to 'depth_unit_id' -->
                         <span class="input-group-text">
                             {!! ecommerce_unit_dropdown('height_unit_id', old('height_unit_id', $product->height_unit_id ?? null)) !!}
                         </span>
-                    </x-slot:prepend>
+                    </x-slot:prepend> --}}
                 </x-core::form.text-input>
             </div>
             <div class="col-md-3 col-md-6">
@@ -293,19 +446,19 @@
                     class="input-mask-number"
                     :group-flat="true"
                 >
-                    <x-slot:prepend>
+                    {{-- <x-slot:prepend>
                         <!-- Call the function and bind it to 'depth_unit_id' -->
                         <span class="input-group-text">
                             {!! ecommerce_unit_dropdown('width_unit_id', old('width_unit_id', $product->width_unit_id ?? null)) !!}
                         </span>
-                    </x-slot:prepend>
+                    </x-slot:prepend> --}}
                 </x-core::form.text-input>
             </div>
 
-            
-            
-            
-           
+
+
+
+
         </div>
     </x-core::form.fieldset>
 
@@ -315,9 +468,18 @@
             <h3>{{ trans('plugins/ecommerce::products.form.shipping.title') }}</h3>
         </legend>
         <div class="row">
-           
-            
-           
+
+
+
+            <div class="col-md-3 col-md-6">
+                <x-core::form.label for="stock_status">
+                    {{ trans('plugins/ecommerce::products.length_unit') }}
+                </x-core::form.label>
+
+                <!-- Call the function and bind it to 'shipping_length_id' -->
+                {!! ecommerce_unit_dropdown('shipping_length_id', old('shipping_length_id', $product->shipping_length_id ?? null)) !!}
+            </div>
+
             <div class="col-md-3 col-md-6">
                 <x-core::form.text-input
                     label="{{ trans('plugins/ecommerce::products.form.shipping.shipping_length') }} "
@@ -326,12 +488,6 @@
                     class="input-mask-number"
                     :group-flat="true"
                 >
-                    <x-slot:prepend>
-                        <!-- Call the function and bind it to 'length_unit_id' -->
-                        <span class="input-group-text">
-                            {!! ecommerce_unit_dropdown('shipping_length_id', old('shipping_length_id', $product->shipping_length_id ?? null)) !!}
-                        </span>
-                    </x-slot:prepend>
                 </x-core::form.text-input>
             </div>
 
@@ -343,16 +499,16 @@
                     class="input-mask-number"
                     :group-flat="true"
                 >
-                    <x-slot:prepend>
+                    {{-- <x-slot:prepend>
                         <!-- Call the function and bind it to 'depth_unit_id' -->
                         <span class="input-group-text">
                             {!! ecommerce_unit_dropdown('shipping_depth_id', old('shipping_depth_id', $product->shipping_depth_id ?? null)) !!}
                         </span>
-                    </x-slot:prepend>
+                    </x-slot:prepend> --}}
                 </x-core::form.text-input>
             </div>
 
-           
+
             {{-- <div class="col-md-3 col-md-6">
                 <x-core::form.text-input
                     label="{{ trans('plugins/ecommerce::products.form.shipping.depth') }} "
@@ -361,9 +517,9 @@
                     class="input-mask-number"
                     :group-flat="true"
                 >
-                
-                      
-                 <x-slot:prepend> 
+
+
+                 <x-slot:prepend>
                     <span class="input-group-text">{!! ecommerce_width_height_unit(true) !!} <!-- Render dropdown --></span>
                 </x-slot:prepend>
                 </x-core::form.text-input>
@@ -389,12 +545,12 @@
                     class="input-mask-number"
                     :group-flat="true"
                 >
-                    <x-slot:prepend>
+                    {{-- <x-slot:prepend>
                         <!-- Call the function and bind it to 'depth_unit_id' -->
                         <span class="input-group-text">
                             {!! ecommerce_unit_dropdown('shipping_height_id', old('shipping_height_id', $product->shipping_height_id ?? null)) !!}
                         </span>
-                    </x-slot:prepend>
+                    </x-slot:prepend> --}}
                 </x-core::form.text-input>
             </div>
             <div class="col-md-3 col-md-6">
@@ -405,19 +561,19 @@
                     class="input-mask-number"
                     :group-flat="true"
                 >
-                    <x-slot:prepend>
+                    {{-- <x-slot:prepend>
                         <!-- Call the function and bind it to 'depth_unit_id' -->
                         <span class="input-group-text">
                             {!! ecommerce_unit_dropdown('shipping_width_id', old('shipping_width_id', $product->shipping_width_id ?? null)) !!}
                         </span>
-                    </x-slot:prepend>
+                    </x-slot:prepend> --}}
                 </x-core::form.text-input>
             </div>
 
-            
-            
-            
-           
+
+
+
+
         </div>
     </x-core::form.fieldset>
 @endif
@@ -519,6 +675,7 @@
             @include('plugins/ecommerce::products.partials.digital-product-file-template')
         @endpushOnce
     @endif
+@endif
 @endif
 
 {!! apply_filters('ecommerce_product_variation_form_end', null, $product) !!}
