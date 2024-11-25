@@ -294,7 +294,8 @@ class ProductForm extends FormAbstract
             ->add('product_type', 'hidden', [
                 'value' => request()->input('product_type') ?: ProductTypeEnum::PHYSICAL,
             ])
-            ->add('status', SelectField::class, StatusFieldOption::make()->toArray())
+            ->add('status', SelectField::class, StatusFieldOption::make()->toArray()->disabled())
+           
             ->add(
                 'is_featured',
                 OnOffField::class,
@@ -1308,7 +1309,13 @@ class ProductForm extends FormAbstract
                         ->add('product_type', 'hidden', [
                             'value' => request()->input('product_type') ?: ProductTypeEnum::PHYSICAL,
                         ])
-                        ->add('status', SelectField::class, StatusFieldOption::make()->toArray())
+                        // ->add('status', SelectField::class, StatusFieldOption::make()->toArray())
+                        ->add('status', SelectField::class, array_merge(StatusFieldOption::make()->toArray(), [
+                            'attr' => [
+                                'disabled' => true, // Disable the field
+                            ],
+                        ]))
+                        
                         ->add(
                             'is_featured',
                             OnOffField::class,

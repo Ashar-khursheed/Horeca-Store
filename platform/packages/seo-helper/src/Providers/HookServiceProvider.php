@@ -77,7 +77,9 @@ class HookServiceProvider extends ServiceProvider
 
     public function setSeoMeta(string $screen, BaseModel|Model|null $object): bool
     {
-        SeoHelper::meta()->addMeta('robots', 'index, follow');
+        SeoHelper::meta()->addMeta('robots', 'noindex, nofollow');
+        // SeoHelper::meta()->addMeta('robots', 'index, follow');
+
 
         if ($object instanceof Page && BaseHelper::isHomepage($object->getKey())) {
             return false;

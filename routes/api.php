@@ -35,10 +35,20 @@ use App\Http\Controllers\API\SearchApiController;
 use App\Http\Controllers\API\CartSummaryController;
 use App\Http\Controllers\API\RecentlyViewedProductController;
 use App\Http\Controllers\API\UserReviewApiController;
+use App\Http\Controllers\API\CustomerCouponApiController;
+use App\Http\Controllers\API\ForgotPasswordApiController;
+use App\Http\Controllers\API\ApiResetPasswordController;
+
+Route::post('password/reset', [ApiResetPasswordController::class, 'reset'])->name('api.password.reset');
+
+
+Route::post('/forgot-password', [ForgotPasswordApiController::class, 'sendResetLinkEmail']);
+
 
 Route::middleware('auth:sanctum')->get('/customer-reviews', [UserReviewApiController::class, 'getCustomerReviews']);
 
 
+Route::middleware('auth:sanctum')->get('/customer/coupons', [CustomerCouponApiController::class, 'getCustomerCoupons']);
 
 
 Route::middleware('auth:sanctum')->group(function () {
