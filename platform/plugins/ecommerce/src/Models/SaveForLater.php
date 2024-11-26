@@ -17,4 +17,9 @@ class SaveForLater extends BaseModel
         'product_id',
         'quantity',
     ];
+    
+        public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_id');
+    }
 }

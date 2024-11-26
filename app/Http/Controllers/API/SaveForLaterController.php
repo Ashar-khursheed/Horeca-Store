@@ -50,4 +50,30 @@ class SaveForLaterController extends Controller
             'message' => 'Product has been moved to Save for Later.',
         ], 200);
     }
+     public function showSaveForLater()
+    {
+        // Get the logged-in user
+        $user = Auth::user();
+
+        // Fetch all saved products for the user
+        $savedProducts = SaveForLater::where('user_id', $user->id)
+                                     ->with('product')  // Assuming `product` is the relationship
+                                     ->get();
+
+        if ($savedProducts->isEmpty()) {
+            return response()->json([
+                'message' => 'No products saved for later.'
+            ], 404);
+        }
+
+        // Return the saved products data
+        $productsData = $savedProducts->map(function ($item) {
+            return $item->product; // Return product data associated with the saved product
+        });
+
+        return response()->json([
+            'message' => 'Saved for Later Products retrieved successfully.',
+            'product' => $productsData
+        ], 200);
+    }
 }
