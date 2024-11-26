@@ -125,6 +125,7 @@ class ProductExporter extends Exporter
         // ];
 
         $columns = [
+            ExportColumn::make('id'),
             ExportColumn::make('name'),
             ExportColumn::make('description'),
             ExportColumn::make('content'),
@@ -435,6 +436,7 @@ class ProductExporter extends Exporter
             // ];
 
             $result = [
+                'id' => $product->id,
                 'name' => $product->name,
                 'description' => $product->description,
                 // 'slug' => $product->slug,
@@ -638,6 +640,7 @@ class ProductExporter extends Exporter
                     // ];
 
                     $data = [
+                        'id' => 5,
                         'name' => $variation->product->name,
                         'description' => '',
                         'url' => '',
