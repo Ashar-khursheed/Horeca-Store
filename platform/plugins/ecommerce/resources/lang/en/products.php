@@ -52,7 +52,7 @@ return [
             'shipping_width' => 'shipping width',
         ],
         'Productfields' => [
-          
+
             'title' => 'Productfields',
             'height' => 'Height',
             'length' => 'Length',
@@ -60,7 +60,7 @@ return [
             'weight' => 'Weight',
             'width' => 'Width',
             'depth' => 'Depth',
-      
+
         ],
 
         'barcode' => 'Barcode (ISBN, UPC, GTIN, etc.) ',
@@ -246,4 +246,5 @@ return [
         ],
     ],
     'import_products_intro' => 'Or import products from CSV/Excel',
+    'length_unit' => 'Unit',
 ];
