@@ -1089,13 +1089,13 @@ class ProductForm extends FormAbstract
             ->setValidatorClass(ProductRequest::class)
             ->setFormOption('files', true)
 
-            // ->add('name', TextField::class, array_merge(NameFieldOption::make()->toArray(), [
-            //    'attr' => [
-            //       'disabled' => true, // Disable the field
-            //    ],
-            // ]))
+            ->add('name', TextField::class, array_merge(NameFieldOption::make()->toArray(), [
+               'attr' => [
+                  'readonly' => true, // Disable the field
+               ],
+            ]))
 
-            ->add('name', TextField::class, NameFieldOption::make()->toArray())
+            // ->add('name', TextField::class, NameFieldOption::make()->toArray())
 
             ->add('product_type', 'hidden', [
                 'value' => request()->input('product_type') ?: ProductTypeEnum::PHYSICAL,

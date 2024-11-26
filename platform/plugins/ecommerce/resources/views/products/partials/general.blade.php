@@ -129,6 +129,15 @@
         value="{{ $product->id ?? null }}"
     >
 
+    {!! apply_filters('ecommerce_product_variation_form_middle', null, $product) !!}
+
+    <x-core::form.on-off.checkbox
+        :label="trans('plugins/ecommerce::products.form.storehouse.storehouse')"
+        name="with_storehouse_management"
+        class="storehouse-management-status"
+        :checked="old('with_storehouse_management', $product ? $product->with_storehouse_management : $originalProduct->with_storehouse_management ?? 0) == 1"
+    />
+
     <x-core::form.fieldset class="storehouse-info" @style(['display: none' => old('with_storehouse_management', $product ? $product->with_storehouse_management : $originalProduct->with_storehouse_management ?? 0) == 0])>
         <x-core::form.text-input
             :label="trans('plugins/ecommerce::products.form.storehouse.quantity')"
