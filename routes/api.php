@@ -38,6 +38,10 @@ use App\Http\Controllers\API\UserReviewApiController;
 use App\Http\Controllers\API\CustomerCouponApiController;
 use App\Http\Controllers\API\ForgotPasswordApiController;
 use App\Http\Controllers\API\ApiResetPasswordController;
+use App\Http\Controllers\API\SaveForLaterController;
+
+Route::middleware('auth:sanctum')->post('/save-for-later', [SaveForLaterController::class, 'saveForLater']);
+
 
 Route::post('password/reset', [ApiResetPasswordController::class, 'reset'])->name('api.password.reset');
 
