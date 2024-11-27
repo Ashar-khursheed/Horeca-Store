@@ -25,12 +25,12 @@ use Botble\Ecommerce\Services\StoreProductTypesService;
 use Botble\Language\Facades\Language;
 use Botble\Media\Facades\RvMedia;
 use Botble\Slug\Facades\SlugHelper;
-use Carbon\Carbon;  
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
-use App\Rules\JsonArrayRule; 
+use App\Rules\JsonArrayRule;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -76,7 +76,7 @@ class ProductImporter extends Importer implements WithMapping
     protected array $supportedLocales = [];
 
     protected string $defaultLanguage;
-    
+
 
     public function __construct()
     {
@@ -414,7 +414,7 @@ class ProductImporter extends Importer implements WithMapping
 //         ImportColumn::make('name')
 //             ->rules(['required', 'string', 'max:250'], trans('plugins/ecommerce::products.import.rules.required_string_max', ['attribute' => ' Name', 'max' => 250])),
 //         ImportColumn::make('description')
-        
+
 //             ->rules(['nullable', 'string'], trans('plugins/ecommerce::products.import.rules.nullable_string', ['attribute' => 'Description'])),
 //         ImportColumn::make('slug')
 //             ->rules(['nullable', 'string', 'max:250'], trans('plugins/ecommerce::products.import.rules.nullable_string_max', ['attribute' => 'Slug', 'max' => 250])),
@@ -482,8 +482,8 @@ class ProductImporter extends Importer implements WithMapping
 //             ->rules(['numeric', 'nullable', 'min:0', 'max:100000000'], trans('plugins/ecommerce::products.import.rules.nullable_numeric_min_max', ['attribute' => 'Height', 'min' => 0, 'max' => 100000000])),
 //             ImportColumn::make('shipping_height')
 //             ->rules(['numeric', 'nullable', 'min:0', 'max:100000000'], trans('plugins/ecommerce::products.import.rules.nullable_numeric_min_max', ['attribute' => 'Height', 'min' => 0, 'max' => 100000000])),
-          
-           
+
+
 //             ImportColumn::make('cost_per_item')
 //             ->rules(['nullable', 'numeric', 'min:0'], trans('plugins/ecommerce::products.import.rules.nullable_numeric_min', ['attribute' => 'Cost per item'])),
 //         ImportColumn::make('barcode')
@@ -527,7 +527,7 @@ class ProductImporter extends Importer implements WithMapping
 //             ->rules(['nullable', 'string', 'max:500'], trans('plugins/ecommerce::products.import.rules.nullable_string_max', ['attribute' => 'SEO description', 'max' => 500])),
 //         ImportColumn::make('google_shopping_category')
 //             ->rules(['nullable', 'string'], trans('plugins/ecommerce::products.import.rules.nullable_string', ['attribute' => 'Google Shopping category'])),
-           
+
 //         // ImportColumn::make('google_shopping_gender')
 //         //     ->rules(['nullable', 'string'], trans('plugins/ecommerce::products.import.rules.nullable_string', ['attribute' => 'Google Shopping gender'])),
 //         // ImportColumn::make('google_shopping_age_group')
@@ -554,7 +554,7 @@ class ProductImporter extends Importer implements WithMapping
 //         //     ->rules(['nullable', 'string'], trans('plugins/ecommerce::products.import.rules.nullable_string', ['attribute' => 'Technical table'])),
 //         // ImportColumn::make('technical_spec')
 //         //     ->rules(['nullable', 'string'], trans('plugins/ecommerce::products.import.rules.nullable_string', ['attribute' => 'Technical spec'])),
-        
+
 //  ];
 
         if (is_plugin_active('marketplace')) {
@@ -853,7 +853,11 @@ class ProductImporter extends Importer implements WithMapping
     public function map(mixed $row): array
     {
         $this->currentRow++;
-        $row = $this->mapLocalization($row);
+        if(auth()->user() && \DB::table('role_users')->where('user_id', auth()->user()->id)->where('role_id', 22)->exists() )
+        {} else {
+            $row = $this->mapLocalization($row);
+        }
+        // dd($row)
         $row = $this->setCategoriesToRow($row);
         $row = $this->setBrandToRow($row);
         $row = $this->setTaxToRow($row);
@@ -865,10 +869,10 @@ class ProductImporter extends Importer implements WithMapping
 
     public function storeProduct(array $row): Product|Model|null
     {
-        dd('row', $row);
+        // dd('row', $row);
         $request = new Request();
         $request->merge($row);
-        dd('row', $request->all());
+        // dd('row', $request->all());
 
         if (
             ($sku = $request->input('sku')) &&
@@ -953,16 +957,16 @@ class ProductImporter extends Importer implements WithMapping
               }
               return $item;
           }, $frequentlyBoughtTogether);
-          
+
           // Now, encode the properly formatted array
           $product->frequently_bought_together = json_encode($formattedData);
-          
+
 
                 //    $compareType = $request->input('compare_type');
                 //      if (!is_array($compareType)) {
                 //     $compareType = json_decode($compareType, true); // Convert JSON string to array if needed
                 //       }
-      
+
                                 // Retrieve the `compare_products` input from the request
 
 
@@ -972,13 +976,13 @@ class ProductImporter extends Importer implements WithMapping
                 if (is_string($compareType)) {
                     // Remove square brackets and split the string by commas
                     $compareTypeArray = explode(',', trim($compareType, '[]'));
-                    
+
                     // Trim whitespace and ensure the values are numeric strings
                     $compareTypeArray = array_map('trim', $compareTypeArray);
                     $compareTypeArray = array_filter($compareTypeArray, 'is_numeric');
                 } else {
                     // If it's already an array, use it directly
-                    $compareTypeArray = (array) $compareType; 
+                    $compareTypeArray = (array) $compareType;
                 }
 
                 // Convert all values to strings (if needed) to match your desired format
@@ -995,13 +999,13 @@ class ProductImporter extends Importer implements WithMapping
                 if (is_string($compareProductsInput)) {
                     // Remove square brackets and split the string by commas
                     $compareProductsArray = explode(',', trim($compareProductsInput, '[]'));
-                    
+
                     // Trim whitespace and ensure the values are numeric strings
                     $compareProductsArray = array_map('trim', $compareProductsArray);
                     $compareProductsArray = array_filter($compareProductsArray, 'is_numeric');
                 } else {
                     // If it's already an array, use it directly
-                    $compareProductsArray = (array) $compareProductsInput; 
+                    $compareProductsArray = (array) $compareProductsInput;
                 }
 
                 // Convert all values to strings (if needed) to match your desired format
@@ -1009,9 +1013,9 @@ class ProductImporter extends Importer implements WithMapping
 
                 // Convert the cleaned array to a JSON string for storage
                 $product->compare_products = json_encode(array_values($compareProductsArray));
-                        
-          
-      
+
+
+
         //   $pr oduct->refund = $request->input('refund');
           $product->delivery_days = $request->input('delivery_days');
           $product->currency_id = $request->input('currency_id', 1); // Default to 1 if not provided
@@ -1027,7 +1031,7 @@ class ProductImporter extends Importer implements WithMapping
           $product->variant_color_title = $request->input('variant_color_title', 'Color');
           $product->variant_color_value = $request->input('variant_color_value');
           $product->variant_color_products = $request->input('variant_color_products');
-      
+
 
         $product->status = strtolower($request->input('status'));
 
@@ -1102,7 +1106,6 @@ class ProductImporter extends Importer implements WithMapping
 
     public function mapLocalization(array $row): array
     {
-        dd('rrr', $row);
         //$row['generate_license_code'] = (bool) Arr::get($row, 'generate_license_code', false);
         $row['minimum_order_quantity'] = (int) Arr::get($row, 'minimum_order_quantity', 0);
         $row['maximum_order_quantity'] = (int) Arr::get($row, 'maximum_order_quantity', 0);
@@ -1110,25 +1113,25 @@ class ProductImporter extends Importer implements WithMapping
         if (! in_array($row['stock_status'], StockStatusEnum::toArray())) {
             $row['stock_status'] = StockStatusEnum::IN_STOCK;
         }
-    
+
         $row['status'] = Arr::get($row, 'status');
         if (! in_array($row['status'], BaseStatusEnum::toArray())) {
             $row['status'] = BaseStatusEnum::PENDING;
         }
-    
+
         $row['product_type'] = Arr::get($row, 'product_type');
         if (! in_array($row['product_type'], ProductTypeEnum::toArray())) {
             $row['product_type'] = ProductTypeEnum::PHYSICAL;
         }
-    
+
         $row['import_type'] = Arr::get($row, 'import_type');
         if ($row['import_type'] != 'variation') {
             $row['import_type'] = 'product';
         }
-    
+
         $row['is_slug_editable'] = true;
         $row['barcode'] = (string) Arr::get($row, 'barcode');
-    
+
         // Call setValues to handle new fields
         $this->setValues($row, [
             ['key' => 'slug', 'type' => 'string', 'default' => 'name'],
@@ -1222,68 +1225,68 @@ class ProductImporter extends Importer implements WithMapping
             ['key' => 'variant_color_value', 'type' => 'string'], // Added variant_color_value
             ['key' => 'variant_color_products', 'type' => 'string'], // Change to string
             ['key' => 'google_shopping_mpn', 'type' => 'string'],
-            
 
-        
+
+
         ]);
-    
+
         $row['product_labels'] = $row['labels'];
-    
+
         if ($row['import_type'] == 'product' && ! $row['sku'] && $row['auto_generate_sku']) {
             $row['sku'] = (new Product())->generateSKU();
         }
-    
+
         $row['sale_type'] = 0;
         if ($row['start_date'] || $row['end_date']) {
             $row['sale_type'] = 1;
         }
-    
+
         if (! $row['with_storehouse_management']) {
             $row['quantity'] = null;
             $row['allow_checkout_when_out_of_stock'] = false;
         }
-    
+
         $attributeSets = Arr::get($row, 'product_attributes');
         $row['attribute_sets'] = [];
         $row['product_attributes'] = [];
-    
+
         if ($row['import_type'] == 'variation') {
             foreach ($attributeSets as $attrSet) {
                 $attrSet = explode(':', $attrSet);
                 $title = Arr::get($attrSet, 0);
                 $valueX = Arr::get($attrSet, 1);
-    
+
                 $attribute = $this->productAttributeSets->filter(function ($value) use ($title) {
                     return $value['title'] == $title;
                 })->first();
-    
+
                 if ($attribute) {
                     $attr = $attribute->attributes->filter(function ($value) use ($valueX) {
                         return $value['title'] == $valueX;
                     })->first();
-    
+
                     if ($attr) {
                         $row['attribute_sets'][$attribute->id] = $attr->id;
                     }
                 }
             }
         }
-    
+
         if ($row['import_type'] == 'product') {
             foreach ($attributeSets as $attrSet) {
                 $attribute = $this->productAttributeSets->filter(function ($value) use ($attrSet) {
                     return $value['title'] == $attrSet;
                 })->first();
-    
+
                 if ($attribute) {
                     $row['attribute_sets'][] = $attribute->id;
                 }
             }
         }
-    
+
         return $row;
     }
-    
+
     public function storeVariant(array $row, ?Product $product): ProductVariation|Model|null
     {
         $request = new Request();
@@ -1388,7 +1391,7 @@ class ProductImporter extends Importer implements WithMapping
         $variation->box_quantity = Arr::get($version, 'box_quantity', $product->box_quantity);
         // $variation->technical_table = Arr::get($version, 'technical_table', $product->technical_table);
         // $variation->technical_spec = Arr::get($version, 'technical_spec', $product->technical_spec);
-    
+
 
         if (Arr::get($version, 'description')) {
             $productRelatedToVariation->description = BaseHelper::clean($version['description']);
@@ -1699,68 +1702,68 @@ class ProductImporter extends Importer implements WithMapping
 
     //     return $url;
     // }
-    
-    
-    
-    
-    
+
+
+
+
+
     //     protected function uploadImageFromURL(?string $url): ?string
     // {
     //     // Directory within public directory
     //     $productsDirectory = 'storage/products';
-    
+
     //     // Ensure products directory exists only if it doesn't already
     //     $publicProductsPath = public_path($productsDirectory);
     //     if (!is_dir($publicProductsPath)) {
     //         // Create the directory only if it doesn't exist
     //         mkdir($publicProductsPath, 0755, true);
     //     }
-    
+
     //     // Fetch the image content from the URL
     //     $imageContents = file_get_contents($url);
-    
+
     //     if ($imageContents !== false) {
     //         // Sanitize the file name
     //         $fileNameWithQuery = basename(parse_url($url, PHP_URL_PATH));
     //         $fileName = preg_replace('/\?.*/', '', $fileNameWithQuery); // Remove query parameters
     //         $fileBaseName = pathinfo($fileName, PATHINFO_FILENAME); // Get base name without extension
-    
+
     //         // Save the original image
     //         $filePath = $publicProductsPath . '/' . $fileName;
     //         if (file_put_contents($filePath, $imageContents) === false) {
     //             Log::error('Failed to write image to file: ' . $filePath);
     //             return null;
     //         }
-    
+
     //         // Resize the image
     //         $sizes = [
     //             'thumb' => [150, 150],
     //             'medium' => [300, 300],
     //             'large' => [790, 510],
     //         ];
-    
+
     //         foreach ($sizes as $key => $dimensions) {
     //             [$width, $height] = $dimensions;
-    
+
     //             // Load the original image
     //             $src = imagecreatefromjpeg($filePath);
     //             if (!$src) {
     //                 Log::error('Failed to load image from path: ' . $filePath);
     //                 continue;
     //             }
-    
+
     //             // Create a new true color image with the new dimensions
     //             $dst = imagecreatetruecolor($width, $height);
     //             if (!$dst) {
     //                 Log::error('Failed to create true color image for size: ' . $key);
     //                 continue;
     //             }
-    
+
     //             // Resample the original image into the new image
     //             if (!imagecopyresampled($dst, $src, 0, 0, 0, 0, $width, $height, imagesx($src), imagesy($src))) {
     //                 Log::error('Failed to resample image for size: ' . $key);
     //             }
-    
+
     //             // Save the resized image
     //             $resizedImagePath = $publicProductsPath . '/' . $fileBaseName . '-' . $width . 'x' . $height . '.webp';
     //             if (!imagewebp($dst, $resizedImagePath)) {
@@ -1768,12 +1771,12 @@ class ProductImporter extends Importer implements WithMapping
     //             } else {
     //                 Log::info('Saved resized image at path: ' . $resizedImagePath);
     //             }
-    
+
     //             // Free up memory
     //             imagedestroy($src);
     //             imagedestroy($dst);
     //         }
-    
+
     //         // Generate the URL for the saved image
     //         return url('storage/products/' . $fileName);
     //     } else {
@@ -1781,43 +1784,43 @@ class ProductImporter extends Importer implements WithMapping
     //         return null;
     //     }
     // }
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
     // protected function uploadImageFromURL(?string $url): ?string
     // {
     //     // Directory within public directory
     //     $productsDirectory = 'storage/products';
-        
+
     //     // Ensure products directory exists only if it doesn't already
     //     $publicProductsPath = public_path($productsDirectory);
     //     if (!is_dir($publicProductsPath)) {
     //         // Create the directory only if it doesn't exist
     //         mkdir($publicProductsPath, 0755, true);
     //     }
-        
+
     //     // Fetch the image content from the URL
     //     $imageContents = file_get_contents($url);
-        
+
     //     if ($imageContents !== false) {
     //         // Sanitize the file name
     //         $fileNameWithQuery = basename(parse_url($url, PHP_URL_PATH));
     //         $fileName = preg_replace('/\?.*/', '', $fileNameWithQuery); // Remove query parameters
     //         $fileBaseName = pathinfo($fileName, PATHINFO_FILENAME); // Get base name without extension
-        
+
     //         // Save the original image
     //         $filePath = $publicProductsPath . '/' . $fileName;
     //         if (file_put_contents($filePath, $imageContents) === false) {
     //             Log::error('Failed to write image to file: ' . $filePath);
     //             return null;
     //         }
-        
+
     //         // Get the MIME type of the image
     //         $imageInfo = getimagesize($filePath);
     //         if (!$imageInfo) {
@@ -1825,11 +1828,11 @@ class ProductImporter extends Importer implements WithMapping
     //             return null;
     //         }
     //         $mimeType = $imageInfo['mime'];
-        
+
     //         // Define the image creation function based on MIME type
     //         $imageCreateFunction = null;
     //         $imageSaveFunction = null;
-        
+
     //         switch ($mimeType) {
     //             case 'image/jpeg':
     //                 $imageCreateFunction = 'imagecreatefromjpeg';
@@ -1847,29 +1850,29 @@ class ProductImporter extends Importer implements WithMapping
     //                 Log::error('Unsupported image type: ' . $mimeType);
     //                 return null;
     //         }
-        
+
     //         foreach (['thumb' => [150, 150], 'medium' => [300, 300], 'large' => [790, 510]] as $key => $dimensions) {
     //             [$width, $height] = $dimensions;
-        
+
     //             // Load the original image
     //             $src = $imageCreateFunction($filePath);
     //             if (!$src) {
     //                 Log::error('Failed to load image from path: ' . $filePath);
     //                 continue;
     //             }
-        
+
     //             // Create a new true color image with the new dimensions
     //             $dst = imagecreatetruecolor($width, $height);
     //             if (!$dst) {
     //                 Log::error('Failed to create true color image for size: ' . $key);
     //                 continue;
     //             }
-        
+
     //             // Resample the original image into the new image
     //             if (!imagecopyresampled($dst, $src, 0, 0, 0, 0, $width, $height, imagesx($src), imagesy($src))) {
     //                 Log::error('Failed to resample image for size: ' . $key);
     //             }
-        
+
     //             // Save the resized image
     //             $resizedImagePath = $publicProductsPath . '/' . $fileBaseName . '-' . $width . 'x' . $height . '.webp';
     //             if (!$imageSaveFunction($dst, $resizedImagePath)) {
@@ -1877,12 +1880,12 @@ class ProductImporter extends Importer implements WithMapping
     //             } else {
     //                 Log::info('Saved resized image at path: ' . $resizedImagePath);
     //             }
-        
+
     //             // Free up memory
     //             imagedestroy($src);
     //             imagedestroy($dst);
     //         }
-        
+
     //         // Generate the URL for the saved image
     //         return url('storage/products/' . $fileName);
     //     } else {
@@ -1890,14 +1893,14 @@ class ProductImporter extends Importer implements WithMapping
     //         return null;
     //     }
     // }
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
     protected function uploadImageFromURL(?string $url): ?string
     {
         // Check if URL is valid
@@ -1905,37 +1908,37 @@ class ProductImporter extends Importer implements WithMapping
             Log::error('Invalid URL provided: ' . $url);
             return null;
         }
-    
+
         // Directory within public directory
         $productsDirectory = 'storage/products';
-    
+
         // Ensure products directory exists only if it doesn't already
         $publicProductsPath = public_path($productsDirectory);
         if (!is_dir($publicProductsPath)) {
             // Create the directory only if it doesn't exist
             mkdir($publicProductsPath, 0755, true);
         }
-    
+
         // Fetch the image content from the URL
         $imageContents = file_get_contents($url); // Use without error suppression to capture errors
-    
+
         if ($imageContents === false) {
             Log::error('Failed to download image from URL: ' . $url);
             return null;
         }
-    
+
         // Sanitize the file name
         $fileNameWithQuery = basename(parse_url($url, PHP_URL_PATH));
         $fileName = preg_replace('/\?.*/', '', $fileNameWithQuery); // Remove query parameters
         $fileBaseName = pathinfo($fileName, PATHINFO_FILENAME); // Get base name without extension
-    
+
         // Save the original image
         $filePath = $publicProductsPath . '/' . $fileName;
         if (file_put_contents($filePath, $imageContents) === false) {
             Log::error('Failed to write image to file: ' . $filePath);
             return null;
         }
-    
+
         // Get the MIME type of the image
         $imageInfo = getimagesize($filePath);
         if (!$imageInfo) {
@@ -1944,11 +1947,11 @@ class ProductImporter extends Importer implements WithMapping
         }
         $mimeType = $imageInfo['mime'];
         Log::info('MIME type of the image: ' . $mimeType); // Log the MIME type
-    
+
         // Define the image creation function based on MIME type
         $imageCreateFunction = null;
         $imageSaveFunction = null;
-    
+
         switch ($mimeType) {
             case 'image/jpeg':
                 $imageCreateFunction = 'imagecreatefromjpeg';
@@ -1966,29 +1969,29 @@ class ProductImporter extends Importer implements WithMapping
                 Log::error('Unsupported image type: ' . $mimeType);
                 return null;
         }
-    
+
         foreach (['thumb' => [150, 150], 'medium' => [300, 300], 'large' => [790, 510]] as $key => $dimensions) {
             [$width, $height] = $dimensions;
-    
+
             // Load the original image
             $src = $imageCreateFunction($filePath);
             if (!$src) {
                 Log::error('Failed to load image from path: ' . $filePath);
                 continue;
             }
-    
+
             // Create a new true color image with the new dimensions
             $dst = imagecreatetruecolor($width, $height);
             if (!$dst) {
                 Log::error('Failed to create true color image for size: ' . $key);
                 continue;
             }
-    
+
             // Resample the original image into the new image
             if (!imagecopyresampled($dst, $src, 0, 0, 0, 0, $width, $height, imagesx($src), imagesy($src))) {
                 Log::error('Failed to resample image for size: ' . $key);
             }
-    
+
             // Save the resized image
             $resizedImagePath = $publicProductsPath . '/' . $fileBaseName . '-' . $width . 'x' . $height . '.webp';
             if (!$imageSaveFunction($dst, $resizedImagePath)) {
@@ -1996,57 +1999,57 @@ class ProductImporter extends Importer implements WithMapping
             } else {
                 Log::info('Saved resized image at path: ' . $resizedImagePath);
             }
-    
+
             // Free up memory
             imagedestroy($src);
             imagedestroy($dst);
         }
-    
+
         // Generate the URL for the saved image
         return url('storage/products/' . $fileName);
     }
-    
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // protected function uploadImageFromURL(?string $url): ?string
     // {
     //     // Directory within public directory
     //     $productsDirectory = 'storage/products';
-    
+
     //     // Ensure products directory exists only if it doesn't already
     //     $publicProductsPath = public_path($productsDirectory);
     //     if (!is_dir($publicProductsPath)) {
     //         // Create the directory only if it doesn't exist
     //         mkdir($publicProductsPath, 0755, true);
     //     }
-    
+
     //     // Fetch the image content from the URL
     //     $imageContents = file_get_contents($url);
-    
+
     //     if ($imageContents !== false) {
     //         // Sanitize the file name
     //         $fileNameWithQuery = basename(parse_url($url, PHP_URL_PATH));
     //         $fileName = preg_replace('/\?.*/', '', $fileNameWithQuery); // Remove query parameters
     //         $filePath = $publicProductsPath . '/' . $fileName;
-    
+
     //         // Save the image content directly to the public/storage/products directory
     //         if (file_put_contents($filePath, $imageContents) === false) {
     //             Log::error('Failed to write image to file: ' . $filePath);
     //             return null;
     //         }
-    
+
     //         // Generate the URL for the saved image
     //         return url('storage/products/' . $fileName);
     //     } else {
@@ -2058,29 +2061,29 @@ class ProductImporter extends Importer implements WithMapping
     // {
     //     // Directory within public directory
     //     $productsDirectory = 'storage/products';
-    
+
     //     // Ensure products directory exists only if it doesn't already
     //     $publicProductsPath = public_path($productsDirectory);
     //     if (!is_dir($publicProductsPath)) {
     //         // Create the directory only if it doesn't exist
     //         mkdir($publicProductsPath, 0755, true);
     //     }
-    
+
     //     // Fetch the image content from the URL
     //     $imageContents = file_get_contents($url);
-    
+
     //     if ($imageContents !== false) {
     //         // Sanitize the file name
     //         $fileNameWithQuery = basename(parse_url($url, PHP_URL_PATH));
     //         $fileName = preg_replace('/\?.*/', '', $fileNameWithQuery); // Remove query parameters
     //         $filePath = $publicProductsPath . '/' . $fileName;
-    
+
     //         // Save the image content directly to the public/storage/products directory
     //         if (file_put_contents($filePath, $imageContents) === false) {
     //             Log::error('Failed to write image to file: ' . $filePath);
     //             return null;
     //         }
-    
+
     //         // Generate the URL for the saved image
     //         return url('storage/products/' . $fileName);
     //     } else {
@@ -2097,7 +2100,7 @@ class ProductImporter extends Importer implements WithMapping
     //     if (filter_var($url, FILTER_VALIDATE_URL)) {
     //         // Upload the external URL using RvMedia
     //         $result = RvMedia::uploadFromUrl($url, 0, 'products');
-    
+
     //         // Check if the upload was successful
     //         if (!$result['error']) {
     //             // Return the URL of the uploaded image
@@ -2113,6 +2116,6 @@ class ProductImporter extends Importer implements WithMapping
     //         return null;
     //     }
     // }
-    
+
 
 }
