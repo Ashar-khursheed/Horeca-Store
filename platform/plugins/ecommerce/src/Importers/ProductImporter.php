@@ -874,11 +874,13 @@ class ProductImporter extends Importer implements WithMapping
     public function storeProduct(array $row): Product|Model|null
     {
         if (array_key_exists('id', $row) && Product::find($row['id'])) {
-            $this->updateProduct($row, 'id');
+            $product = $this->updateProduct($row, 'id');
+            return $product;
         } else {
             if (array_key_exists('sku', $row) && array_key_exists('name', $row) && Product::query()->where('name', $row['name'])->where('sku', $row['sku'])->first()
             ) {
-                $this->updateProduct($row, 'sku');
+                $product = $this->updateProduct($row, 'sku');
+                return $product;
             } else {
                 // code...
                 $request = new Request();
@@ -951,8 +953,6 @@ class ProductImporter extends Importer implements WithMapping
             $preparedData = $this->prepareProductAttributes($request, $product);
             $request = $preparedData['request'];
             $product = $preparedData['product'];
-
-            $product->price = $request->price;
         }
         $product->sku = $request->sku ? $request->sku : $product->sku;
         $product->price = $request->price ? $request->price : $product->price;
