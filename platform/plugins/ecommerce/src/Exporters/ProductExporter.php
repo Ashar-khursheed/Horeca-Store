@@ -64,11 +64,9 @@ class ProductExporter extends Exporter
                 ExportColumn::make('sale_price'),
                 ExportColumn::make('start_date_sale_price'),
                 ExportColumn::make('end_date_sale_price'),
-                ExportColumn::make('compare_type')->label('Compare Type'),
-                ExportColumn::make('compare_products')->label('Compare Products'),
                 ExportColumn::make('refund')->label('Refund Policy'),
                 ExportColumn::make('delivery_days')->label('Delivery Days'),
-                ExportColumn::make('cost_per_item'),
+                ExportColumn::make('cost_per_item')->label('Cost Per Item'),
                 ExportColumn::make('minimum_order_quantity'),
                 ExportColumn::make('variant_requires_shipping'),
                 ExportColumn::make('box_quantity'),
@@ -168,7 +166,7 @@ class ProductExporter extends Exporter
                 // ExportColumn::make('technical_spec'),
             ];
         }
-        
+
 
         // if ($this->isEnabledDigital) {
         //     $columns[] = ExportColumn::make('product_type');
@@ -282,7 +280,7 @@ class ProductExporter extends Exporter
     public function productResults(Collection $products): array
     {
 
-        
+
         $results = [];
 
         foreach ($products as $product) {
@@ -303,14 +301,14 @@ class ProductExporter extends Exporter
 
                 // Convert the array to a string with commas and spaces
                 $frequentlyBoughtTogetherString = implode(', ', $frequentlyBoughtTogether);
-                        
-                        
+
+
             $compareTypeArray = json_decode($product->compare_type, true);
             $compareType= is_array($compareTypeArray) ? implode(', ', $compareTypeArray) : '';
 
             $compareProductsArray = json_decode($product->compare_products, true);
             $compareProducts = is_array($compareProductsArray) ? implode(', ', $compareProductsArray) : '';
-        
+
             if (! $product->is_variation) {
                 $productAttributes = $product->productAttributeSets->pluck('title')->all();
             }
@@ -435,7 +433,7 @@ class ProductExporter extends Exporter
                 // 'generate_license_code' => $product->generate_license_code,
                 'minimum_order_quantity' => $product->minimum_order_quantity,
                 // 'maximum_order_quantity' => $product->maximum_order_quantity,
-            
+
                 // New fields
                 // 'handle' => $product->handle,
                 // 'variant_grams' => $product->variant_grams,
@@ -495,7 +493,7 @@ class ProductExporter extends Exporter
                 'variant_color_value' => $product->variant_color_value,
                 'variant_color_products' => $product->variant_color_products,
             ];
-            
+
 
             // if ($this->isEnabledDigital) {
             //     $result['product_type'] = $product->product_type;
@@ -642,7 +640,7 @@ class ProductExporter extends Exporter
                         'google_shopping_category' => $variation->product->google_shopping_category,
                         'google_shopping_mpn' => $variation->product->google_shopping_mpn,
                         'box_quantity' => $variation->product->box_quantity,
-                    
+
                         // New fields
                         'units_sold' => $variation->product->units_sold ?? 0, // Default to 0 if null
                         'refund_policy' => $variation->product->refund_policy,
@@ -676,7 +674,7 @@ class ProductExporter extends Exporter
                         'variant_color_value' => $variation->product->variant_color_value,
                         'variant_color_products' => $variation->product->variant_color_products,
                     ];
-                    
+
                     // if ($this->isEnabledDigital) {
                     //     $data['product_type'] = ProductTypeEnum::PHYSICAL;
                     // }

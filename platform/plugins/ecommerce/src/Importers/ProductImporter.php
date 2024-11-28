@@ -152,12 +152,6 @@ class ProductImporter extends Importer implements WithMapping
                     ->rules(['date', 'nullable', 'after:start_date'], trans('plugins/ecommerce::products.import.rules.nullable_date_after', ['attribute' => 'End date', 'after' => 'Start date'])),
                 ImportColumn::make('cost_per_item')
                 ->rules(['nullable', 'numeric', 'min:0'], trans('plugins/ecommerce::products.import.rules.nullable_numeric_min', ['attribute' => 'Cost per item'])),
-                ImportColumn::make('compare_type')
-                ->label('Compare Type')
-                ->rules(['nullable', 'array'],trans('plugins/ecommerce::products.import.rules.nullable_array', ['attribute' => 'Compare Type']) ),
-                ImportColumn::make('compare_products')
-                ->label('Compare Products')
-                ->rules(['nullable', 'array'],trans('plugins/ecommerce::products.import.rules.nullable_array', ['attribute' => 'Compare Products']) ),
                 ImportColumn::make('refund')
                     ->label('Refund Policy')
                     ->rules(['nullable', 'string'], trans('plugins/ecommerce::products.import.rules.nullable_string', ['attribute' => 'Refund'])),

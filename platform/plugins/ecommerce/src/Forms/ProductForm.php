@@ -295,7 +295,7 @@ class ProductForm extends FormAbstract
                 'value' => request()->input('product_type') ?: ProductTypeEnum::PHYSICAL,
             ])
             ->add('status', SelectField::class, StatusFieldOption::make()->toArray()->disabled())
-           
+
             ->add(
                 'is_featured',
                 OnOffField::class,
@@ -1187,16 +1187,6 @@ class ProductForm extends FormAbstract
                 ],
             ])
 
-            ->addMetaBoxes([
-                'comparison' => [
-                    'title' => 'Product Comparison',
-                    'content' => view('plugins/ecommerce::products.partials.comparison_form', [
-                        'product' => $this->getModel(), // Pass the current product model for editing
-                    ]),
-                    'priority' => 150,
-                ],
-            ]);
-
             if (! $totalProductVariations) {
                 // dd('11', $this->getModel());
                 $this
@@ -1515,7 +1505,7 @@ class ProductForm extends FormAbstract
                                 'disabled' => true, // Disable the field
                             ],
                         ]))
-                        
+
                         ->add(
                             'is_featured',
                             OnOffField::class,
