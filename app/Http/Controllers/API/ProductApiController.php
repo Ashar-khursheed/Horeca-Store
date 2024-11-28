@@ -284,25 +284,25 @@ class ProductApiController extends Controller
                 ->with('currency') // Eager load the currency relationship
                 ->get(); // Retrieve the results as a collection
             
-            // Prepare the results with additional details including currency information
-            $product->same_sku_product_ids = $sameSkuProducts->map(function ($item) {
-                // Prepare currency title
-                $currencyTitle = $item->currency 
-                    ? ($item->currency->is_prefix_symbol 
-                        ? $item->currency->title 
-                        : $item->price . ' ' . $item->currency->title)
-                    : $item->price;
-            
-                return [
-                    'id' => $item->id,
-                    'name' => $item->name,
-                    'price' => $item->price,
-                    'delivery_days'=>$item->delivery_days,
-                    'images' => $item->images,
-                    'currency_title' => $currencyTitle, // Include formatted currency title
-                ];
-            });
-                 
+                // Prepare the results with additional details including currency information
+                $product->same_sku_product_ids = $sameSkuProducts->map(function ($item) {
+                    // Prepare currency title
+                    $currencyTitle = $item->currency 
+                        ? ($item->currency->is_prefix_symbol 
+                            ? $item->currency->title 
+                            : $item->price . ' ' . $item->currency->title)
+                        : $item->price;
+                
+                    return [
+                        'id' => $item->id,
+                        'name' => $item->name,
+                        'price' => $item->price,
+                        'delivery_days'=>$item->delivery_days,
+                        'images' => $item->images,
+                        'currency_title' => $currencyTitle, // Include formatted currency title
+                    ];
+                });
+                    
                  
                    $sameBrandSkuProducts = Product::where('sku', $product->sku)
                                         ->where('id', '!=', $product->id) // Exclude current product
@@ -363,89 +363,7 @@ class ProductApiController extends Controller
                         $product->compare_products = $compareProducts;
                     }
                     
-//                     if ($product->compare_products) {
-//     $compareIds = json_decode($product->compare_products, true);
 
-//     $compareProducts = Product::whereIn('id', $compareIds)
-//         ->with('reviews', 'currency') // Include reviews and currency in query
-//         ->get();
-
-//     // Step 1: Define the fixed order of specification names
-//     $fixedSpecOrder = [
-//         'Manufacturer',
-//         'Model Number',
-//         'Shipping Weight',
-//         'Width',
-//         'Depth',
-//         'Height',
-//         'Amps',
-//         'Hertz',
-//         'Phase',
-//         'Voltage',
-//         'Capacity',
-//         'Casters',
-//         'Compressor Location',
-//         'Door style',
-//         'Door Type'
-//     ];
-
-//     // Step 2: Prepare to collect specifications
-//     $specData = [];
-//     $uniqueSpecNames = [];
-
-//     // Step 3: Collect specifications from each compare product
-//     foreach ($compareProducts as $compareProduct) {
-//         if ($compareProduct->specs_sheet) {
-//             $specifications = json_decode($compareProduct->specs_sheet, true);
-//             foreach ($specifications as $spec) {
-//                 $specName = $spec['spec_name'] ?? null;
-//                 $specValue = $spec['spec_value'] ?? 'N/A';
-
-//                 if ($specName) {
-//                     // Store unique spec names
-//                     if (!in_array($specName, $uniqueSpecNames)) {
-//                         $uniqueSpecNames[] = $specName;
-//                     }
-//                     // Map specifications to their values
-//                     $specData[$compareProduct->id][$specName] = $specValue;
-//                 }
-//             }
-//         }
-//     }
-
-//     // Step 4: Prepare structured specification arrays in fixed order
-//     foreach ($compareProducts as $compareProduct) {
-//         $totalReviews = $compareProduct->reviews->count();
-//         $avgRating = $totalReviews > 0 ? $compareProduct->reviews->avg('star') : null;
-
-//         $compareProduct->total_reviews = $totalReviews;
-//         $compareProduct->avg_rating = $avgRating;
-
-//         // Add currency details
-//         if ($compareProduct->currency) {
-//             $compareProduct->currency_title = $compareProduct->currency->is_prefix_symbol
-//                 ? $compareProduct->currency->title
-//                 : $compareProduct->price . ' ' . $compareProduct->currency->title;
-//         } else {
-//             $compareProduct->currency_title = $compareProduct->price;
-//         }
-
-//         // Step 5: Create specifications in the fixed order
-//         $specifications = []; // Temporary array to hold specifications
-//         foreach ($fixedSpecOrder as $specName) {
-//             $specifications[] = [
-//                 'spec_name' => $specName,
-//                 'spec_value' => $specData[$compareProduct->id][$specName] ?? 'N/A', // Get value or default to 'N/A'
-//             ];
-//         }
-
-//         // Assign the structured specifications back to the compare product
-//         $compareProduct->setAttribute('specifications', $specifications);
-//     }
-
-//     // Step 6: Assign the enhanced compare products back to the original product
-//     $product->compare_products = $compareProducts;
-// }
 
             
                     // Add tags and types
@@ -471,9 +389,10 @@ class ProductApiController extends Controller
                     'delivery_min' =>  $DeliveryMin ,
                     'delivery_max' => $DeliveryMax ,
                 ]);
-            }
+         }
             
-        public function getAllPublicProducts(Request $request)
+     
+    public function getAllPublicProducts(Request $request)
             {
                
 
@@ -753,91 +672,7 @@ class ProductApiController extends Controller
                         $product->compare_products = $compareProducts;
                     }
                     
-//                     if ($product->compare_products) {
-//     $compareIds = json_decode($product->compare_products, true);
 
-//     $compareProducts = Product::whereIn('id', $compareIds)
-//         ->with('reviews', 'currency') // Include reviews and currency in query
-//         ->get();
-
-//     // Step 1: Define the fixed order of specification names
-//     $fixedSpecOrder = [
-//         'Manufacturer',
-//         'Model Number',
-//         'Shipping Weight',
-//         'Width',
-//         'Depth',
-//         'Height',
-//         'Amps',
-//         'Hertz',
-//         'Phase',
-//         'Voltage',
-//         'Capacity',
-//         'Casters',
-//         'Compressor Location',
-//         'Door style',
-//         'Door Type'
-//     ];
-
-//     // Step 2: Prepare to collect specifications
-//     $specData = [];
-//     $uniqueSpecNames = [];
-
-//     // Step 3: Collect specifications from each compare product
-//     foreach ($compareProducts as $compareProduct) {
-//         if ($compareProduct->specs_sheet) {
-//             $specifications = json_decode($compareProduct->specs_sheet, true);
-//             foreach ($specifications as $spec) {
-//                 $specName = $spec['spec_name'] ?? null;
-//                 $specValue = $spec['spec_value'] ?? 'N/A';
-
-//                 if ($specName) {
-//                     // Store unique spec names
-//                     if (!in_array($specName, $uniqueSpecNames)) {
-//                         $uniqueSpecNames[] = $specName;
-//                     }
-//                     // Map specifications to their values
-//                     $specData[$compareProduct->id][$specName] = $specValue;
-//                 }
-//             }
-//         }
-//     }
-
-//     // Step 4: Prepare structured specification arrays in fixed order
-//     foreach ($compareProducts as $compareProduct) {
-//         $totalReviews = $compareProduct->reviews->count();
-//         $avgRating = $totalReviews > 0 ? $compareProduct->reviews->avg('star') : null;
-
-//         $compareProduct->total_reviews = $totalReviews;
-//         $compareProduct->avg_rating = $avgRating;
-
-//         // Add currency details
-//         if ($compareProduct->currency) {
-//             $compareProduct->currency_title = $compareProduct->currency->is_prefix_symbol
-//                 ? $compareProduct->currency->title
-//                 : $compareProduct->price . ' ' . $compareProduct->currency->title;
-//         } else {
-//             $compareProduct->currency_title = $compareProduct->price;
-//         }
-
-//         // Step 5: Create specifications in the fixed order
-//         $specifications = []; // Temporary array to hold specifications
-//         foreach ($fixedSpecOrder as $specName) {
-//             $specifications[] = [
-//                 'spec_name' => $specName,
-//                 'spec_value' => $specData[$compareProduct->id][$specName] ?? 'N/A', // Get value or default to 'N/A'
-//             ];
-//         }
-
-//         // Assign the structured specifications back to the compare product
-//         $compareProduct->setAttribute('specifications', $specifications);
-//     }
-
-//     // Step 6: Assign the enhanced compare products back to the original product
-//     $product->compare_products = $compareProducts;
-// }
-
-            
                     // Add tags and types
                     $product->tags = $product->tags; // Assuming tags is a relationship in the Product model
                     $product->producttypes = $product->producttypes; // Assuming producttypes is a relationship in the Product model

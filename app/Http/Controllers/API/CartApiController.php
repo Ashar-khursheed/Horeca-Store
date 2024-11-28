@@ -13,46 +13,7 @@ use Illuminate\Support\Facades\Log;
 
 class CartApiController extends Controller
 {
-    // public function addToCart(Request $request)
-    // {
-    //     $request->validate([
-    //         'product_id' => 'required|exists:ec_products,id',
-    //         'quantity' => 'required|integer|min:1',
-    //     ]);
-
-    //     $productId = $request->input('product_id');
-    //     $quantity = $request->input('quantity');
-
-    //     if (Auth::check()) {
-    //         // Logged-in user
-    //         $userId = Auth::id();
-    //         $cartItem = Cart::updateOrCreate(
-    //             ['user_id' => $userId, 'product_id' => $productId],
-    //             ['quantity' => \DB::raw("quantity + $quantity")]
-    //         );
-    //     } 
-
-        
-    //     //$cartItem = Cart::find($cartItem->id); // Get the cart item again with updated values
-
-    //       $cartItem = Cart::with('product.currency')->find($cartItem->id); // Fetch updated cart item with product and currency data
-
-    //     return response()->json([
-    //         'success' => true,
-    //         'data' => [
-    //             'id' => $cartItem->id,
-    //             'user_id' => $cartItem->user_id,
-    //             'session_id' => $cartItem->session_id,
-    //             'product_id' => $cartItem->product_id,
-    //             'quantity' => $cartItem->quantity,
-    //             'currency_id' => $cartItem->product->currency->id,
-    //         'currency_title' => $cartItem->product->currency->title,
-    //             'created_at' => $cartItem->created_at,
-    //             'updated_at' => $cartItem->updated_at,
-    //         ],
-    //     ]);
-    // }
-
+    
 public function addToCart(Request $request)
 {
     $request->validate([
@@ -264,45 +225,7 @@ public function clearProductFromCart(Request $request, $productId)
     return response()->json(['success' => true]);
 }
 
-    // Update cart quantity method
-    // public function updateCartQuantity(Request $request)
-    // {
-    //     $request->validate([
-    //         'product_id' => 'required|exists:ec_products,id',
-    //         'quantity' => 'required|integer|min:1',
-    //     ]);
 
-    //     $productId = $request->input('product_id');
-    //     $quantity = $request->input('quantity');
-
-    //     if (Auth::check()) {
-    //         $userId = Auth::id();
-    //         $cartItem = Cart::where('user_id', $userId)->where('product_id', $productId)->first();
-    //     } else {
-    //         $sessionId = $request->session()->getId();
-    //         $cartItem = Cart::where('session_id', $sessionId)->where('product_id', $productId)->first();
-    //     }
-
-    //     if ($cartItem) {
-    //         $cartItem->quantity = $quantity;
-    //         $cartItem->save();
-
-    //         return response()->json([
-    //             'success' => true,
-    //             'data' => [
-    //                 'id' => $cartItem->id,
-    //                 'user_id' => $cartItem->user_id,
-    //                 'session_id' => $cartItem->session_id,
-    //                 'product_id' => $cartItem->product_id,
-    //                 'quantity' => $cartItem->quantity,
-    //                 'created_at' => $cartItem->created_at,
-    //                 'updated_at' => $cartItem->updated_at,
-    //             ],
-    //         ]);
-    //     }
-
-    //     return response()->json(['success' => false, 'message' => 'Item not found in cart.'], 404);
-    // }
 
 public function updateCartQuantity(Request $request)
 {
