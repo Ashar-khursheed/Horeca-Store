@@ -1001,8 +1001,8 @@ class ProductController extends BaseController
                 $product->unit_of_measurement_id = $request->unit_of_measurement_id;
                 $product->delivery_days = $request->delivery_days;
                 $product->box_quantity = $request->box_quantity;
-                $product->compare_type = json_encode(explode(',', $request->input('compare_type')));
-                $product->compare_products = json_encode(explode(',', $request->input('compare_products')));
+                // $product->compare_type = json_encode(explode(',', $request->input('compare_type')));
+                // $product->compare_products = json_encode(explode(',', $request->input('compare_products')));
 
                 // Save the updated product
                 $product->save();
