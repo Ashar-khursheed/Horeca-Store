@@ -38,6 +38,9 @@ use App\Http\Controllers\API\UserReviewApiController;
 use App\Http\Controllers\API\CustomerCouponApiController;
 use App\Http\Controllers\API\ForgotPasswordApiController;
 use App\Http\Controllers\API\ApiResetPasswordController;
+use App\Http\Controllers\API\SaveForLaterController;
+use App\Http\Controllers\CartController; // Adjust if the controller name is different
+
 
 Route::post('password/reset', [ApiResetPasswordController::class, 'reset'])->name('api.password.reset');
 
@@ -46,6 +49,11 @@ Route::post('/forgot-password', [ForgotPasswordApiController::class, 'sendResetL
 
 
 Route::middleware('auth:sanctum')->get('/customer-reviews', [UserReviewApiController::class, 'getCustomerReviews']);
+
+Route::middleware('auth:sanctum')->post('/save-for-later', [SaveForLaterController::class, 'saveForLater']);
+Route::middleware('auth:sanctum')->get('/show-save-for-later', [SaveForLaterController::class, 'showSaveForLater']);
+Route::middleware('auth:sanctum')->post('/remove-from-save-for-later', [SaveForLaterController::class, 'removeFromSaveForLater']);
+
 
 
 Route::middleware('auth:sanctum')->get('/customer/coupons', [CustomerCouponApiController::class, 'getCustomerCoupons']);
