@@ -985,7 +985,6 @@ class ProductController extends BaseController
         }
         else if(auth()->user() && DB::table('role_users')->where('user_id', auth()->user()->id)->where('role_id', 22)->exists())
         {
-
             if ($product) {  // Check if the product exists
                 // Manually assign values to the product's attributes
                 $product->sku = $request->sku;
@@ -1002,6 +1001,8 @@ class ProductController extends BaseController
                 $product->unit_of_measurement_id = $request->unit_of_measurement_id;
                 $product->delivery_days = $request->delivery_days;
                 $product->box_quantity = $request->box_quantity;
+                // $product->compare_type = json_encode(explode(',', $request->input('compare_type')));
+                // $product->compare_products = json_encode(explode(',', $request->input('compare_products')));
 
                 // Save the updated product
                 $product->save();

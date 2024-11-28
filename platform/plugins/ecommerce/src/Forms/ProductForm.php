@@ -85,7 +85,7 @@ class ProductForm extends FormAbstract
 
               $productCollections = ProductCollection::query()->pluck('name', 'id')->all();
 
-              $productLabels = ProductLabel::query()->pluck('name', 'id')->all();
+              // $productLabels = ProductLabel::query()->pluck('name', 'id')->all();
 
               $productId = null;
               $selectedCategories = [];
@@ -180,7 +180,7 @@ class ProductForm extends FormAbstract
 
             $productCollections = ProductCollection::query()->pluck('name', 'id')->all();
 
-            $productLabels = ProductLabel::query()->pluck('name', 'id')->all();
+            // $productLabels = ProductLabel::query()->pluck('name', 'id')->all();
 
             $productId = null;
             $selectedCategories = [];
@@ -295,7 +295,7 @@ class ProductForm extends FormAbstract
                 'value' => request()->input('product_type') ?: ProductTypeEnum::PHYSICAL,
             ])
             ->add('status', SelectField::class, StatusFieldOption::make()->toArray()->disabled())
-           
+
             ->add(
                 'is_featured',
                 OnOffField::class,
@@ -353,20 +353,20 @@ class ProductForm extends FormAbstract
                     'value' => old('product_collections', $selectedProductCollections),
                 ]);
             })
-            ->when($productLabels, function () use ($productLabels) {
-                $selectedProductLabels = [];
+            // ->when($productLabels, function () use ($productLabels) {
+            //     $selectedProductLabels = [];
 
-                if ($this->getModel() && $this->getModel()->getKey()) {
-                    $selectedProductLabels = $this->getModel()->productLabels()->pluck('product_label_id')->all();
-                }
+            //     if ($this->getModel() && $this->getModel()->getKey()) {
+            //         $selectedProductLabels = $this->getModel()->productLabels()->pluck('product_label_id')->all();
+            //     }
 
-                $this
-                    ->add('product_labels[]', MultiCheckListField::class, [
-                        'label' => trans('plugins/ecommerce::products.form.labels'),
-                        'choices' => $productLabels,
-                        'value' => old('product_labels', $selectedProductLabels),
-                    ]);
-            })
+            //     $this
+            //         ->add('product_labels[]', MultiCheckListField::class, [
+            //             'label' => trans('plugins/ecommerce::products.form.labels'),
+            //             'choices' => $productLabels,
+            //             'value' => old('product_labels', $selectedProductLabels),
+            //         ]);
+            // })
             ->when(EcommerceHelper::isTaxEnabled(), function () {
                 $taxes = Tax::query()->orderBy('percentage')->get()->pluck('title_with_percentage', 'id')->all();
 
@@ -621,7 +621,7 @@ class ProductForm extends FormAbstract
 
                         $productCollections = ProductCollection::query()->pluck('name', 'id')->all();
 
-                        $productLabels = ProductLabel::query()->pluck('name', 'id')->all();
+                        // $productLabels = ProductLabel::query()->pluck('name', 'id')->all();
 
                         $productId = null;
                         $selectedCategories = [];
@@ -760,20 +760,20 @@ class ProductForm extends FormAbstract
                             'value' => old('product_collections', $selectedProductCollections),
                         ]);
                     })
-                    ->when($productLabels, function () use ($productLabels) {
-                        $selectedProductLabels = [];
+                    // ->when($productLabels, function () use ($productLabels) {
+                    //     $selectedProductLabels = [];
 
-                        if ($this->getModel() && $this->getModel()->getKey()) {
-                            $selectedProductLabels = $this->getModel()->productLabels()->pluck('product_label_id')->all();
-                        }
+                    //     if ($this->getModel() && $this->getModel()->getKey()) {
+                    //         $selectedProductLabels = $this->getModel()->productLabels()->pluck('product_label_id')->all();
+                    //     }
 
-                        $this
-                            ->add('product_labels[]', MultiCheckListField::class, [
-                                'label' => trans('plugins/ecommerce::products.form.labels'),
-                                'choices' => $productLabels,
-                                'value' => old('product_labels', $selectedProductLabels),
-                            ]);
-                    })
+                    //     $this
+                    //         ->add('product_labels[]', MultiCheckListField::class, [
+                    //             'label' => trans('plugins/ecommerce::products.form.labels'),
+                    //             'choices' => $productLabels,
+                    //             'value' => old('product_labels', $selectedProductLabels),
+                    //         ]);
+                    // })
                     // ->when(EcommerceHelper::isTaxEnabled(), function () {
                     //     $taxes = Tax::query()->orderBy('percentage')->get()->pluck('title_with_percentage', 'id')->all();
 
@@ -1063,7 +1063,7 @@ class ProductForm extends FormAbstract
 
             $productCollections = ProductCollection::query()->pluck('name', 'id')->all();
 
-            $productLabels = ProductLabel::query()->pluck('name', 'id')->all();
+            // $productLabels = ProductLabel::query()->pluck('name', 'id')->all();
 
             $productId = null;
             $selectedCategories = [];
@@ -1185,7 +1185,7 @@ class ProductForm extends FormAbstract
                     'after_wrapper' => '</div>',
                     'priority' => 3,
                 ],
-            ]);
+            ])
 
             if (! $totalProductVariations) {
                 // dd('11', $this->getModel());
@@ -1254,7 +1254,7 @@ class ProductForm extends FormAbstract
 
                             $productCollections = ProductCollection::query()->pluck('name', 'id')->all();
 
-                            $productLabels = ProductLabel::query()->pluck('name', 'id')->all();
+                            // $productLabels = ProductLabel::query()->pluck('name', 'id')->all();
 
                             $productId = null;
                             $selectedCategories = [];
@@ -1505,7 +1505,7 @@ class ProductForm extends FormAbstract
                                 'disabled' => true, // Disable the field
                             ],
                         ]))
-                        
+
                         ->add(
                             'is_featured',
                             OnOffField::class,
@@ -1566,20 +1566,19 @@ class ProductForm extends FormAbstract
 
 
                         })
-                        ->when($productLabels, function () use ($productLabels) {
-                            $selectedProductLabels = [];
+                        // ->when($productLabels, function () use ($productLabels) {
+                        //     $selectedProductLabels = [];
 
-                            if ($this->getModel() && $this->getModel()->getKey()) {
-                                $selectedProductLabels = $this->getModel()->productLabels()->pluck('product_label_id')->all();
-                            }
-
-                            $this
-                                ->add('product_labels[]', MultiCheckListField::class, [
-                                    'label' => trans('plugins/ecommerce::products.form.labels'),
-                                    'choices' => $productLabels,
-                                    'value' => old('product_labels', $selectedProductLabels),
-                                ]);
-                        })
+                        //     if ($this->getModel() && $this->getModel()->getKey()) {
+                        //         $selectedProductLabels = $this->getModel()->productLabels()->pluck('product_label_id')->all();
+                        //     }
+                        //     $this
+                        //         ->add('product_labels[]', MultiCheckListField::class, [
+                        //             'label' => trans('plugins/ecommerce::products.form.labels'),
+                        //             'choices' => $productLabels,
+                        //             'value' => old('product_labels', $selectedProductLabels),
+                        //         ]);
+                        // })
                         ->when(EcommerceHelper::isTaxEnabled(), function () {
                             $taxes = Tax::query()->orderBy('percentage')->get()->pluck('title_with_percentage', 'id')->all();
 
