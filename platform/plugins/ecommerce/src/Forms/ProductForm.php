@@ -1185,7 +1185,7 @@ class ProductForm extends FormAbstract
                     'after_wrapper' => '</div>',
                     'priority' => 3,
                 ],
-            ])
+            ]);
 
             if (! $totalProductVariations) {
                 // dd('11', $this->getModel());
