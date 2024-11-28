@@ -61,8 +61,10 @@ class PaymentApiController extends Controller
         $main_json = [
             'merchant_key' => $merchantKey,
             'operation' => 'purchase',
-            'success_url' => route('payment.success'),
-            'cancel_url' => route('payment.cancel'),
+            // 'success_url' => route('payment.success'),
+            'success_url' => 'http://localhost:3000/payment/success',
+            'success_url' => 'http://localhost:3000/payment/cancel',
+            // 'cancel_url' => route('payment.cancel'),
             'hash' => $hash,
             'order' => $order_json,
             'customer' => $customerinfo,
