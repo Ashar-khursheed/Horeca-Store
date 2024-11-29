@@ -1499,12 +1499,12 @@ class ProductForm extends FormAbstract
                         ->add('product_type', 'hidden', [
                             'value' => request()->input('product_type') ?: ProductTypeEnum::PHYSICAL,
                         ])
-                        // ->add('status', SelectField::class, StatusFieldOption::make()->toArray())
-                        ->add('status', SelectField::class, array_merge(StatusFieldOption::make()->toArray(), [
-                            'attr' => [
-                                'disabled' => true, // Disable the field
-                            ],
-                        ]))
+                        ->add('status', SelectField::class, StatusFieldOption::make()->toArray())
+                        // ->add('status', SelectField::class, array_merge(StatusFieldOption::make()->toArray(), [
+                        //     'attr' => [
+                        //         'disabled' => true, // Disable the field
+                        //     ],
+                        // ]))
 
                         ->add(
                             'is_featured',
@@ -1539,13 +1539,13 @@ class ProductForm extends FormAbstract
                                         ->toArray()
                                 );
                         })
-                        ->add(
-                            'image',
-                            MediaImageField::class,
-                            MediaImageFieldOption::make()
-                                ->label(trans('plugins/ecommerce::products.form.featured_image'))
-                                ->toArray()
-                        )
+                        // ->add(
+                        //     'image',
+                        //     MediaImageField::class,
+                        //     MediaImageFieldOption::make()
+                        //         ->label(trans('plugins/ecommerce::products.form.featured_image'))
+                        //         ->toArray()
+                        // )
                         ->when($productCollections, function () use ($productCollections) {
                             $selectedProductCollections = [];
 
@@ -1579,24 +1579,26 @@ class ProductForm extends FormAbstract
                         //             'value' => old('product_labels', $selectedProductLabels),
                         //         ]);
                         // })
-                        ->when(EcommerceHelper::isTaxEnabled(), function () {
-                            $taxes = Tax::query()->orderBy('percentage')->get()->pluck('title_with_percentage', 'id')->all();
 
-                            if ($taxes) {
-                                $selectedTaxes = [];
-                                if ($this->getModel() && $this->getModel()->getKey()) {
-                                    $selectedTaxes = $this->getModel()->taxes()->pluck('tax_id')->all();
-                                } elseif ($defaultTaxRate = get_ecommerce_setting('default_tax_rate')) {
-                                    $selectedTaxes = [$defaultTaxRate];
-                                }
 
-                                $this->add('taxes[]', MultiCheckListField::class, [
-                                    'label' => trans('plugins/ecommerce::products.form.taxes'),
-                                    'choices' => $taxes,
-                                    'value' => old('taxes', $selectedTaxes),
-                                ]);
-                            }
-                        })
+                        // ->when(EcommerceHelper::isTaxEnabled(), function () {
+                        //     $taxes = Tax::query()->orderBy('percentage')->get()->pluck('title_with_percentage', 'id')->all();
+
+                        //     if ($taxes) {
+                        //         $selectedTaxes = [];
+                        //         if ($this->getModel() && $this->getModel()->getKey()) {
+                        //             $selectedTaxes = $this->getModel()->taxes()->pluck('tax_id')->all();
+                        //         } elseif ($defaultTaxRate = get_ecommerce_setting('default_tax_rate')) {
+                        //             $selectedTaxes = [$defaultTaxRate];
+                        //         }
+
+                        //         $this->add('taxes[]', MultiCheckListField::class, [
+                        //             'label' => trans('plugins/ecommerce::products.form.taxes'),
+                        //             'choices' => $taxes,
+                        //             'value' => old('taxes', $selectedTaxes),
+                        //         ]);
+                        //     }
+                        // })
                         ->when(EcommerceHelper::isCartEnabled(), function (ProductForm $form) {
                             $form
                                 ->add(
@@ -1743,7 +1745,7 @@ class ProductForm extends FormAbstract
                     ->add('box_quantity', 'number', ['label' => 'Box Quantity'])
                     // ->add('technical_table', 'text', ['label' => 'Technical Table'])
                     // ->add('technical_spec', 'text', ['label' => 'Technical Spec'])
-                    ->add('product_label', 'text', ['label' => 'Product Label'])
+                    // ->add('product_label', 'text', ['label' => 'Product Label'])
 
 
                         // ->addMetaBoxes([

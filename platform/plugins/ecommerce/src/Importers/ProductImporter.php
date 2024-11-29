@@ -162,6 +162,9 @@ class ProductImporter extends Importer implements WithMapping
                     ->rules(['nullable', 'numeric', 'min:0'], trans('plugins/ecommerce::products.import.rules.nullable_numeric_min', ['attribute' => 'Minimum order quantity'])),
                 ImportColumn::make('variant_requires_shipping')
                     ->rules(['nullable', 'bool'], trans('plugins/ecommerce::products.import.rules.nullable_bool', ['attribute' => 'Variant requires shipping'])),
+                    ImportColumn::make('google_shopping_mpn')
+                    ->label('Google Shopping Mpn')
+                    ->rules(['nullable', 'string'], trans('plugins/ecommerce::products.import.rules.nullable_string', ['attribute' => 'Google Shopping Mpn'])),
                 ImportColumn::make('box_quantity')
                     ->rules(['nullable', 'numeric', 'min:0'], trans('plugins/ecommerce::products.import.rules.nullable_numeric_min', ['attribute' => 'Box quantity'])),
 
@@ -614,7 +617,7 @@ class ProductImporter extends Importer implements WithMapping
                     'google_shopping_category' => $product->google_shopping_category,
                     // 'google_shopping_gender' => $product->google_shopping_gender,
                     // 'google_shopping_age_group' => $product->google_shopping_age_group,
-                    // 'google_shopping_mpn' => $product->google_shopping_mpn,
+                    'google_shopping_mpn' => $product->google_shopping_mpn,
                     // 'google_shopping_condition' => $product->google_shopping_condition,
                     // 'google_shopping_custom_product' => $product->google_shopping_custom_product,
                     // 'google_shopping_custom_label_0' => $product->google_shopping_custom_label_0,
@@ -708,7 +711,7 @@ class ProductImporter extends Importer implements WithMapping
                 'google_shopping_category' => 'category-name',
                 // 'google_shopping_gender' => 'unisex',
                 // 'google_shopping_age_group' => 'adult',
-                // 'google_shopping_mpn' => 'mpn-code',
+                'google_shopping_mpn' => 'mpn-code',
                 // 'google_shopping_condition' => 'new',
                 // 'google_shopping_custom_product' => 'custom-product',
                 // 'google_shopping_custom_label_0' => 'label0',
@@ -961,6 +964,7 @@ class ProductImporter extends Importer implements WithMapping
         $product->refund = $request->refund ? $request->refund : $product->refund;
         $product->unit_of_measurement_id = $request->unit_of_measurement_id ? $request->unit_of_measurement_id : $product->unit_of_measurement_id;
         $product->delivery_days = $request->delivery_days ? $request->delivery_days : $product->delivery_days;
+        $product->google_shopping_mpn = $request->google_shopping_mpn ? $request->google_shopping_mpn : $product->google_shopping_mpn;
         $product->box_quantity = $request->box_quantity ? $request->box_quantity : $product->box_quantity;
         $product->save();
 
@@ -1006,6 +1010,7 @@ class ProductImporter extends Importer implements WithMapping
         $product->seo_title = $request->input('seo_title');
         $product->seo_description = $request->input('seo_description');
         $product->google_shopping_category = $request->input('google_shopping_category');
+        $product->google_shopping_mpn = $request->input('google_shopping_mpn');
         // Define your ImportColumns
 
         // Handle video path input
@@ -1222,7 +1227,7 @@ class ProductImporter extends Importer implements WithMapping
             ['key' => 'google_shopping_category', 'type' => 'string'],
             // ['key' => 'google_shopping_gender', 'type' => 'string'],
             // ['key' => 'google_shopping_age_group', 'type' => 'string'],
-            // ['key' => 'google_shopping_mpn', 'type' => 'string'],
+            ['key' => 'google_shopping_mpn', 'type' => 'string'],
             // ['key' => 'google_shopping_condition', 'type' => 'string'],
             // ['key' => 'google_shopping_custom_product', 'type' => 'string'],
             // ['key' => 'google_shopping_custom_label_0', 'type' => 'string'],
@@ -1422,7 +1427,7 @@ class ProductImporter extends Importer implements WithMapping
         $variation->google_shopping_category = Arr::get($version, 'google_shopping_category', $product->google_shopping_category);
         // $variation->google_shopping_gender = Arr::get($version, 'google_shopping_gender', $product->google_shopping_gender);
         // $variation->google_shopping_age_group = Arr::get($version, 'google_shopping_age_group', $product->google_shopping_age_group);
-        // $variation->google_shopping_mpn = Arr::get($version, 'google_shopping_mpn', $product->google_shopping_mpn);
+        $variation->google_shopping_mpn = Arr::get($version, 'google_shopping_mpn', $product->google_shopping_mpn);
         // $variation->google_shopping_condition = Arr::get($version, 'google_shopping_condition', $product->google_shopping_condition);
         // $variation->google_shopping_custom_product = Arr::get($version, 'google_shopping_custom_product', $product->google_shopping_custom_product);
         // $variation->google_shopping_custom_label_0 = Arr::get($version, 'google_shopping_custom_label_0', $product->google_shopping_custom_label_0);
