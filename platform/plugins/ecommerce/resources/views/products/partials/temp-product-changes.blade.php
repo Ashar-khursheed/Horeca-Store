@@ -1,70 +1,3 @@
-{{--
-@extends($layout ?? BaseHelper::getAdminMasterLayoutTemplate())
-
-@section('content')
-<form action="{{ route('temp-products.approve') }}" method="POST">
-	@csrf
-	<div class="table-responsive">
-		<table class="table table-striped">
-			<thead>
-				<tr>
-
-					<th>Product ID</th>
-					<th>Product Name</th>
-					<th>Change Description</th>
-					<th>Current Status</th>
-					<th>Approval Status</th>
-					<th>Edit</th>
-				</tr>
-			</thead>
-			<tbody>
-				@foreach ($tempProducts as $tempProduct)
-				<tr>
-
-					<td>{{ $tempProduct->product_id }}</td>
-					<td>{{ $tempProduct->name }}</td>
-					<td>{{ $tempProduct->description }}</td>
-					<td>{{ $tempProduct->status }}</td>
-					<td>
-						<select name="approval_status[{{ $tempProduct->id }}]" class="form-control approval-status-dropdown">
-							<option value="pending" {{ $tempProduct->approval_status == 'pending' ? 'selected' : '' }}>Pending</option>
-							<option value="approved" {{ $tempProduct->approval_status == 'approved' ? 'selected' : '' }}>Approved</option>
-							<option value="rejected" {{ $tempProduct->approval_status == 'rejected' ? 'selected' : '' }}>Rejected</option>
-						</sewlect>
-
-					</td>
-					<td>
-						<a href="#" class="edit-temp-product" data-id="{{ $tempProduct->id }}" data-name="{{ $tempProduct->name }}" data-description="{{ $tempProduct->description }}" data-status="{{ $tempProduct->status }}">
-							<i class="fa fa-pencil"></i>
-						</a>
-					</td>
-				</tr>
-				@endforeach
-			</tbody>
-		</table>
-	</div>
-
-	<button type="submit" class="btn btn-success" id="save-changes-btn">Save Approval Changes</button>
-</form>
-@endsection --}}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 @extends($layout ?? BaseHelper::getAdminMasterLayoutTemplate())
 
 @section('content')
@@ -86,7 +19,6 @@
 	</style>
 </head>
 <body>
-
 	<div class="container mt-5">
 		<form action="{{ route('temp-products.approve') }}" method="POST">
 			@csrf
@@ -103,27 +35,27 @@
 						</tr>
 					</thead>
 					<tbody>
-						@foreach ($tempProducts as $tempProduct)
-						<tr id="product-row-{{ $tempProduct->id }}">
-							<td>{{ $tempProduct->product_id }}</td>
-							<td class="product-name">{{ $tempProduct->name }}</td>
-							<td class="product-description">{{ $tempProduct->description }}</td>
-							<td class="product-status">{{ $tempProduct->status }}</td>
+						@foreach ($tempContentProducts as $tempContentProduct)
+						<tr id="product-row-{{ $tempContentProduct->id }}">
+							<td>{{ $tempContentProduct->product_id }}</td>
+							<td class="product-name">{{ $tempContentProduct->name }}</td>
+							<td class="product-description">{{ $tempContentProduct->description }}</td>
+							<td class="product-status">{{ $tempContentProduct->status }}</td>
 							<td>
-								<select name="approval_status[{{ $tempProduct->id }}]" class="form-control approval-status-dropdown">
-									<option value="pending" {{ $tempProduct->approval_status == 'pending' ? 'selected' : '' }}>Pending</option>
-									<option value="approved" {{ $tempProduct->approval_status == 'approved' ? 'selected' : '' }}>Approved</option>
-									<option value="rejected" {{ $tempProduct->approval_status == 'rejected' ? 'selected' : '' }}>Rejected</option>
+								<select name="approval_status[{{ $tempContentProduct->id }}]" class="form-control approval-status-dropdown">
+									<option value="pending" {{ $tempContentProduct->approval_status == 'pending' ? 'selected' : '' }}>Pending</option>
+									<option value="approved" {{ $tempContentProduct->approval_status == 'approved' ? 'selected' : '' }}>Approved</option>
+									<option value="rejected" {{ $tempContentProduct->approval_status == 'rejected' ? 'selected' : '' }}>Rejected</option>
 								</select>
 							</td>
 							<td>
 								<button type="button" class="edit-icon" data-toggle="modal" data-target="#editProductModal"
-								data-id="{{ $tempProduct->id }}"
-								data-name="{{ $tempProduct->name }}"
-								data-description="{{ $tempProduct->description }}"
-								data-content="{{ $tempProduct->content }}"
-								data-status="{{ $tempProduct->status }}"
-								data-approval-status="{{ $tempProduct->approval_status }}">
+								data-id="{{ $tempContentProduct->id }}"
+								data-name="{{ $tempContentProduct->name }}"
+								data-description="{{ $tempContentProduct->description }}"
+								data-content="{{ $tempContentProduct->content }}"
+								data-status="{{ $tempContentProduct->status }}"
+								data-approval-status="{{ $tempContentProduct->approval_status }}">
 								<i class="fas fa-pencil-alt"></i> <!-- Pencil icon -->
 							</button>
 						</td>
@@ -151,41 +83,41 @@
 				<form action="{{ route('temp-products.approve') }}" method="POST">
 					@csrf
 					<div class="products-container">
-						@foreach ($tempProducts as $tempProduct)
-						<div class="product-card" id="product-row-{{ $tempProduct->id }}">
+						@foreach ($tempContentProducts as $tempContentProduct)
+						<div class="product-card" id="product-row-{{ $tempContentProduct->id }}">
 							<div class="product-header">
-								<h6>Product ID: {{ $tempProduct->product_id }}</h6>
-								<h4>{{ $tempProduct->name }}</h4>
+								<h6>Product ID: {{ $tempContentProduct->product_id }}</h6>
+								<h4>{{ $tempContentProduct->name }}</h4>
 							</div>
 
 							<div class="product-description">
-								<label for="description-{{ $tempProduct->id }}">Change Description:</label>
-								<textarea id="description-{{ $tempProduct->id }}" class="editor" name="description[{{ $tempProduct->id }}]">
-									{{ $tempProduct->description }}
+								<label for="description-{{ $tempContentProduct->id }}">Change Description:</label>
+								<textarea id="description-{{ $tempContentProduct->id }}" class="editor" name="description[{{ $tempContentProduct->id }}]">
+									{{ $tempContentProduct->description }}
 								</textarea>
 							</div>
 							<div class="product-content">
-								<label for="content-{{ $tempProduct->id }}">Change Content:</label>
-								<textarea id="description-{{ $tempProduct->id }}" class="editor" name="content[{{ $tempProduct->id }}]">
-									{{ $tempProduct->content }}
+								<label for="content-{{ $tempContentProduct->id }}">Change Content:</label>
+								<textarea id="description-{{ $tempContentProduct->id }}" class="editor" name="content[{{ $tempContentProduct->id }}]">
+									{{ $tempContentProduct->content }}
 								</textarea>
 							</div>
 							<div class="approval-status-container">
-								<label for="approval-status-{{ $tempProduct->id }}">Approval Status:</label>
-								<select name="approval_status[{{ $tempProduct->id }}]" id="approval-status-{{ $tempProduct->id }}" class="form-control approval-status-dropdown">
-									<option value="pending" {{ $tempProduct->approval_status == 'pending' ? 'selected' : '' }}>Pending</option>
-									<option value="approved" {{ $tempProduct->approval_status == 'approved' ? 'selected' : '' }}>Approved</option>
-									<option value="rejected" {{ $tempProduct->approval_status == 'rejected' ? 'selected' : '' }}>Rejected</option>
+								<label for="approval-status-{{ $tempContentProduct->id }}">Approval Status:</label>
+								<select name="approval_status[{{ $tempContentProduct->id }}]" id="approval-status-{{ $tempContentProduct->id }}" class="form-control approval-status-dropdown">
+									<option value="pending" {{ $tempContentProduct->approval_status == 'pending' ? 'selected' : '' }}>Pending</option>
+									<option value="approved" {{ $tempContentProduct->approval_status == 'approved' ? 'selected' : '' }}>Approved</option>
+									<option value="rejected" {{ $tempContentProduct->approval_status == 'rejected' ? 'selected' : '' }}>Rejected</option>
 								</select>
 							</div>
 							<div class="edit-button-container">
 								<button type="button" class="edit-icon" data-toggle="modal" data-target="#editProductModal"
-								data-id="{{ $tempProduct->id }}"
-								data-name="{{ $tempProduct->name }}"
-								data-description="{{ $tempProduct->description }}"
-								data-content="{{ $tempProduct->content }}"
-								data-status="{{ $tempProduct->status }}"
-								data-approval-status="{{ $tempProduct->approval_status }}">
+								data-id="{{ $tempContentProduct->id }}"
+								data-name="{{ $tempContentProduct->name }}"
+								data-description="{{ $tempContentProduct->description }}"
+								data-content="{{ $tempContentProduct->content }}"
+								data-status="{{ $tempContentProduct->status }}"
+								data-approval-status="{{ $tempContentProduct->approval_status }}">
 
 							</button>
 						</div>
