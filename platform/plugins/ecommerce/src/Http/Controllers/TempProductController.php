@@ -13,9 +13,9 @@ class TempProductController extends BaseController
 	public function index()
 	{
 		// Fetch all temporary product changes
-		$tempPricingProducts = TempProduct::where('role_id', 22)->where('status', '!=', 'pending')->get();
-		$tempContentProducts = TempProduct::where('role_id', 18)->where('status', '!=', 'pending')->get();
-		$tempGraphicsProducts = TempProduct::where('role_id', 19)->where('status', '!=', 'pending')->get();
+		$tempPricingProducts = TempProduct::where('role_id', 22)->where('approval_status', 'pending')->get();
+		$tempContentProducts = TempProduct::where('role_id', 18)->where('approval_status', 'pending')->get();
+		$tempGraphicsProducts = TempProduct::where('role_id', 19)->where('approval_status', 'pending')->get();
 
 		$unitOfMeasurements = UnitOfMeasurement::pluck('name', 'id')->toArray();
 		$stores = Store::pluck('name', 'id')->toArray();
@@ -35,7 +35,7 @@ class TempProductController extends BaseController
 		logger()->info('approvePricingChanges method called.');
 		logger()->info('Request Data: ', $request->all());
 		$request->validate([
-			'approval_status' => 'required',
+			'approval_status' => 'required'
 		]);
 
 		if($request->initial_approval_status=='pending' && $request->approval_status=='approved') {
