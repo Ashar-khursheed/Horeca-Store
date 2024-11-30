@@ -35,15 +35,26 @@ class TempProductController extends BaseController
 		logger()->info('approvePricingChanges method called.');
 		logger()->info('Request Data: ', $request->all());
 		$request->validate([
-			'approval_status' => 'required'
+			'approval_status' => 'required',
+			'remarks' => [
+				'required_if:approval_status,rejected'
+			]
 		]);
 
+
+		$tempProduct = TempProduct::find($request->id);
 		if($request->initial_approval_status=='pending' && $request->approval_status=='approved') {
-			$tempProduct = TempProduct::find($request->id);
 			$input = $request->all();
 			unset($input['_token'], $input['id'], $input['initial_approval_status'], $input['approval_status'], $input['margin']);
 			$tempProduct->product->update($input);
 			$tempProduct->update(['approval_status' => $request->approval_status]);
+		}
+
+		if($request->initial_approval_status=='pending' && $request->approval_status=='rejected') {
+			$tempProduct->update([
+				'approval_status' => $request->approval_status,
+				'remarks' => $request->remarks
+			]);
 		}
 
 		return redirect()->route('temp-products.index')->with('success', 'Product changes approved and updated successfully.');
