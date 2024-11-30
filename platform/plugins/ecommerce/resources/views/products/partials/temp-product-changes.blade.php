@@ -350,12 +350,17 @@
 
 							<div class="mb-3">
 								<input type="hidden" id="pricing_initial_approval_status" name="initial_approval_status">
-								<label for="approvalStatus" class="form-label">Approval Status</label>
+								<label for="pricing_approval_status" class="form-label">Approval Status</label>
 								<select class="form-select" id="pricing_approval_status" name="approval_status">
 									@foreach ($approvalStatuses as $value => $label)
 									<option value="{{ $value }}">{{ $label }}</option>
 									@endforeach
 								</select>
+							</div>
+
+							<div class="mb-3">
+								<label for="pricing_remarks" class="form-label">Remarks</label>
+								<textarea class="form-select" id="pricing_remarks" name="remarks"></textarea>
 							</div>
 
 							<button type="submit" class="btn btn-primary">Submit</button>
@@ -574,6 +579,26 @@
 				const linkText = $(this).text().trim();
 				$(this).text(linkText === 'Choose Discount Period' ? 'Cancel' : 'Choose Discount Period');
 			});
+
+
+			// Get references to the select and textarea elements
+			const $approvalStatus = $('#pricing_approval_status');
+			const $remarks = $('#pricing_remarks');
+
+			// Function to update the "required" attribute based on approval status
+			function updateRemarksRequirement() {
+				if ($approvalStatus.val() === 'rejected') { // Replace 'rejected' with the actual value for rejection
+					$remarks.attr('required', 'required');
+				} else {
+					$remarks.removeAttr('required');
+				}
+			}
+
+			// Initial check when the page loads
+			updateRemarksRequirement();
+
+			// Update requirement whenever the approval status changes
+			$approvalStatus.on('change', updateRemarksRequirement);
 		});
 	</script>
 	<script>
