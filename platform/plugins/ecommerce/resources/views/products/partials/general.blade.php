@@ -123,6 +123,7 @@
             </x-slot:prepend>
         </x-core::form.text-input>
     </div>
+
     <input
         name="product_id"
         type="hidden"
@@ -151,6 +152,22 @@
             name="allow_checkout_when_out_of_stock"
             :checked="old('allow_checkout_when_out_of_stock', $product ? $product->allow_checkout_when_out_of_stock : $originalProduct->allow_checkout_when_out_of_stock ?? 0) == 1"
         />
+    </x-core::form.fieldset>
+
+    <x-core::form.fieldset class="stock-status-wrapper" @style(['display: none' => old('with_storehouse_management', $product ? $product->with_storehouse_management : $originalProduct->with_storehouse_management ?? 0) == 1])>
+        <x-core::form.label for="stock_status">
+            {{ trans('plugins/ecommerce::products.form.stock_status') }}
+        </x-core::form.label>
+        @foreach (Botble\Ecommerce\Enums\StockStatusEnum::labels() as $status => $label)
+            <x-core::form.checkbox
+                :label="$label"
+                name="stock_status"
+                type="radio"
+                :value="$status"
+                :checked="old('stock_status', $product ? $product->stock_status : 'in_stock') == $status"
+                :inline="true"
+            />
+        @endforeach
     </x-core::form.fieldset>
 </div>
 

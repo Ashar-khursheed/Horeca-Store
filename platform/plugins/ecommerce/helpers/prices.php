@@ -79,6 +79,21 @@ if (! function_exists('get_sale_percentage')) {
     }
 }
 
+if (! function_exists('get_margin')) {
+    function get_margin(?float $price, ?float $salePrice, ?float $costPerItem, bool $appendSymbol = true)
+    {
+        $symbol = $appendSymbol ? '%' : '';
+
+        if ($costPerItem && ($price || $salePrice)) {
+            $calculatedPrice = $salePrice ? $salePrice : $price;
+            $margin = round((($calculatedPrice - $costPerItem) / $costPerItem) * 100);
+            return $margin;
+        } else {
+            return null;
+        }
+    }
+}
+
 if (! function_exists('is_product_on_sale')) {
     function is_product_on_sale(string $saleStatus, ?string $startDate = null, ?string $endDate = null): bool
     {

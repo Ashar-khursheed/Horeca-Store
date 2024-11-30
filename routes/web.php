@@ -28,6 +28,7 @@ use Botble\Ecommerce\Http\Controllers\EliteShipmentController;
 
 
 Route::get('temp-products', [TempProductController::class, 'index'])->name('temp-products.index');
+Route::post('temp-products/pricing-approve', [TempProductController::class, 'approvePricingChanges'])->name('temp-products.pricing_approve');
 Route::post('temp-products/approve', [TempProductController::class, 'approveChanges'])->name('temp-products.approve');
 
 Route::post('/delete-document', [DocumentController::class, 'deleteDocument'])
@@ -43,7 +44,7 @@ Route::post('/delete-document', [DocumentController::class, 'deleteDocument'])
      });
      Route::post('product-images/import/validate', [ImportProductImageController::class, 'validateImport'])->name('product-images.import.validate');
      Route::post('product-images/import/store', [ImportProductImageController::class, 'storeImport'])->name('product-images.import.store');
-     
+
 // Route::get('/import', [ImportProductImageController::class, 'index'])->name('import.index');
 // Route::post('/import', [ImportProductImageController::class, 'store'])->name('import.store');
 Route::group(['namespace' => 'Botble\ProductImages\Http\Controllers', 'prefix' => 'ecommerce'], function () {
@@ -67,10 +68,10 @@ Route::group(['namespace' => 'YourNamespace'], function () {
 
 Route::get('/products/search-sku', [ProductController::class, 'searchBySku'])
     ->name('products.search-sku');
-    
-    
-    
-    
+
+
+
+
 
     // Define the route for the create form
     Route::get('admin/ecommerce/create-shipment', [EliteShipmentController::class, 'create'])->name('eliteshipment.create');

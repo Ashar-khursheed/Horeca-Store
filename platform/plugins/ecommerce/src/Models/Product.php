@@ -101,15 +101,17 @@ class Product extends BaseModel
         'shipping_height_id' => 'nullable|exists:units,id',
         'shipping_length' => 'nullable|numeric',
         'shipping_length_id' => 'nullable|exists:units,id',
+        'store_id',
         'refund_policy',
         'delivery_days',
+        'box_quantity',
         'frequently_bought_together' => 'array', // Adjust as needed
         'compare_type' => 'array', // Cast JSON to array
         'compare_products' => 'array', // Cast JSON to array
         'variant_1_title' => 'nullable|string|max:255',
         'variant_1_value' => 'nullable|string|max:255',
         'variant_1_products' => 'nullable|string', // Can be comma-separated IDs
-       
+
         ' variant_color_title' => 'nullable|string|max:255',
         'variant_color_value' => 'nullable|string|max:255',
         'variant_color_products' => 'nullable|string',
@@ -121,7 +123,7 @@ class Product extends BaseModel
         'variant_3_title' => 'nullable|string|max:255',
         'variant_3_value' => 'nullable|string|max:255',
         'variant_3_products' => 'nullable|string',
-        
+
     ];
 
     protected $appends = [
@@ -129,7 +131,7 @@ class Product extends BaseModel
         'front_sale_price',
     ];
 
-        
+
 
 
     protected $casts = [
@@ -146,12 +148,12 @@ class Product extends BaseModel
         'end_date' => 'datetime',
         'minimum_order_quantity' => 'int',
         'maximum_order_quantity' => 'int',
-        'specs_sheet' => 'array', 
+        'specs_sheet' => 'array',
         // 'video_path'=> 'json',
-        
+
     ];
 
-    
+
     protected static function booted(): void
     {
         static::creating(function (Product $product) {
@@ -208,7 +210,7 @@ class Product extends BaseModel
             'category_id'
         );
     }
-    
+
 
     public function productAttributeSets(): BelongsToMany
     {
@@ -795,13 +797,13 @@ class Product extends BaseModel
         {
             return $this->belongsTo(Currency::class, 'currency_id'); // Assuming currency_id is the foreign key in products table
         }
-        
-        
+
+
         public function types()
         {
             return $this->belongsToMany(ProductTypes::class, 'ec_products_product_types_product', 'product_id', 'producttypes_id');
         }
-        
+
         public function carts()
         {
             return $this->belongsToMany(Cart::class, 'cart_product', 'product_id', 'cart_id')
@@ -821,8 +823,8 @@ class Product extends BaseModel
         }
         return false; // Or return null if you want to differentiate between guest and no wishlist
     }
-    
-    
+
+
             // In the Product model (e.g., app/Models/Product.php)
         public function recentlyViewed()
         {
