@@ -986,33 +986,39 @@ class ProductController extends BaseController
         else if(auth()->user() && DB::table('role_users')->where('user_id', auth()->user()->id)->where('role_id', 22)->exists())
         {
             if ($product) {  // Check if the product exists
-                // Manually assign values to the product's attributes
-                $product->sku = $request->sku;
-                $product->price = $request->price;
-                $product->sale_price = $request->sale_price;
-                $product->start_date = $request->start_date;
-                $product->end_date = $request->end_date;
-                $product->cost_per_item = $request->cost_per_item;
-                $product->quantity = $request->quantity;
-                $product->store_id = $request->store_id;
-                $product->minimum_order_quantity = $request->minimum_order_quantity;
-                $product->variant_requires_shipping = $request->variant_requires_shipping;
-                $product->refund = $request->refund;
-                $product->unit_of_measurement_id = $request->unit_of_measurement_id;
-                $product->delivery_days = $request->delivery_days;
-                $product->box_quantity = $request->box_quantity;
-                // $product->compare_type = json_encode(explode(',', $request->input('compare_type')));
-                // $product->compare_products = json_encode(explode(',', $request->input('compare_products')));
+                // dd($request->all(), $product->toArray());
+                $tempProduct = TempProduct::where('created_by_id', auth()->id())->where('role_id', 22)->where('approval_status', 'pending')->first();
+                if(!$tempProduct) {
+                    $tempProduct = new TempProduct();
+                }
+                $tempProduct->name = $request->name;
+                $tempProduct->sku = $request->sku;
+                $tempProduct->price = $request->price;
+                $tempProduct->sale_price = $request->sale_price;
+                $tempProduct->start_date = $request->start_date;
+                $tempProduct->end_date = $request->end_date;
+                $tempProduct->cost_per_item = $request->cost_per_item;
+                $tempProduct->margin = get_margin($request->price, $request->sale_price, $request->cost_per_item);
+                $tempProduct->with_storehouse_management = $request->with_storehouse_management;
+                $tempProduct->quantity = $request->quantity;
+                $tempProduct->allow_checkout_when_out_of_stock = $request->allow_checkout_when_out_of_stock;
+                $tempProduct->stock_status = $request->stock_status;
+                $tempProduct->store_id = $request->store_id;
+                $tempProduct->minimum_order_quantity = $request->minimum_order_quantity;
+                $tempProduct->variant_requires_shipping = $request->variant_requires_shipping;
+                $tempProduct->refund = $request->refund;
+                $tempProduct->unit_of_measurement_id = $request->unit_of_measurement_id;
+                $tempProduct->delivery_days = $request->delivery_days;
+                $tempProduct->box_quantity = $request->box_quantity;
+                $tempProduct->created_by_id = auth()->id();
+                $tempProduct->created_at = now();
+                $tempProduct->updated_at = now();
+                $tempProduct->product_id = $product->id;
+                $tempProduct->role_id = 22;
 
-                // Save the updated product
-                $product->save();
+                $tempProduct->save();
             }
-
-            /* Return success response */
-            return $this->httpResponse()
-            ->setPreviousUrl(route('products.index'))
-            ->setNextUrl(route('products.edit', $product->id))
-            ->withUpdatedSuccessMessage();
+            return redirect()->route('products.index')->with('success', 'Product update request submitted and saved for approval.');
         }
           else {
                     // Validate incoming request data
