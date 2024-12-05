@@ -40,7 +40,11 @@ use App\Http\Controllers\API\ForgotPasswordApiController;
 use App\Http\Controllers\API\ApiResetPasswordController;
 use App\Http\Controllers\API\SaveForLaterController;
 use App\Http\Controllers\CartController; // Adjust if the controller name is different
+use App\Http\Controllers\API\CountryController;
 
+
+Route::get('/countries', [CountryController::class, 'index']);
+Route::get('/countries/{id}', [CountryController::class, 'show']);
 
 Route::post('password/reset', [ApiResetPasswordController::class, 'reset'])->name('api.password.reset');
 
