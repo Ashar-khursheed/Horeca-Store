@@ -107,8 +107,16 @@
         />
     </div>
 
+    <div class="col-md-6">
+        <x-core::form.label for="stock_status">
+            {{ trans('plugins/ecommerce::products.unit_of_measurement') }}
+        </x-core::form.label>
 
-      <div class="col-md-6">
+        <!-- Call the function and bind it to 'shipping_length_id' -->
+        {!! measurement_unit_dropdown('unit_of_measurement_id', old('unit_of_measurement_id', $product->unit_of_measurement_id ?? null)) !!}
+    </div>
+
+    <div class="col-md-6">
         <x-core::form.text-input
             :label="trans('plugins/ecommerce::products.form.cost_per_item')"
             name="cost_per_item"
@@ -137,7 +145,7 @@
             class="form-control bg-light"
         />
     </div>
-   
+
     <input
         name="product_id"
         type="hidden"
@@ -184,6 +192,161 @@
         @endforeach
     </x-core::form.fieldset>
 </div>
+
+
+<x-core::form.fieldset>
+    <legend>
+        <h3>Buy more Save more</h3>
+    </legend>
+
+    <div id="discount-group">
+        @if($product->discounts && $product->discounts->count())
+            @foreach ($product->discounts as $index => $discount)
+                <div class="discount-item">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <input type="hidden" name="discount[{{ $index }}][discount_id]" value="{{ $discount->id }}">
+                            <label for="product_quantity_{{ $index }}" class="form-label quantity-label">Product Quantity</label>
+                            <input type="number" class="form-control product-quantity"
+                                   name="discount[{{ $index }}][product_quantity]"
+                                   value="{{ old('discount.' . $index . '.product_quantity', $discount->product_quantity) }}"
+                                   onchange="calculateDiscount(this)">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="discount_{{ $index }}" class="form-label">Discount</label>
+                            <input type="number" class="form-control discount-percentage"
+                                   name="discount[{{ $index }}][discount]"
+                                   value="{{ old('discount.' . $index . '.discount', $discount->value) }}"
+                                   onchange="calculateDiscount(this)">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="price_after_discount_{{ $index }}" class="form-label">Price after Discount</label>
+                            <input type="number" class="form-control price-after-discount"
+                                   name="discount[{{ $index }}][price_after_discount]"
+                                   value="{{ old('discount.' . $index . '.price_after_discount') }}" readonly>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="margin_{{ $index }}" class="form-label">Margin</label>
+                            <input type="number" class="form-control margin"
+                                   name="discount[{{ $index }}][margin]"
+                                   value="{{ old('discount.' . $index . '.margin') }}" readonly>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label for="fromDate_{{ $index }}" class="form-label">From Date</label>
+                            <input type="datetime-local" class="form-control"
+                                   name="discount[{{ $index }}][discount_from_date]"
+                                   value="{{ old('discount.' . $index . '.discount_from_date', \Carbon\Carbon::parse($discount->start_date)) }}">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="toDate_{{ $index }}" class="form-label">To Date</label>
+                            <input type="datetime-local" class="form-control to-date"
+                                   name="discount[{{ $index }}][discount_to_date]"
+                                   value="{{ old('discount.' . $index . '.discount_to_date', $discount->end_date ? \Carbon\Carbon::parse($discount->end_date) : '') }}">
+                        </div>
+
+                        <div class="col-md-4 d-flex align-items-center">
+                            <div class="form-check">
+                                <input class="form-check-input me-2 never-expired-checkbox"
+                                       type="checkbox"
+                                       name="discount[{{ $index }}][never_expired]"
+                                       value="1"
+                                       {{ old('discount.' . $index . '.never_expired', $discount->end_date ? '' : 'checked') }}
+                                       onchange="toggleToDateField(this)">
+                                <label class="form-check-label" for="never_expired_{{ $index }}">Never Expired</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if ($loop->iteration < 2)
+                        <div class="row g-3 my-3">
+                            <div class="col-md-12">&nbsp;
+                            </div>
+                        </div>
+
+                    @elseif ($loop->iteration == 2)
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-12 text-end">
+                                <button type="button" class="btn btn-success add-btn {{$product->discounts->count() >= 3 ? 'disabled':''}}"><i class="fas fa-plus"></i> Add</button>
+                            </div>
+                        </div>
+
+                    @elseif($loop->iteration > 2 && $loop->iteration)
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-12 text-end">
+                                <button type="button" class="btn btn-danger remove-btn1"><i class="fas fa-minus"></i> Remove</button>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            @endforeach
+        @else
+            @for($i=0; $i<2; $i++)
+            <div class="discount-item">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="product_quantity" class="form-label quantity-label">Product Quantity</label>
+                        <input type="number" class="form-control product-quantity" name="discount[$i][product_quantity]" onchange="calculateDiscount(this)">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="discount" class="form-label">Discount</label>
+                        <input type="number" class="form-control discount-percentage" name="discount[$i][discount]" onchange="calculateDiscount(this)">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="price_after_discount" class="form-label">Price after Discount</label>
+                        <input type="number" class="form-control price-after-discount" name="discount[$i][price_after_discount]" readonly>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="margin" class="form-label">Margin</label>
+                        <input type="number" class="form-control margin" name="discount[$i][margin]" readonly>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label for="fromDate" class="form-label">From Date</label>
+                        <input type="datetime-local" class="form-control" name="discount[$i][discount_from_date]">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="toDate" class="form-label">To Date</label>
+                        <input type="datetime-local" class="form-control to-date" name="discount[$i][discount_to_date]">
+                    </div>
+
+                    <div class="col-md-4 d-flex align-items-center">
+                        <div class="form-check">
+                            <input class="form-check-input me-2 never-expired-checkbox" type="checkbox" name="discount[$i][never_expired]" value="1" onchange="toggleToDateField(this)">
+                            <label class="form-check-label" for="never_expired">Never Expired</label>
+                        </div>
+                    </div>
+                </div>
+                @if ($i < 1)
+                    <div class="row g-3 my-3">
+                        <div class="col-md-12">&nbsp;
+                        </div>
+                    </div>
+
+                @elseif ($i == 1)
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-12 text-end">
+                            <button type="button" class="btn btn-success add-btn"><i class="fas fa-plus"></i> Add</button>
+                        </div>
+                    </div>
+                @endif
+            </div>
+            @endfor
+        @endif
+    </div>
+</x-core::form.fieldset>
 
 @else
 @if (!$productspec)
@@ -285,8 +448,17 @@
         />
     </div>
 
+    <div class="col-md-6">
+        <x-core::form.label for="stock_status">
+            {{ trans('plugins/ecommerce::products.unit_of_measurement') }}
+        </x-core::form.label>
 
-      <div class="col-md-6">
+        <!-- Call the function and bind it to 'shipping_length_id' -->
+        {!! measurement_unit_dropdown('unit_of_measurement_id', old('unit_of_measurement_id', $product->unit_of_measurement_id ?? null)) !!}
+    </div>
+
+
+    <div class="col-md-6">
         <x-core::form.text-input
             :label="trans('plugins/ecommerce::products.form.cost_per_item')"
             name="cost_per_item"
@@ -315,7 +487,7 @@
             class="form-control bg-light"
         />
     </div>
- 
+
     <input
         name="product_id"
         type="hidden"
@@ -371,6 +543,162 @@
             :inline="true"
         />
     @endforeach
+</x-core::form.fieldset>
+
+
+
+<x-core::form.fieldset>
+    <legend>
+        <h3>Buy more Save more</h3>
+    </legend>
+
+    <div id="discount-group">
+        @if($product->discounts && $product->discounts->count())
+            @foreach ($product->discounts as $index => $discount)
+                <div class="discount-item">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <input type="hidden" name="discount[{{ $index }}][discount_id]" value="{{ $discount->id }}">
+                            <label for="product_quantity_{{ $index }}" class="form-label quantity-label">Product Quantity</label>
+                            <input type="number" class="form-control product-quantity"
+                                   name="discount[{{ $index }}][product_quantity]"
+                                   value="{{ old('discount.' . $index . '.product_quantity', $discount->product_quantity) }}"
+                                   onchange="calculateDiscount(this)">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="discount_{{ $index }}" class="form-label">Discount</label>
+                            <input type="number" class="form-control discount-percentage"
+                                   name="discount[{{ $index }}][discount]"
+                                   value="{{ old('discount.' . $index . '.discount', $discount->value) }}"
+                                   onchange="calculateDiscount(this)">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="price_after_discount_{{ $index }}" class="form-label">Price after Discount</label>
+                            <input type="number" class="form-control price-after-discount"
+                                   name="discount[{{ $index }}][price_after_discount]"
+                                   value="{{ old('discount.' . $index . '.price_after_discount') }}" readonly>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="margin_{{ $index }}" class="form-label">Margin</label>
+                            <input type="number" class="form-control margin"
+                                   name="discount[{{ $index }}][margin]"
+                                   value="{{ old('discount.' . $index . '.margin') }}" readonly>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label for="fromDate_{{ $index }}" class="form-label">From Date</label>
+                            <input type="datetime-local" class="form-control"
+                                   name="discount[{{ $index }}][discount_from_date]"
+                                   value="{{ old('discount.' . $index . '.discount_from_date', \Carbon\Carbon::parse($discount->start_date)) }}">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="toDate_{{ $index }}" class="form-label">To Date</label>
+                            <input type="datetime-local" class="form-control to-date"
+                                   name="discount[{{ $index }}][discount_to_date]"
+                                   value="{{ old('discount.' . $index . '.discount_to_date', $discount->end_date ? \Carbon\Carbon::parse($discount->end_date) : '') }}">
+                        </div>
+
+                        <div class="col-md-4 d-flex align-items-center">
+                            <div class="form-check">
+                                <input class="form-check-input me-2 never-expired-checkbox"
+                                       type="checkbox"
+                                       name="discount[{{ $index }}][never_expired]"
+                                       value="1"
+                                       {{ old('discount.' . $index . '.never_expired', $discount->end_date ? '' : 'checked') }}
+                                       onchange="toggleToDateField(this)">
+                                <label class="form-check-label" for="never_expired_{{ $index }}">Never Expired</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if ($loop->iteration < 2)
+                        <div class="row g-3 my-3">
+                            <div class="col-md-12">&nbsp;
+                            </div>
+                        </div>
+
+                    @elseif ($loop->iteration == 2)
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-12 text-end">
+                                <button type="button" class="btn btn-success add-btn {{$product->discounts->count() >= 3 ? 'disabled':''}}"><i class="fas fa-plus"></i> Add</button>
+                            </div>
+                        </div>
+
+                    @elseif($loop->iteration > 2 && $loop->iteration)
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-12 text-end">
+                                <button type="button" class="btn btn-danger remove-btn1"><i class="fas fa-minus"></i> Remove</button>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            @endforeach
+        @else
+            @for($i=0; $i<2; $i++)
+            <div class="discount-item">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="product_quantity" class="form-label quantity-label">Product Quantity</label>
+                        <input type="number" class="form-control product-quantity" name="discount[$i][product_quantity]" onchange="calculateDiscount(this)">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="discount" class="form-label">Discount</label>
+                        <input type="number" class="form-control discount-percentage" name="discount[$i][discount]" onchange="calculateDiscount(this)">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="price_after_discount" class="form-label">Price after Discount</label>
+                        <input type="number" class="form-control price-after-discount" name="discount[$i][price_after_discount]" readonly>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="margin" class="form-label">Margin</label>
+                        <input type="number" class="form-control margin" name="discount[$i][margin]" readonly>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label for="fromDate" class="form-label">From Date</label>
+                        <input type="datetime-local" class="form-control" name="discount[$i][discount_from_date]">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="toDate" class="form-label">To Date</label>
+                        <input type="datetime-local" class="form-control to-date" name="discount[$i][discount_to_date]">
+                    </div>
+
+                    <div class="col-md-4 d-flex align-items-center">
+                        <div class="form-check">
+                            <input class="form-check-input me-2 never-expired-checkbox" type="checkbox" name="discount[$i][never_expired]" value="1" onchange="toggleToDateField(this)">
+                            <label class="form-check-label" for="never_expired">Never Expired</label>
+                        </div>
+                    </div>
+                </div>
+                @if ($i < 1)
+                    <div class="row g-3 my-3">
+                        <div class="col-md-12">&nbsp;
+                        </div>
+                    </div>
+
+                @elseif ($i == 1)
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-12 text-end">
+                            <button type="button" class="btn btn-success add-btn"><i class="fas fa-plus"></i> Add</button>
+                        </div>
+                    </div>
+                @endif
+            </div>
+            @endfor
+        @endif
+    </div>
 </x-core::form.fieldset>
 
 @endif
@@ -766,6 +1094,180 @@
 
         // Run the calculation every second
         setInterval(calculateMargin, 1000);
+    });
+</script>
+
+
+
+<script>
+    /* JavaScript to handle add/remove functionality */
+    document.addEventListener('DOMContentLoaded', () => {
+        const unitOfMeasurementDropdown = document.getElementById('unit-of-measurement');
+        const unitLabels = {
+            1: 'Pieces',
+            2: 'Dozen',
+            3: 'Box',
+            4: 'Case'
+        };
+
+        // Function to update all quantity labels
+        function updateAllQuantityLabels() {
+            const selectedValue = unitOfMeasurementDropdown.value;
+            const unitText = unitLabels[selectedValue] || 'Units';
+
+            // Update all labels in the discount group
+            document.querySelectorAll('.quantity-label').forEach(label => {
+                label.textContent = `Product Quantity (in ${unitText})`;
+            });
+        }
+
+        // Trigger label updates when the UoM dropdown changes
+        unitOfMeasurementDropdown.addEventListener('change', updateAllQuantityLabels);
+
+        // Initial update on page load
+        updateAllQuantityLabels();
+
+
+        const discountGroup = document.getElementById('discount-group');
+        discountGroup.addEventListener('click', (event) => {
+            if (event.target.classList.contains('add-btn')) {
+                // Disable the "Add" button temporarily
+                event.target.classList.add('disabled');
+                event.target.disabled = true;
+
+                /* Find the current count of discount items */
+                const count = discountGroup.querySelectorAll('.discount-item').length;
+
+                if (count < 3) {
+                    /* Create a new input field group with updated name attributes */
+                    const newField = document.createElement('div');
+                    newField.classList.add('discount-item');
+                    newField.innerHTML = `
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="product_quantity" class="form-label quantity-label">Product Quantity</label>
+                                <input type="number" class="form-control product-quantity" name="discount[${count}][product_quantity]" onchange="calculateDiscount(this)">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="discount" class="form-label">Discount</label>
+                                <input type="number" class="form-control discount-percentage" name="discount[${count}][discount]" onchange="calculateDiscount(this)">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="price_after_discount" class="form-label">Price after Discount</label>
+                                <input type="number" class="form-control price-after-discount" name="discount[${count}][price_after_discount]">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="margin" class="form-label">Margin</label>
+                                <input type="number" class="form-control margin" name="discount[${count}][margin]">
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label for="fromDate" class="form-label">From Date</label>
+                                <input type="datetime-local" class="form-control" name="discount[${count}][discount_from_date]">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="toDate" class="form-label">To Date</label>
+                                <input type="datetime-local" class="form-control to-date" name="discount[${count}][discount_to_date]">
+                            </div>
+                            <div class="col-md-4 d-flex align-items-center">
+                                <div class="form-check">
+                                    <input class="form-check-input me-2 never-expired-checkbox" type="checkbox" name="discount[${count}][never_expired]" value="1" onchange="toggleToDateField(this)">
+                                    <label class="form-check-label" for="never_expired">Never Expired</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-12 text-end">
+                                <button type="button" class="btn btn-danger remove-btn1"><i class="fas fa-minus"></i> Remove</button>
+                            </div>
+                        </div>
+                    `;
+                    discountGroup.appendChild(newField);
+
+                    // Ensure the new label reflects the current UoM
+                    updateAllQuantityLabels();
+                }
+            } else if (event.target.classList.contains('remove-btn1')) {
+                /* Remove input fields */
+                const discountItem = event.target.closest('.discount-item');
+                if (discountItem) {
+                    discountItem.remove();
+                }
+
+                // Re-enable the Add button after a remove
+                const addButton = discountGroup.querySelector('.add-btn');
+                if (addButton) {
+                    addButton.classList.remove('disabled');
+                    addButton.disabled = false;
+                }
+            }
+        });
+
+
+        // Ensure all input fields are properly handled
+        const discountItems = document.querySelectorAll('.discount-item');
+        discountItems.forEach(item => {
+            calculateDiscount(item);  // Call once on page load to set initial values
+        });
+    });
+
+    function calculateDiscount(element) {
+        const discountItem = element.closest('.discount-item');
+        const productRequiredInput = discountItem.querySelector('.product-quantity');
+        const discountPercentageInput = discountItem.querySelector('.discount-percentage');
+        const priceAfterDiscountInput = discountItem.querySelector('.price-after-discount');
+        const marginInput = discountItem.querySelector('.margin');
+
+        const price = document.querySelector('input[name="sale_price"]').value || document.querySelector('input[name="price"]').value || 0;
+        const costPerItem = document.querySelector('input[name="cost_per_item"]').value || 0;
+        const productRequired = parseFloat(productRequiredInput.value) || 0;
+        const discountPercentage = parseFloat(discountPercentageInput.value) || 0;
+
+        // Ensure all inputs are valid
+        if (price > 0 && productRequired > 0 && discountPercentage > 0) {
+            // Calculate discount amount
+            const discountAmount = price * (discountPercentage / 100);
+
+            // Calculate final price after discount
+            const priceAfterDiscount = price - discountAmount;
+
+            // Set the result in the readonly input field
+            priceAfterDiscountInput.value = priceAfterDiscount.toFixed(2);
+
+            const marginValue = (priceAfterDiscountInput.value - costPerItem)*100/priceAfterDiscountInput.value;
+            marginInput.value = marginValue.toFixed(2);
+        } else {
+            // Clear the price after discount field if inputs are invalid or missing
+            priceAfterDiscountInput.value = '';
+        }
+    }
+
+    // Function to toggle the "To Date" field for each discount group
+    function toggleToDateField(checkbox) {
+        // Find the discount item container (group) that contains the checkbox
+        const discountItem = checkbox.closest('.discount-item');
+
+        // Get the "To Date" input field within this group
+        const toDateInput = discountItem.querySelector('.to-date');
+
+        // If "Never Expired" is checked, disable the "To Date" field
+        if (checkbox.checked) {
+            toDateInput.disabled = true;
+        } else {
+            toDateInput.disabled = false;
+        }
+    }
+
+    // Add event listeners to all "Never Expired" checkboxes when the document is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+        // Select all the "Never Expired" checkboxes
+        const neverExpiredCheckboxes = document.querySelectorAll('.never-expired-checkbox');
+
+        // For each checkbox, trigger the toggle function to set the initial state
+        neverExpiredCheckboxes.forEach(checkbox => {
+            toggleToDateField(checkbox);
+        });
     });
 </script>
 

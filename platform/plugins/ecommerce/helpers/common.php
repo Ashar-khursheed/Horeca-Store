@@ -3,6 +3,7 @@
 use Botble\Ecommerce\Facades\EcommerceHelper;
 use Botble\Ecommerce\Models\StoreLocator;
 use Botble\Media\Facades\RvMedia;
+use Botble\Ecommerce\Models\UnitOfMeasurement;
 
 if (! function_exists('array_equal')) {
     function array_equal(array $first, array $second): bool
@@ -180,14 +181,14 @@ if (!function_exists('ecommerce_width_height_unit')) {
     // {
     //     // Get the currently selected unit from settings
     //     $unit = (string) get_ecommerce_setting('store_width_height_unit', 'cm');
-    
+
     //     // Fetch available units from the database
     //     $availableUnits = DB::table('units')->pluck('full_name', 'symbol')->toArray();
-    
+
     //     if (!array_key_exists($unit, $availableUnits)) {
     //         $unit = 'cm'; // Default to cm if the unit is not found
     //     }
-    
+
     //     // Generate the dropdown HTML
     //     $dropdown = '<select name="width_height_unit" class="form-control">';
     //     foreach ($availableUnits as $key => $value) {
@@ -195,14 +196,14 @@ if (!function_exists('ecommerce_width_height_unit')) {
     //         $dropdown .= "<option value=\"{$key}\" {$selected}>{$value} ({$key})</option>";
     //     }
     //     $dropdown .= '</select>';
-    
+
     //     return $full ? $dropdown : $unit; // Return dropdown or unit symbol based on the parameter
     // }
     function ecommerce_unit_dropdown(string $name, $selectedUnitId = null): string
     {
         // Fetch available units from the database (id => unit name)
         $availableUnits = DB::table('units')->pluck('symbol', 'id')->toArray();
-    
+
         // Generate the dropdown HTML, where the `name` attribute is dynamic
         $dropdown = '<select name="' . $name . '" class="form-control">';
         foreach ($availableUnits as $id => $unitName) {
@@ -210,14 +211,29 @@ if (!function_exists('ecommerce_width_height_unit')) {
             $dropdown .= "<option value=\"{$id}\" {$selected}>{$unitName}</option>";
         }
         $dropdown .= '</select>';
-    
+
+        return $dropdown;
+    }
+    function measurement_unit_dropdown(string $name, $selectedUnitId = null): string
+    {
+        // Fetch available units from the database (id => unit name)
+        $availableUnits = UnitOfMeasurement::pluck('name', 'id')->toArray();
+
+        // Generate the dropdown HTML, where the `name` attribute is dynamic
+        $dropdown = '<select name="' . $name . '" class="form-control" id="unit-of-measurement">';
+        foreach ($availableUnits as $id => $unitName) {
+            $selected = $id == $selectedUnitId ? 'selected' : '';
+            $dropdown .= "<option value=\"{$id}\" {$selected}>{$unitName}</option>";
+        }
+        $dropdown .= '</select>';
+
         return $dropdown;
     }
     function ecommerce_weight_unit_dropdown(string $name, $selectedUnitId = null): string
     {
         // Fetch available units from the database (id => unit name)
         $availableUnits = DB::table('weight_units')->pluck('symbol', 'id')->toArray();
-    
+
         // Generate the dropdown HTML, where the `name` attribute is dynamic
         $dropdown = '<select name="' . $name . '" class="form-control">';
         foreach ($availableUnits as $id => $unitName) {
@@ -225,10 +241,10 @@ if (!function_exists('ecommerce_width_height_unit')) {
             $dropdown .= "<option value=\"{$id}\" {$selected}>{$unitName}</option>";
         }
         $dropdown .= '</select>';
-    
+
         return $dropdown;
     }
-    
+
 function ecommerce_width_height_unit(bool $full = false): string
 {
     // Get the currently selected unit from settings

@@ -15,6 +15,8 @@ use Botble\Ecommerce\Models\GroupedProduct;
 use Botble\Ecommerce\Models\Product;
 use Botble\Ecommerce\Models\Unit;
 use Botble\Ecommerce\Models\TempProduct;
+use Botble\Ecommerce\Models\Discount;
+use Botble\Ecommerce\Models\DiscountProduct;
 use Botble\Ecommerce\Models\ProductVariation;
 use Botble\Ecommerce\Models\ProductVariationItem;
 use Botble\Ecommerce\Services\Products\DuplicateProductService;
@@ -30,7 +32,7 @@ use Botble\Ecommerce\Models\Review;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
-
+use Carbon\Carbon;
 
 class ProductController extends BaseController
 {
@@ -681,6 +683,7 @@ class ProductController extends BaseController
     StoreProductService $service,
     StoreProductTagService $storeProductTagService ,   StoreProductTypesService $storeProductTypesService )
     {
+        // dd($request->discount);
         // Get the currently authenticated user
         $user = Auth::user();
 
@@ -985,6 +988,29 @@ class ProductController extends BaseController
         }
         else if(auth()->user() && DB::table('role_users')->where('user_id', auth()->user()->id)->where('role_id', 22)->exists())
         {
+            // dd($request->all());
+            // Validate incoming request data
+            $this->validate($request, [
+                'discount.0.product_quantity' => 'required|numeric|min:1', // First group product_quantity is required
+                'discount.0.discount' => 'required|numeric|min:1|max:100', // First group discount is required
+                'discount.0.discount_from_date' => 'required', // First group discount_from_date is required
+
+                'discount.1.product_quantity' => 'required|numeric|min:1', // Second group product_quantity is required
+                'discount.1.discount' => 'required|numeric|min:1|max:100', // Second group discount is required
+                'discount.1.discount_from_date' => 'required', // Second group discount_from_date is required
+
+                'discount.*.product_quantity' => 'nullable|numeric|min:1', // Additional groups are optional but must be valid
+                'discount.*.discount' => 'nullable|numeric|min:1|max:100',
+                'discount.*.discount_from_date' => 'nullable',
+            ], [
+                'discount.0.product_quantity.required' => 'Product quantity for the first discount is required.',
+                'discount.1.product_quantity.required' => 'Product quantity for the second discount is required.',
+                'discount.0.discount.required' => 'Discount percentage for the first discount is required.',
+                'discount.1.discount.required' => 'Discount percentage for the second discount is required.',
+                'discount.0.discount_from_date.required' => 'The start date for the first discount is required.',
+                'discount.1.discount_from_date.required' => 'The start date for the second discount is required.',
+            ]);
+
             if ($product) {  // Check if the product exists
                 // dd($request->all(), $product->toArray());
                 $tempProduct = TempProduct::where('created_by_id', auth()->id())->where('role_id', 22)->where('approval_status', 'pending')->first();
@@ -998,6 +1024,8 @@ class ProductController extends BaseController
                 $tempProduct->start_date = $request->start_date;
                 $tempProduct->end_date = $request->end_date;
                 $tempProduct->cost_per_item = $request->cost_per_item;
+                $tempProduct->discount = json_encode($request->discount);
+
                 $tempProduct->margin = get_margin($request->price, $request->sale_price, $request->cost_per_item);
                 $tempProduct->with_storehouse_management = $request->with_storehouse_management;
                 $tempProduct->quantity = $request->quantity;
@@ -1023,11 +1051,31 @@ class ProductController extends BaseController
           else {
                     // Validate incoming request data
                     $this->validate($request, [
+                        'discount.0.product_quantity' => 'required|numeric|min:1', // First group product_quantity is required
+                        'discount.0.discount' => 'required|numeric|min:1|max:100', // First group discount is required
+                        'discount.0.discount_from_date' => 'required', // First group discount_from_date is required
+
+                        'discount.1.product_quantity' => 'required|numeric|min:1', // Second group product_quantity is required
+                        'discount.1.discount' => 'required|numeric|min:1|max:100', // Second group discount is required
+                        'discount.1.discount_from_date' => 'required', // Second group discount_from_date is required
+
+                        'discount.*.product_quantity' => 'nullable|numeric|min:1', // Additional groups are optional but must be valid
+                        'discount.*.discount' => 'nullable|numeric|min:1|max:100',
+                        'discount.*.discount_from_date' => 'nullable',
+
                         'documents.*' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
                         'titles.*' => 'nullable|string|max:255',
                         'compare_type' => 'nullable|string',
                         'compare_products' => 'nullable|string',
+                    ], [
+                        'discount.0.product_quantity.required' => 'Product quantity for the first discount is required.',
+                        'discount.1.product_quantity.required' => 'Product quantity for the second discount is required.',
+                        'discount.0.discount.required' => 'Discount percentage for the first discount is required.',
+                        'discount.1.discount.required' => 'Discount percentage for the second discount is required.',
+                        'discount.0.discount_from_date.required' => 'The start date for the first discount is required.',
+                        'discount.1.discount_from_date.required' => 'The start date for the second discount is required.',
                     ]);
+
 
                     // Load existing documents if any
                     $existingDocuments = json_decode($product->documents, true) ?? [];
@@ -1206,7 +1254,76 @@ class ProductController extends BaseController
 
                     $product->save();
 
+                if ($request->discount) {
+                    // Fetch existing discount IDs related to the product
+                    $existingDiscountIds = $product->discounts->pluck('id')->toArray();
 
+                    // Keep track of processed discount IDs
+                    $processedDiscountIds = [];
+
+                    foreach ($request->discount as $discountDetail) {
+                        if (
+                                array_key_exists('product_quantity', $discountDetail) && $discountDetail['product_quantity']
+                                && array_key_exists('discount', $discountDetail) && $discountDetail['discount']
+                                && array_key_exists('discount_from_date', $discountDetail) && $discountDetail['discount_from_date']
+                            ) {
+                            if (array_key_exists('discount_id', $discountDetail) && $discountDetail['discount_id']) {
+                                // Update existing discount
+                                $discountId = $discountDetail['discount_id'];
+                                $discount = Discount::find($discountId);
+
+                                if ($discount) {
+                                    $discount->product_quantity = $discountDetail['product_quantity'];
+                                    $discount->title = ($discountDetail['product_quantity']) . ' products';
+                                    $discount->value = $discountDetail['discount'];
+                                    $discount->start_date = Carbon::parse($discountDetail['discount_from_date']);
+                                    $discount->end_date = array_key_exists('never_expired', $discountDetail) && $discountDetail['never_expired'] == 1
+                                        ? null
+                                        : Carbon::parse($discountDetail['discount_to_date']);
+                                    $discount->save();
+
+                                    // Update relation
+                                    DiscountProduct::updateOrCreate(
+                                        ['discount_id' => $discountId, 'product_id' => $product->id],
+                                        ['discount_id' => $discountId, 'product_id' => $product->id]
+                                    );
+                                }
+
+                                // Mark this discount ID as processed
+                                $processedDiscountIds[] = $discountId;
+                            } else {
+                                // Create new discount
+                                $discount = new Discount();
+                                $discount->product_quantity = $discountDetail['product_quantity'];
+                                $discount->title = ($discountDetail['product_quantity']) . ' products';
+                                $discount->type_option = 'percentage';
+                                $discount->type = 'promotion';
+                                $discount->value = $discountDetail['discount'];
+                                $discount->start_date = Carbon::parse($discountDetail['discount_from_date']);
+                                $discount->end_date = array_key_exists('never_expired', $discountDetail) && $discountDetail['never_expired'] == 1
+                                    ? null
+                                    : Carbon::parse($discountDetail['discount_to_date']);
+                                $discount->save();
+
+                                // Save relation
+                                $discountProduct = new DiscountProduct();
+                                $discountProduct->discount_id = $discount->id;
+                                $discountProduct->product_id = $product->id;
+                                $discountProduct->save();
+
+                                // Mark this discount ID as processed
+                                $processedDiscountIds[] = $discount->id;
+                            }
+                        }
+                    }
+
+                    // Delete removed discounts
+                    $discountsToDelete = array_diff($existingDiscountIds, $processedDiscountIds);
+                    if (!empty($discountsToDelete)) {
+                        Discount::whereIn('id', $discountsToDelete)->delete();
+                        DiscountProduct::whereIn('discount_id', $discountsToDelete)->delete();
+                    }
+                }
 
 
                 // Additional processing

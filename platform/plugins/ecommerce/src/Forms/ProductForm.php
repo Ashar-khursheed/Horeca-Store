@@ -34,7 +34,7 @@ use Botble\Ecommerce\Http\Requests\ProductRequest;
 use Botble\Ecommerce\Models\Brand;
 use Botble\Ecommerce\Models\GlobalOption;
 use Botble\Ecommerce\Models\Product;
-use Botble\Ecommerce\Models\UnitOfMeasurement;
+// use Botble\Ecommerce\Models\UnitOfMeasurement;
 use Botble\Ecommerce\Models\ProductAttributeSet;
 use Botble\Ecommerce\Models\ProductCollection;
 use Botble\Ecommerce\Models\ProductLabel;
@@ -1162,11 +1162,11 @@ class ProductForm extends FormAbstract
             ])
 
 
-            ->add('unit_of_measurement_id', 'select', [
-                'label' => 'Unit of Measurement',
-                'choices' => UnitOfMeasurement::pluck('name', 'id')->toArray(), /* Fetch the list of units from the DB */
-                'empty_value' => 'Select a Unit' /* Optional placeholder */
-            ])
+            // ->add('unit_of_measurement_id', 'select', [
+            //     'label' => 'Unit of Measurement',
+            //     'choices' => UnitOfMeasurement::pluck('name', 'id')->toArray(), /* Fetch the list of units from the DB */
+            //     'empty_value' => 'Select a Unit' /* Optional placeholder */
+            // ])
             ->add('delivery_days', 'text', ['label' => 'Delivery Days'])
 
             ->add('box_quantity', 'number', ['label' => 'Box Quantity'])
@@ -1725,11 +1725,11 @@ class ProductForm extends FormAbstract
 
                     ->add('google_shopping_category', 'text', ['label' => 'Google Shopping / Google Product Category'])
 
-                 ->add('unit_of_measurement_id', 'select', [
-                        'label' => 'Unit of Measurement',
-                        'choices' => UnitOfMeasurement::pluck('name', 'id')->toArray(), // Fetch the list of units from the DB
-                        'empty_value' => 'Select a Unit' // Optional placeholder
-                    ])
+                 // ->add('unit_of_measurement_id', 'select', [
+                 //        'label' => 'Unit of Measurement',
+                 //        'choices' => UnitOfMeasurement::pluck('name', 'id')->toArray(), // Fetch the list of units from the DB
+                 //        'empty_value' => 'Select a Unit' // Optional placeholder
+                 //    ])
                     ->add('delivery_days', 'text', ['label' => 'Delivery Days'])
 
                     // ->add('google_shopping_gender', 'text', ['label' => 'Google Shopping / Gender'])

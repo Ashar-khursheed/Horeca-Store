@@ -13,6 +13,7 @@ class DiscountProduct extends BaseModel
         'discount_id',
         'product_id',
     ];
+    public $timestamps = false;
 
     public function products(): BelongsTo
     {
