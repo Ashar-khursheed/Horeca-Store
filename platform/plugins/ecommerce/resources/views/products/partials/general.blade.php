@@ -107,10 +107,12 @@
         />
     </div>
 
-    <div class="col-md-6">
+
+      <div class="col-md-6">
         <x-core::form.text-input
             :label="trans('plugins/ecommerce::products.form.cost_per_item')"
             name="cost_per_item"
+            id="cost-per-item"
             :value="old('cost_per_item', $product ? $product->cost_per_item : $originalProduct->cost_per_item ?? 0)"
             :placeholder="trans('plugins/ecommerce::products.form.cost_per_item_placeholder')"
             step="any"
@@ -124,6 +126,18 @@
         </x-core::form.text-input>
     </div>
 
+    <!-- Margin Calculation Display -->
+    <div class="col-md-6">
+        <x-core::form.text-input
+            :label="trans('Profit Margin')"
+            name="margin"
+            id="margin"
+            value="0%"
+            :readonly="true"
+            class="form-control bg-light"
+        />
+    </div>
+   
     <input
         name="product_id"
         type="hidden"
@@ -271,10 +285,12 @@
         />
     </div>
 
-    <div class="col-md-6">
+
+      <div class="col-md-6">
         <x-core::form.text-input
             :label="trans('plugins/ecommerce::products.form.cost_per_item')"
             name="cost_per_item"
+            id="cost-per-item"
             :value="old('cost_per_item', $product ? $product->cost_per_item : $originalProduct->cost_per_item ?? 0)"
             :placeholder="trans('plugins/ecommerce::products.form.cost_per_item_placeholder')"
             step="any"
@@ -287,6 +303,19 @@
             </x-slot:prepend>
         </x-core::form.text-input>
     </div>
+
+    <!-- Margin Calculation Display -->
+    <div class="col-md-6">
+        <x-core::form.text-input
+            :label="trans('Profit Margin')"
+            name="margin"
+            id="margin"
+            value="0%"
+            :readonly="true"
+            class="form-control bg-light"
+        />
+    </div>
+ 
     <input
         name="product_id"
         type="hidden"
@@ -705,3 +734,39 @@
 @endif
 
 {!! apply_filters('ecommerce_product_variation_form_end', null, $product) !!}
+
+
+  <!-- Real-time Margin Calculation Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const costInput = document.querySelector('#cost-per-item');
+        const priceInput = document.querySelector('#price');
+        const marginInput = document.querySelector('#margin');
+
+        // Function to calculate and update the margin
+        const calculateMargin = () => {
+            const cost = parseFloat(costInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
+
+            if (price > 0) {
+                const margin = ((price - cost) / price) * 100;
+                marginInput.value = `${margin.toFixed(2)}%`;
+            } else {
+                marginInput.value = '0%';
+            }
+        };
+
+        // Attach real-time event listeners
+        [costInput, priceInput].forEach(input => {
+            input.addEventListener('input', calculateMargin);
+        });
+
+        // Initialize margin calculation on page load
+        calculateMargin();
+
+        // Run the calculation every second
+        setInterval(calculateMargin, 1000);
+    });
+</script>
+
+
