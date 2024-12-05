@@ -86,7 +86,8 @@ if (! function_exists('get_margin')) {
 
         if ($costPerItem && ($price || $salePrice)) {
             $calculatedPrice = $salePrice ? $salePrice : $price;
-            $margin = round((($calculatedPrice - $costPerItem) / $costPerItem) * 100);
+            $margin = round((($calculatedPrice - $costPerItem) / $calculatedPrice) * 100, 2);
+
             return $margin;
         } else {
             return null;

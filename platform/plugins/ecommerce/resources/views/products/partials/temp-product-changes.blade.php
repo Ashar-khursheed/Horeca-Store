@@ -68,7 +68,7 @@
 									</td>
 									<td>
 										<button type="button" id="edit_pricing_modal" data-toggle="modal" data-target="#editPricingModal" data-product="{{ htmlspecialchars(json_encode($tempPricingProduct->toArray(), JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8') }}">
-											<i class="fas fa-pencil-alt"></i> <!-- Pencil icon -->
+											<i class="fas fa-pencil-alt"></i>
 										</button>
 									</td>
 								</tr>
@@ -208,7 +208,7 @@
 
 								<div class="mb-3 col-md-6">
 									<label for="price" class="form-label">Price</label>
-									<input type="number" class="form-control" id="pricing_price" name="price">
+									<input type="number" class="form-control" id="pricing_price" name="price" onchange="calculateMargin()">
 								</div>
 
 								<div class="mb-3 col-md-6">
@@ -217,7 +217,17 @@
 										<a href="javascript:void(0)" id="chooseDiscountPeriod">Choose Discount Period</a>
 									</div>
 
-									<input type="number" class="form-control me-2" id="pricing_sale_price" name="sale_price">
+									<input type="number" class="form-control me-2" id="pricing_sale_price" name="sale_price" onchange="calculateMargin()">
+								</div>
+
+								<div class="col-md-6 mb-3">
+									<label class="form-label">Unit of Measurement</label>
+									<select id="pricing_unit_of_measurement_id" name="unit_of_measurement_id" class="form-control">
+										<option value="">Select a unit</option>
+										@foreach($unitOfMeasurements as $id => $name)
+										<option value="{{ $id }}">{{ $name }}</option>
+										@endforeach
+									</select>
 								</div>
 							</div>
 							<div id="discountPeriodFields" class="d-none">
@@ -236,11 +246,11 @@
 							<div class="row">
 								<div class="col-md-6 mb-3">
 									<label for="costPerItem" class="form-label">Cost per Item</label>
-									<input type="number" class="form-control" id="pricing_cost_per_item" name="cost_per_item" placeholder="Enter cost per item">
+									<input type="number" class="form-control" id="pricing_cost_per_item" name="cost_per_item" placeholder="Enter cost per item" onchange="calculateMargin()">
 								</div>
 								<div class="col-md-6 mb-3">
-									<label for="costPerItem" class="form-label">Margin</label>
-									<input type="text" class="form-control" id="pricing_margin" name="margin">
+									<label for="costPerItem" class="form-label">Margin (%)</label>
+									<input type="text" class="form-control" id="pricing_margin" name="margin" readonly>
 								</div>
 							</div>
 
@@ -283,9 +293,12 @@
 								</div>
 							</div>
 
+							<legend>
+								<h5>Buy more Save more</h5>
+							</legend>
 
-
-							<!-- Include Select2 CSS -->
+							<div id="discount-group">
+							</div>
 
 							<div class="row">
 								<div class="col-md-6 mb-3">
@@ -307,29 +320,18 @@
 								</div>
 							</div>
 
-							<div class="mb-3">
-								<label for="price" class="form-label">Minimum Order Quantity</label>
-								<input type="number" class="form-control" id="pricing_minimum_order_quantity" name="minimum_order_quantity">
-							</div>
-
-
 							<div class="row">
+								<div class="col-md-6 mb-3">
+									<label for="price" class="form-label">Minimum Order Quantity</label>
+									<input type="number" class="form-control" id="pricing_minimum_order_quantity" name="minimum_order_quantity">
+								</div>
+
 								<div class="col-md-6 mb-3">
 									<label for="refundPolicy" class="form-label">Refund Policy</label>
 									<select id="pricing_refund" name="refund" class="form-control">
 										<option value="non-refundable">Non-refundable</option>
 										<option value="15 days">15 Days Refund</option>
 										<option value="90 days">90 Days Refund</option>
-									</select>
-								</div>
-
-								<div class="col-md-6 mb-3">
-									<label class="form-label">Unit of Measurement</label>
-									<select id="pricing_unit_of_measurement_id" name="unit_of_measurement_id" class="form-control">
-										<option value="">Select a unit</option>
-										@foreach($unitOfMeasurements as $id => $name)
-										<option value="{{ $id }}">{{ $name }}</option>
-										@endforeach
 									</select>
 								</div>
 							</div>
@@ -497,6 +499,98 @@
 	</style>
 
 	<script>
+			// Function to toggle the "To Date" field for each discount group
+			function toggleToDateField(checkbox) {
+				// Find the discount item container (group) that contains the checkbox
+				const discountItem = checkbox.closest('.discount-item');
+
+				// Get the "To Date" input field within this group
+				const toDateInput = discountItem.querySelector('.to-date');
+
+				// If "Never Expired" is checked, disable the "To Date" field
+				if (checkbox.checked) {
+					toDateInput.disabled = true;
+				} else {
+					toDateInput.disabled = false;
+				}
+			}
+
+			function calculateDiscount(element) {
+				const discountItem = element.closest('.discount-item');
+				const productRequiredInput = discountItem.querySelector('.product-quantity');
+				const discountPercentageInput = discountItem.querySelector('.discount-percentage');
+				const priceAfterDiscountInput = discountItem.querySelector('.price-after-discount');
+				const marginInput = discountItem.querySelector('.margin');
+
+				const price = document.querySelector('input[name="sale_price"]').value || document.querySelector('input[name="price"]').value || 0;
+				const costPerItem = document.querySelector('input[name="cost_per_item"]').value || 0;
+				const productRequired = parseFloat(productRequiredInput.value) || 0;
+				const discountPercentage = parseFloat(discountPercentageInput.value) || 0;
+
+				// Ensure all inputs are valid
+				if (price > 0 && productRequired > 0 && discountPercentage > 0) {
+					// Calculate discount amount
+					const discountAmount = price * (discountPercentage / 100);
+
+					// Calculate final price after discount
+					const priceAfterDiscount = price - discountAmount;
+
+					// Set the result in the readonly input field
+					priceAfterDiscountInput.value = priceAfterDiscount.toFixed(2);
+
+					const marginValue = (priceAfterDiscountInput.value - costPerItem)*100/priceAfterDiscountInput.value;
+					marginInput.value = marginValue.toFixed(2);
+				} else {
+					// Clear the price after discount field if inputs are invalid or missing
+					priceAfterDiscountInput.value = '';
+				}
+			}
+
+			function calculateMargin() {
+				const price = document.querySelector('#pricing_sale_price').value || document.querySelector('#pricing_price').value || 0;
+				const costPerItem = document.querySelector('#pricing_cost_per_item').value || 0;
+				const marginInput = document.querySelector('#pricing_margin');
+
+				if (price > 0 && costPerItem > 0) {
+					const margin = ((price - costPerItem) / price) * 100;
+					marginInput.value = `${margin.toFixed(2)}`;
+				} else {
+					marginInput.value = 0;
+				}
+			}
+
+			function calculateDiscount(element) {
+				const discountItem = element.closest('.discount-item');
+				const productRequiredInput = discountItem.querySelector('.product-quantity');
+				const discountPercentageInput = discountItem.querySelector('.discount-percentage');
+				const priceAfterDiscountInput = discountItem.querySelector('.price-after-discount');
+				const marginInput = discountItem.querySelector('.margin');
+
+				const price = document.querySelector('input[name="sale_price"]').value || document.querySelector('input[name="price"]').value || 0;
+				const costPerItem = document.querySelector('input[name="cost_per_item"]').value || 0;
+				const productRequired = parseFloat(productRequiredInput.value) || 0;
+				const discountPercentage = parseFloat(discountPercentageInput.value) || 0;
+
+				// Ensure all inputs are valid
+				if (price > 0 && productRequired > 0 && discountPercentage > 0) {
+					// Calculate discount amount
+					const discountAmount = price * (discountPercentage / 100);
+
+					// Calculate final price after discount
+					const priceAfterDiscount = price - discountAmount;
+
+					// Set the result in the readonly input field
+					priceAfterDiscountInput.value = priceAfterDiscount.toFixed(2);
+
+					const marginValue = (priceAfterDiscountInput.value - costPerItem)*100/priceAfterDiscountInput.value;
+					marginInput.value = marginValue.toFixed(2);
+				} else {
+					// Clear the price after discount field if inputs are invalid or missing
+					priceAfterDiscountInput.value = '';
+				}
+			}
+
+
 		$(document).on('click', '#edit_pricing_modal', function () {
 			// Get the product data from the button's data-product attribute
 			const productData = $(this).attr('data-product');
@@ -505,7 +599,7 @@
 			// Parse the JSON string into a JavaScript object
 			const product = JSON.parse(decodedData);
 
-			console.log('Parsed Product:', product);
+			// console.log('Parsed Product:', product.discount);
 
 			// Populate the modal fields
 			$('#pricing_temp_header_id').text(product.product_id);
@@ -518,7 +612,7 @@
 			$('#pricing_from_date').val(product.from_date);
 			$('#pricing_to_date').val(product.to_date);
 			$('#pricing_cost_per_item').val(product.cost_per_item);
-			$('#pricing_margin').val(product.margin+ ' %');
+			$('#pricing_margin').val(product.margin);
 			$('#pricing_quantity').val(product.quantity);
 
 			$('#pricing_store_id').val(product.store_id);
@@ -535,6 +629,100 @@
 			$('#pricing_with_storehouse_management').prop('checked', product.with_storehouse_management);
 			$('#pricing_allow_checkout_when_out_of_stock').prop('checked', product.allow_checkout_when_out_of_stock);
 			$(`#pricing_${productData.stock_status}`).prop('checked', true);
+
+
+			// Clear existing discount items
+			const discountGroup = $('#discount-group');
+			discountGroup.empty();
+
+			// Populate discount items
+			if (product.discount && product.discount.length) {
+				product.discount.forEach((discount, index) => {
+					const discountItem = `
+						<div class="discount-item">
+							<div class="row g-3 mb-3">
+								<div class="col-md-6">
+									<input type="hidden" name="discount[${index}][discount_id]" value="${discount.discount_id}">
+									<label for="product_quantity_${index}" class="form-label quantity-label">Product Quantity</label>
+									<input type="number" class="form-control product-quantity"
+										   name="discount[${index}][product_quantity]"
+										   value="${discount.product_quantity || ''}"
+										   onchange="calculateDiscount(this)">
+								</div>
+
+								<div class="col-md-6">
+									<label for="discount_${index}" class="form-label">Discount</label>
+									<input type="number" class="form-control discount-percentage"
+										   name="discount[${index}][discount]"
+										   value="${discount.discount || ''}"
+										   onchange="calculateDiscount(this)">
+								</div>
+
+								<div class="col-md-6">
+									<label for="price_after_discount_${index}" class="form-label">Price after Discount</label>
+									<input type="number" class="form-control price-after-discount"
+										   name="discount[${index}][price_after_discount]"
+										   value="${discount.price_after_discount || ''}" readonly>
+								</div>
+
+								<div class="col-md-6">
+									<label for="margin_${index}" class="form-label">Margin (%)</label>
+									<input type="number" class="form-control margin"
+										   name="discount[${index}][margin]"
+										   value="${discount.margin || ''}" readonly>
+								</div>
+							</div>
+
+							<div class="row g-3 mb-3">
+								<div class="col-md-4">
+									<label for="fromDate_${index}" class="form-label">From Date</label>
+									<input type="datetime-local" class="form-control"
+										   name="discount[${index}][discount_from_date]"
+										   value="${discount.discount_from_date || ''}">
+								</div>
+
+								<div class="col-md-4">
+									<label for="toDate_${index}" class="form-label">To Date</label>
+									<input type="datetime-local" class="form-control to-date"
+											${discount.never_expired==1 ? 'disabled' : ''}
+										   name="discount[${index}][discount_to_date]"
+										   value="${discount.discount_to_date || ''}">
+								</div>
+
+								<div class="col-md-4 d-flex align-items-center">
+									<div class="form-check">
+										<input class="form-check-input me-2 never-expired-checkbox"
+											   type="checkbox"
+											   name="discount[${index}][never_expired]"
+											   value="1"
+											   ${discount.never_expired ? 'checked' : ''}
+											   onchange="toggleToDateField(this)">
+										<label class="form-check-label" for="never_expired_${index}">Never Expired</label>
+									</div>
+								</div>
+							</div>
+
+							<div class="row g-3 my-3">
+								<div class="col-md-12">&nbsp;
+								</div>
+							</div>
+						</div>
+					`;
+					discountGroup.append(discountItem);
+				});
+
+				// Add "Add" button if items are less than 3
+				if (product.discount.length < 3) {
+					discountGroup.append(`
+						<div class="row g-3 mb-3">
+							<div class="col-md-12 text-end">
+								<button type="button" class="btn btn-success add-btn"><i class="fas fa-plus"></i> Add</button>
+							</div>
+						</div>
+					`);
+				}
+			}
+
 
 			// Show the discount period fields if the dates are available
 			if (product.from_date || product.to_date) {

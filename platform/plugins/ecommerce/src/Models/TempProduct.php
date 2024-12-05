@@ -73,13 +73,13 @@ class TempProduct extends BaseModel
         'specs_sheet',
         'product_id',
         'approval_status',
-        'box_quantity'
+        'box_quantity',
+        'discount',
+        'margin'
     ];
 
     public function product()
     {
         return $this->belongsTo(Product::class, 'product_id');
     }
-
-
  }
