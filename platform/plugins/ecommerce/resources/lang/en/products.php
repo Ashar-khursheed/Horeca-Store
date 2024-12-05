@@ -247,4 +247,6 @@ return [
     ],
     'import_products_intro' => 'Or import products from CSV/Excel',
     'length_unit' => 'Unit',
+    'unit_of_measurement' => 'Unit of Measurement',
+
 ];
