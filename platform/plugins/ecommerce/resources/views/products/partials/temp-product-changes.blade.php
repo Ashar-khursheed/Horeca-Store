@@ -450,22 +450,21 @@
 			});
 		});
 
-		tinymce.init({
-			selector: '.editor',
-			menubar: false,
-			toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright | bullist numlist outdent indent | link image',
-			plugins: 'lists link image',
-			content_style: "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
-			setup: function (editor) {
-				editor.on('change', function () {
-					editor.save(); // This ensures that the data is saved into the textarea
-				});
-			}
-		});
+		// tinymce.init({
+		// 	selector: '.editor',
+		// 	menubar: false,
+		// 	toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright | bullist numlist outdent indent | link image',
+		// 	plugins: 'lists link image',
+		// 	content_style: "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+		// 	setup: function (editor) {
+		// 		editor.on('change', function () {
+		// 			editor.save(); // This ensures that the data is saved into the textarea
+		// 		});
+		// 	}
+		// });
 	</script>
 
-
-		<style>
+	<style>
 
 		.product-card {
 			border: 1px solid #ddd;
