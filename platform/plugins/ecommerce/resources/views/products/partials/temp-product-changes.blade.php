@@ -623,6 +623,7 @@
 			$('#pricing_refund').val(product.refund);
 			$('#pricing_initial_approval_status').val(product.approval_status);
 			$('#pricing_approval_status').val(product.approval_status);
+			$('#pricing_remarks').val(product.remarks);
 
 			// Set checkbox values
 			$('#pricing_with_storehouse_management').prop('checked', product.with_storehouse_management);
