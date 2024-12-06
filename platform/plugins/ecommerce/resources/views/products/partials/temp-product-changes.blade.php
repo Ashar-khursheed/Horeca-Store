@@ -498,97 +498,84 @@
 	</style>
 
 	<script>
-			// Function to toggle the "To Date" field for each discount group
-			function toggleToDateField(checkbox) {
-				// Find the discount item container (group) that contains the checkbox
-				const discountItem = checkbox.closest('.discount-item');
+		// Function to toggle the "To Date" field for each discount group
+		function toggleToDateField(checkbox) {
+			// Find the discount item container (group) that contains the checkbox
+			const discountItem = checkbox.closest('.discount-item');
 
-				// Get the "To Date" input field within this group
-				const toDateInput = discountItem.querySelector('.to-date');
+			// Get the "To Date" input field within this group
+			const toDateInput = discountItem.querySelector('.to-date');
 
-				// If "Never Expired" is checked, disable the "To Date" field
-				if (checkbox.checked) {
-					toDateInput.disabled = true;
-				} else {
-					toDateInput.disabled = false;
-				}
+			// If "Never Expired" is checked, disable the "To Date" field
+			if (checkbox.checked) {
+				toDateInput.disabled = true;
+			} else {
+				toDateInput.disabled = false;
 			}
+		}
 
-			function calculateDiscount(element) {
-				const discountItem = element.closest('.discount-item');
-				const productRequiredInput = discountItem.querySelector('.product-quantity');
-				const discountPercentageInput = discountItem.querySelector('.discount-percentage');
-				const priceAfterDiscountInput = discountItem.querySelector('.price-after-discount');
-				const marginInput = discountItem.querySelector('.margin');
+		function calculateDiscount(element) {
+			const discountItem = element.closest('.discount-item');
+			const productRequiredInput = discountItem.querySelector('.product-quantity');
+			const discountPercentageInput = discountItem.querySelector('.discount-percentage');
+			const priceAfterDiscountInput = discountItem.querySelector('.price-after-discount');
+			const marginInput = discountItem.querySelector('.margin');
 
-				const price = document.querySelector('input[name="sale_price"]').value || document.querySelector('input[name="price"]').value || 0;
-				const costPerItem = document.querySelector('input[name="cost_per_item"]').value || 0;
-				const productRequired = parseFloat(productRequiredInput.value) || 0;
-				const discountPercentage = parseFloat(discountPercentageInput.value) || 0;
+			const price = document.querySelector('input[name="sale_price"]').value || document.querySelector('input[name="price"]').value || 0;
+			const costPerItem = document.querySelector('input[name="cost_per_item"]').value || 0;
+			const productRequired = parseFloat(productRequiredInput.value) || 0;
+			const discountPercentage = parseFloat(discountPercentageInput.value) || 0;
 
-				// Ensure all inputs are valid
-				if (price > 0 && productRequired > 0 && discountPercentage > 0) {
-					// Calculate discount amount
-					const discountAmount = price * (discountPercentage / 100);
+			// Ensure all inputs are valid
+			if (price > 0 && productRequired > 0 && discountPercentage > 0) {
+				// Calculate discount amount
+				const discountAmount = price * (discountPercentage / 100);
 
-					// Calculate final price after discount
-					const priceAfterDiscount = price - discountAmount;
+				// Calculate final price after discount
+				const priceAfterDiscount = price - discountAmount;
 
-					// Set the result in the readonly input field
-					priceAfterDiscountInput.value = priceAfterDiscount.toFixed(2);
+				// Set the result in the readonly input field
+				priceAfterDiscountInput.value = priceAfterDiscount.toFixed(2);
 
-					const marginValue = (priceAfterDiscountInput.value - costPerItem)*100/priceAfterDiscountInput.value;
-					marginInput.value = marginValue.toFixed(2);
-				} else {
-					// Clear the price after discount field if inputs are invalid or missing
-					priceAfterDiscountInput.value = '';
-				}
+				const marginValue = (priceAfterDiscountInput.value - costPerItem)*100/priceAfterDiscountInput.value;
+				marginInput.value = marginValue.toFixed(2);
+			} else {
+				// Clear the price after discount field if inputs are invalid or missing
+				priceAfterDiscountInput.value = '';
 			}
+		}
 
-			function calculateMargin() {
-				const price = document.querySelector('#pricing_sale_price').value || document.querySelector('#pricing_price').value || 0;
-				const costPerItem = document.querySelector('#pricing_cost_per_item').value || 0;
-				const marginInput = document.querySelector('#pricing_margin');
+		function calculateMargin() {
+			const price = document.querySelector('#pricing_sale_price').value || document.querySelector('#pricing_price').value || 0;
+			const costPerItem = document.querySelector('#pricing_cost_per_item').value || 0;
+			const marginInput = document.querySelector('#pricing_margin');
 
-				if (price > 0 && costPerItem > 0) {
-					const margin = ((price - costPerItem) / price) * 100;
-					marginInput.value = `${margin.toFixed(2)}`;
-				} else {
-					marginInput.value = 0;
-				}
+			if (price > 0 && costPerItem > 0) {
+				const margin = ((price - costPerItem) / price) * 100;
+				marginInput.value = `${margin.toFixed(2)}`;
+			} else {
+				marginInput.value = 0;
 			}
+		}
 
-			function calculateDiscount(element) {
-				const discountItem = element.closest('.discount-item');
-				const productRequiredInput = discountItem.querySelector('.product-quantity');
-				const discountPercentageInput = discountItem.querySelector('.discount-percentage');
-				const priceAfterDiscountInput = discountItem.querySelector('.price-after-discount');
-				const marginInput = discountItem.querySelector('.margin');
+		const unitOfMeasurementDropdown = document.getElementById('pricing_unit_of_measurement_id');
+		const unitLabels = {
+			1: 'Pieces',
+			2: 'Dozen',
+			3: 'Box',
+			4: 'Case'
+		};
 
-				const price = document.querySelector('input[name="sale_price"]').value || document.querySelector('input[name="price"]').value || 0;
-				const costPerItem = document.querySelector('input[name="cost_per_item"]').value || 0;
-				const productRequired = parseFloat(productRequiredInput.value) || 0;
-				const discountPercentage = parseFloat(discountPercentageInput.value) || 0;
+		// Function to update all quantity labels
+		function updateAllQuantityLabels() {
+			const selectedValue = unitOfMeasurementDropdown.value;
+			const unitText = unitLabels[selectedValue] || 'Units';
 
-				// Ensure all inputs are valid
-				if (price > 0 && productRequired > 0 && discountPercentage > 0) {
-					// Calculate discount amount
-					const discountAmount = price * (discountPercentage / 100);
-
-					// Calculate final price after discount
-					const priceAfterDiscount = price - discountAmount;
-
-					// Set the result in the readonly input field
-					priceAfterDiscountInput.value = priceAfterDiscount.toFixed(2);
-
-					const marginValue = (priceAfterDiscountInput.value - costPerItem)*100/priceAfterDiscountInput.value;
-					marginInput.value = marginValue.toFixed(2);
-				} else {
-					// Clear the price after discount field if inputs are invalid or missing
-					priceAfterDiscountInput.value = '';
-				}
-			}
-
+			// Update all labels in the discount group
+			document.querySelectorAll('.quantity-label').forEach((label, index) => {
+				label.textContent = `Buying Quantity Tier ${index+1} (in ${unitText})`;
+			});
+		}
 
 		$(document).on('click', '#edit_pricing_modal', function () {
 			// Get the product data from the button's data-product attribute
@@ -643,7 +630,7 @@
 							<div class="row g-3 mb-3">
 								<div class="col-md-6">
 									<input type="hidden" name="discount[${index}][discount_id]" value="${discount.discount_id}">
-									<label for="product_quantity_${index}" class="form-label quantity-label">Product Quantity</label>
+									<label for="product_quantity_${index}" class="form-label quantity-label">Buying Quantity</label>
 									<input type="number" class="form-control product-quantity"
 										   name="discount[${index}][product_quantity]"
 										   value="${discount.product_quantity || ''}"
@@ -651,7 +638,7 @@
 								</div>
 
 								<div class="col-md-6">
-									<label for="discount_${index}" class="form-label">Discount</label>
+									<label for="discount_${index}" class="form-label">Discount (%)</label>
 									<input type="number" class="form-control discount-percentage"
 										   name="discount[${index}][discount]"
 										   value="${discount.discount || ''}"
@@ -721,8 +708,10 @@
 						</div>
 					`);
 				}
-			}
 
+				// Ensure the new label reflects the current UoM
+				updateAllQuantityLabels();
+			}
 
 			// Show the discount period fields if the dates are available
 			if (product.from_date || product.to_date) {

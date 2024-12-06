@@ -78,7 +78,7 @@ return [
             'no_storehouse' => 'No storehouse management',
             'storehouse' => 'With storehouse management',
             'title' => 'Storehouse',
-            'quantity' => 'Quantity',
+            'quantity' => 'Quantity (In Stock)',
         ],
         'tax' => 'Tax',
         'taxes' => 'Taxes',

@@ -206,7 +206,7 @@
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <input type="hidden" name="discount[{{ $index }}][discount_id]" value="{{ $discount->id }}">
-                            <label for="product_quantity_{{ $index }}" class="form-label quantity-label">Product Quantity</label>
+                            <label for="product_quantity_{{ $index }}" class="form-label quantity-label">Buying Quantity</label>
                             <input type="number" class="form-control product-quantity"
                                    name="discount[{{ $index }}][product_quantity]"
                                    value="{{ old('discount.' . $index . '.product_quantity', $discount->product_quantity) }}"
@@ -291,7 +291,7 @@
             <div class="discount-item">
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
-                        <label for="product_quantity" class="form-label quantity-label">Product Quantity</label>
+                        <label for="product_quantity" class="form-label quantity-label">Buying Quantity</label>
                         <input type="number" class="form-control product-quantity" name="discount[$i][product_quantity]" onchange="calculateDiscount(this)">
                     </div>
 
@@ -559,7 +559,7 @@
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <input type="hidden" name="discount[{{ $index }}][discount_id]" value="{{ $discount->id }}">
-                            <label for="product_quantity_{{ $index }}" class="form-label quantity-label">Product Quantity</label>
+                            <label for="product_quantity_{{ $index }}" class="form-label quantity-label">Buying Quantity</label>
                             <input type="number" class="form-control product-quantity"
                                    name="discount[{{ $index }}][product_quantity]"
                                    value="{{ old('discount.' . $index . '.product_quantity', $discount->product_quantity) }}"
@@ -644,7 +644,7 @@
             <div class="discount-item">
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
-                        <label for="product_quantity" class="form-label quantity-label">Product Quantity</label>
+                        <label for="product_quantity" class="form-label quantity-label">Buying Quantity</label>
                         <input type="number" class="form-control product-quantity" name="discount[$i][product_quantity]" onchange="calculateDiscount(this)">
                     </div>
 
@@ -1116,8 +1116,8 @@
             const unitText = unitLabels[selectedValue] || 'Units';
 
             // Update all labels in the discount group
-            document.querySelectorAll('.quantity-label').forEach(label => {
-                label.textContent = `Product Quantity (in ${unitText})`;
+            document.querySelectorAll('.quantity-label').forEach((label, index) => {
+                label.textContent = `Buying Quantity Tier ${index+1} (in ${unitText})`;
             });
         }
 
@@ -1145,7 +1145,7 @@
                     newField.innerHTML = `
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
-                                <label for="product_quantity" class="form-label quantity-label">Product Quantity</label>
+                                <label for="product_quantity" class="form-label quantity-label">Buying Quantity</label>
                                 <input type="number" class="form-control product-quantity" name="discount[${count}][product_quantity]" onchange="calculateDiscount(this)">
                             </div>
                             <div class="col-md-6">
