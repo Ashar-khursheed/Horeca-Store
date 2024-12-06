@@ -292,39 +292,39 @@
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
                         <label for="product_quantity" class="form-label quantity-label">Buying Quantity</label>
-                        <input type="number" class="form-control product-quantity" name="discount[$i][product_quantity]" onchange="calculateDiscount(this)">
+                        <input type="number" class="form-control product-quantity" name="discount[{{$i}}][product_quantity]" onchange="calculateDiscount(this)">
                     </div>
 
                     <div class="col-md-6">
                         <label for="discount" class="form-label">Discount</label>
-                        <input type="number" class="form-control discount-percentage" name="discount[$i][discount]" onchange="calculateDiscount(this)">
+                        <input type="number" class="form-control discount-percentage" name="discount[{{$i}}][discount]" onchange="calculateDiscount(this)">
                     </div>
 
                     <div class="col-md-6">
                         <label for="price_after_discount" class="form-label">Price after Discount</label>
-                        <input type="number" class="form-control price-after-discount" name="discount[$i][price_after_discount]" readonly>
+                        <input type="number" class="form-control price-after-discount" name="discount[{{$i}}][price_after_discount]" readonly>
                     </div>
 
                     <div class="col-md-6">
                         <label for="margin" class="form-label">Margin</label>
-                        <input type="number" class="form-control margin" name="discount[$i][margin]" readonly>
+                        <input type="number" class="form-control margin" name="discount[{{$i}}][margin]" readonly>
                     </div>
                 </div>
 
                 <div class="row g-3 mb-3">
                     <div class="col-md-4">
                         <label for="fromDate" class="form-label">From Date</label>
-                        <input type="datetime-local" class="form-control" name="discount[$i][discount_from_date]">
+                        <input type="datetime-local" class="form-control" name="discount[{{$i}}][discount_from_date]">
                     </div>
 
                     <div class="col-md-4">
                         <label for="toDate" class="form-label">To Date</label>
-                        <input type="datetime-local" class="form-control to-date" name="discount[$i][discount_to_date]">
+                        <input type="datetime-local" class="form-control to-date" name="discount[{{$i}}][discount_to_date]">
                     </div>
 
                     <div class="col-md-4 d-flex align-items-center">
                         <div class="form-check">
-                            <input class="form-check-input me-2 never-expired-checkbox" type="checkbox" name="discount[$i][never_expired]" value="1" onchange="toggleToDateField(this)">
+                            <input class="form-check-input me-2 never-expired-checkbox" type="checkbox" name="discount[{{$i}}][never_expired]" value="1" onchange="toggleToDateField(this)">
                             <label class="form-check-label" for="never_expired">Never Expired</label>
                         </div>
                     </div>
@@ -645,39 +645,39 @@
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
                         <label for="product_quantity" class="form-label quantity-label">Buying Quantity</label>
-                        <input type="number" class="form-control product-quantity" name="discount[$i][product_quantity]" onchange="calculateDiscount(this)">
+                        <input type="number" class="form-control product-quantity" name="discount[{{$i}}][product_quantity]" onchange="calculateDiscount(this)">
                     </div>
 
                     <div class="col-md-6">
                         <label for="discount" class="form-label">Discount</label>
-                        <input type="number" class="form-control discount-percentage" name="discount[$i][discount]" onchange="calculateDiscount(this)">
+                        <input type="number" class="form-control discount-percentage" name="discount[{{$i}}][discount]" onchange="calculateDiscount(this)">
                     </div>
 
                     <div class="col-md-6">
                         <label for="price_after_discount" class="form-label">Price after Discount</label>
-                        <input type="number" class="form-control price-after-discount" name="discount[$i][price_after_discount]" readonly>
+                        <input type="number" class="form-control price-after-discount" name="discount[{{$i}}][price_after_discount]" readonly>
                     </div>
 
                     <div class="col-md-6">
                         <label for="margin" class="form-label">Margin</label>
-                        <input type="number" class="form-control margin" name="discount[$i][margin]" readonly>
+                        <input type="number" class="form-control margin" name="discount[{{$i}}][margin]" readonly>
                     </div>
                 </div>
 
                 <div class="row g-3 mb-3">
                     <div class="col-md-4">
                         <label for="fromDate" class="form-label">From Date</label>
-                        <input type="datetime-local" class="form-control" name="discount[$i][discount_from_date]">
+                        <input type="datetime-local" class="form-control" name="discount[{{$i}}][discount_from_date]">
                     </div>
 
                     <div class="col-md-4">
                         <label for="toDate" class="form-label">To Date</label>
-                        <input type="datetime-local" class="form-control to-date" name="discount[$i][discount_to_date]">
+                        <input type="datetime-local" class="form-control to-date" name="discount[{{$i}}][discount_to_date]">
                     </div>
 
                     <div class="col-md-4 d-flex align-items-center">
                         <div class="form-check">
-                            <input class="form-check-input me-2 never-expired-checkbox" type="checkbox" name="discount[$i][never_expired]" value="1" onchange="toggleToDateField(this)">
+                            <input class="form-check-input me-2 never-expired-checkbox" type="checkbox" name="discount[{{$i}}][never_expired]" value="1" onchange="toggleToDateField(this)">
                             <label class="form-check-label" for="never_expired">Never Expired</label>
                         </div>
                     </div>
