@@ -1028,9 +1028,9 @@ class ProductController extends BaseController
 
                 $tempProduct->margin = get_margin($request->price, $request->sale_price, $request->cost_per_item);
                 $tempProduct->with_storehouse_management = $request->with_storehouse_management;
-                $tempProduct->quantity = $request->quantity;
-                $tempProduct->allow_checkout_when_out_of_stock = $request->allow_checkout_when_out_of_stock;
-                $tempProduct->stock_status = $request->stock_status;
+                $tempProduct->quantity = $request->quantity ?? null;
+                $tempProduct->allow_checkout_when_out_of_stock = $request->allow_checkout_when_out_of_stock ?? null;
+                $tempProduct->stock_status = $request->stock_status ?? null;
                 $tempProduct->store_id = $request->store_id;
                 $tempProduct->minimum_order_quantity = $request->minimum_order_quantity;
                 $tempProduct->variant_requires_shipping = $request->variant_requires_shipping;
