@@ -777,6 +777,9 @@
 			// Update requirement whenever the approval status changes
 			$approvalStatus.on('change', updateRemarksRequirement);
 		});
+
+		// Trigger label updates when the UoM dropdown changes
+		unitOfMeasurementDropdown.addEventListener('change', updateAllQuantityLabels);
 	</script>
 	<script>
 		$(document).ready(function () {
