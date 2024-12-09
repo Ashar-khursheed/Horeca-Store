@@ -70,6 +70,18 @@ class ProductExporter extends Exporter
                 ExportColumn::make('minimum_order_quantity'),
                 ExportColumn::make('variant_requires_shipping'),
                 ExportColumn::make('box_quantity'),
+                ExportColumn::make('buying_quantity1'),
+                ExportColumn::make('discount1'),
+                ExportColumn::make('start_date1'),
+                ExportColumn::make('end_date1'),
+                ExportColumn::make('buying_quantity2'),
+                ExportColumn::make('discount2'),
+                ExportColumn::make('start_date2'),
+                ExportColumn::make('end_date2'),
+                ExportColumn::make('buying_quantity3'),
+                ExportColumn::make('discount3'),
+                ExportColumn::make('start_date3'),
+                ExportColumn::make('end_date3'),
             ];
         } else {
             $columns = [
@@ -162,6 +174,18 @@ class ProductExporter extends Exporter
                 // ExportColumn::make('google_shopping_custom_label_3'),
                 // ExportColumn::make('google_shopping_custom_label_4'),
                 ExportColumn::make('box_quantity'),
+                ExportColumn::make('buying_quantity1'),
+                ExportColumn::make('discount1'),
+                ExportColumn::make('start_date1'),
+                ExportColumn::make('end_date1'),
+                ExportColumn::make('buying_quantity2'),
+                ExportColumn::make('discount2'),
+                ExportColumn::make('start_date2'),
+                ExportColumn::make('end_date2'),
+                ExportColumn::make('buying_quantity3'),
+                ExportColumn::make('discount3'),
+                ExportColumn::make('start_date3'),
+                ExportColumn::make('end_date3'),
                 // ExportColumn::make('technical_table'),
                 // ExportColumn::make('technical_spec'),
             ];
@@ -493,11 +517,20 @@ class ProductExporter extends Exporter
                 'variant_color_value' => $product->variant_color_value,
                 'variant_color_products' => $product->variant_color_products,
             ];
-
-
-            // if ($this->isEnabledDigital) {
-            //     $result['product_type'] = $product->product_type;
-            // }
+            for ($i=1; $i <=3 ; $i++) {
+                $result['buying_quantity' . $i] = '';
+                $result['discount' . $i] = '';
+                $result['start_date' . $i] = '';
+                $result['end_date' . $i] = '';
+            }
+            $counter = 1;
+            foreach ($product->discounts as $discount) {
+                $result['buying_quantity' . $counter] = $discount->product_quantity;
+                $result['discount' . $counter] = $discount->value;
+                $result['start_date' . $counter] = $discount->start_date;
+                $result['end_date' . $counter] = $discount->end_date;
+                $counter++;
+            }
 
             if ($this->isMarketplaceActive) {
                 $result['vendor'] = $product->store_id ? $product->store->name : null;
