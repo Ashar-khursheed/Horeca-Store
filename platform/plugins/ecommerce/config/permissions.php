@@ -17,7 +17,11 @@ return [
     'flag' => 'ecommerce::partials.temp-product-changes.index',
     'parent_flag' => 'plugins.ecommerce',
    ],
-
+   [
+    'name' => 'Product Status',
+    'flag' => 'ecommerce::partials.temp-product-status',
+    'parent_flag' => 'plugins.ecommerce',
+   ],
    [
     'name' => 'Import Specifications',
     'flag' => 'ecommerce::partials.upload-specifications',
