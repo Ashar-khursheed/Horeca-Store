@@ -243,6 +243,7 @@ return [
             'nullable_array' => ':attribute can be left empty or must be provided as an array if specified.',
             'nullable_date_required_if' => ':attribute can be left empty or must be a valid date if provided, required if :required is specified.',
             'nullable_date_after' => ':attribute can be left empty or must be a valid date after the :after if provided.',
+            'required_numeric_min' => ':attribute is rquired and must be a non-negative number.',
         ],
     ],
     'import_products_intro' => 'Or import products from CSV/Excel',
