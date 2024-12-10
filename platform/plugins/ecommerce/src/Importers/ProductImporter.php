@@ -174,26 +174,26 @@ class ProductImporter extends Importer implements WithMapping
 
                 ImportColumn::make('buying_quantity_1')
                     ->label('Buying Quantity1')
-                    ->rules(['required', 'numeric', 'min:0'], trans('plugins/ecommerce::products.import.rules.required_numeric_min', ['attribute' => 'Buying Quantity1'])),
+                    ->rules(['nullable', 'numeric', 'min:0'], trans('plugins/ecommerce::products.import.rules.nullable_numeric_min', ['attribute' => 'Buying Quantity1'])),
                 ImportColumn::make('discount_1')
                     ->label('Discount1')
-                    ->rules(['required', 'numeric', 'min:0'], trans('plugins/ecommerce::products.import.rules.required_numeric_min', ['attribute' => 'Discount1'])),
+                    ->rules(['nullable', 'numeric', 'min:0'], trans('plugins/ecommerce::products.import.rules.nullable_numeric_min', ['attribute' => 'Discount1'])),
                 ImportColumn::make('start_date_1')
                     ->label('Start Date1')
-                    ->rules(['required', 'date']),
+                    ->rules(['nullable', 'date']),
                 ImportColumn::make('end_date_1')
                     ->label('End Date1')
                     ->rules(['nullable', 'date']),
 
                 ImportColumn::make('buying_quantity_2')
                     ->label('Buying Quantity2')
-                    ->rules(['required', 'numeric', 'min:0'], trans('plugins/ecommerce::products.import.rules.required_numeric_min', ['attribute' => 'Buying Quantity2'])),
+                    ->rules(['nullable', 'numeric', 'min:0'], trans('plugins/ecommerce::products.import.rules.nullable_numeric_min', ['attribute' => 'Buying Quantity2'])),
                 ImportColumn::make('discount_2')
                     ->label('Discount2')
-                    ->rules(['required', 'numeric', 'min:0'], trans('plugins/ecommerce::products.import.rules.required_numeric_min', ['attribute' => 'Discount2'])),
+                    ->rules(['nullable', 'numeric', 'min:0'], trans('plugins/ecommerce::products.import.rules.nullable_numeric_min', ['attribute' => 'Discount2'])),
                 ImportColumn::make('start_date_2')
                     ->label('Start Date2')
-                    ->rules(['required', 'date']),
+                    ->rules(['nullable', 'date']),
                 ImportColumn::make('end_date_2')
                     ->label('End Date2')
                     ->rules(['nullable', 'date']),
@@ -448,26 +448,26 @@ class ProductImporter extends Importer implements WithMapping
 
                 ImportColumn::make('buying_quantity_1')
                     ->label('Buying Quantity1')
-                    ->rules(['required', 'numeric', 'min:0'], trans('plugins/ecommerce::products.import.rules.required_numeric_min', ['attribute' => 'Buying Quantity1'])),
+                    ->rules(['nullable', 'numeric', 'min:0'], trans('plugins/ecommerce::products.import.rules.nullable_numeric_min', ['attribute' => 'Buying Quantity1'])),
                 ImportColumn::make('discount_1')
                     ->label('Discount1')
-                    ->rules(['required', 'numeric', 'min:0'], trans('plugins/ecommerce::products.import.rules.required_numeric_min', ['attribute' => 'Discount1'])),
+                    ->rules(['nullable', 'numeric', 'min:0'], trans('plugins/ecommerce::products.import.rules.nullable_numeric_min', ['attribute' => 'Discount1'])),
                 ImportColumn::make('start_date_1')
                     ->label('Start Date1')
-                    ->rules(['required', 'date']),
+                    ->rules(['nullable', 'date']),
                 ImportColumn::make('end_date_1')
                     ->label('End Date1')
                     ->rules(['nullable', 'date']),
 
                 ImportColumn::make('buying_quantity_2')
                     ->label('Buying Quantity2')
-                    ->rules(['required', 'numeric', 'min:0'], trans('plugins/ecommerce::products.import.rules.required_numeric_min', ['attribute' => 'Buying Quantity2'])),
+                    ->rules(['nullable', 'numeric', 'min:0'], trans('plugins/ecommerce::products.import.rules.nullable_numeric_min', ['attribute' => 'Buying Quantity2'])),
                 ImportColumn::make('discount_2')
                     ->label('Discount2')
-                    ->rules(['required', 'numeric', 'min:0'], trans('plugins/ecommerce::products.import.rules.required_numeric_min', ['attribute' => 'Discount2'])),
+                    ->rules(['nullable', 'numeric', 'min:0'], trans('plugins/ecommerce::products.import.rules.nullable_numeric_min', ['attribute' => 'Discount2'])),
                 ImportColumn::make('start_date_2')
                     ->label('Start Date2')
-                    ->rules(['required', 'date']),
+                    ->rules(['nullable', 'date']),
                 ImportColumn::make('end_date_2')
                     ->label('End Date2')
                     ->rules(['nullable', 'date']),
@@ -976,38 +976,51 @@ class ProductImporter extends Importer implements WithMapping
                 $product = (new StoreProductService())->execute($request, $product);
 
                 if (isset($product->id) && !empty($product->id)) {
-                    for ($i = 1; $i <= 3; $i++) {
-                        // Check if the current iteration is optional (3rd discount)
-                        $isOptional = ($i === 3);
+                    // Required fields for discounts
+                    $requiredFieldValues = [
+                        'quantity1' => $row['buying_quantity_1'] ?? null,
+                        'value1' => $row['discount_1'] ?? null,
+                        'start_date1' => $row['start_date_1'] ?? null,
+                        'quantity2' => $row['buying_quantity_2'] ?? null,
+                        'value2' => $row['discount_2'] ?? null,
+                        'start_date2' => $row['start_date_2'] ?? null,
+                    ];
 
-                        // Required fields for discounts
-                        $requiredFields = [
-                            'quantity' => $row['buying_quantity_' . $i] ?? null,
-                            'value' => $row['discount_' . $i] ?? null,
-                            'start_date' => $row['start_date_' . $i] ?? null,
-                        ];
+                    $requiredFieldsProvided = !empty($requiredFieldValues['quantity1']) && !empty($requiredFieldValues['value1']) && !empty($requiredFieldValues['start_date1']) && !empty($requiredFieldValues['quantity2']) && !empty($requiredFieldValues['value2']) && !empty($requiredFieldValues['start_date2']);
+                    if ($requiredFieldsProvided) {
+                        for ($i = 1; $i <= 3; $i++) {
+                            // Check if the current iteration is optional (3rd discount)
+                            $isOptional = ($i === 3);
 
-                        // Check if all required fields are non-empty
-                        $allFieldsProvided = !empty($requiredFields['quantity']) && !empty($requiredFields['value']) && !empty($requiredFields['start_date']);
+                            // Required fields for discounts
+                            $requiredFields = [
+                                'quantity' => $row['buying_quantity_' . $i] ?? null,
+                                'value' => $row['discount_' . $i] ?? null,
+                                'start_date' => $row['start_date_' . $i] ?? null,
+                            ];
 
-                        // Validate required fields for discounts
-                        if (!$isOptional || ($isOptional && array_filter($requiredFields) && $allFieldsProvided)) {
-                            // Create a new discount
-                            $discount = new Discount();
-                            $discount->product_quantity = $requiredFields['quantity'];
-                            $discount->title = $discount->product_quantity . ' products';
-                            $discount->type_option = 'percentage';
-                            $discount->type = 'promotion';
-                            $discount->value = $requiredFields['value'];
-                            $discount->start_date = !empty($requiredFields['start_date']) ? Carbon::parse($requiredFields['start_date']) : null;
-                            $discount->end_date = !empty($row['end_date_' . $i]) ? Carbon::parse($row['end_date_' . $i]) : null;
-                            $discount->save();
+                            // Check if all required fields are non-empty
+                            $allFieldsProvided = !empty($requiredFields['quantity']) && !empty($requiredFields['value']) && !empty($requiredFields['start_date']);
 
-                            // Associate the discount with the product
-                            $discountProduct = new DiscountProduct();
-                            $discountProduct->discount_id = $discount->id;
-                            $discountProduct->product_id = $product->id;
-                            $discountProduct->save();
+                            // Validate required fields for discounts
+                            if ($allFieldsProvided) {
+                                // Create a new discount
+                                $discount = new Discount();
+                                $discount->product_quantity = $requiredFields['quantity'];
+                                $discount->title = $discount->product_quantity . ' products';
+                                $discount->type_option = 'percentage';
+                                $discount->type = 'promotion';
+                                $discount->value = $requiredFields['value'];
+                                $discount->start_date = !empty($requiredFields['start_date']) ? Carbon::parse($requiredFields['start_date']) : null;
+                                $discount->end_date = !empty($row['end_date_' . $i]) ? Carbon::parse($row['end_date_' . $i]) : null;
+                                $discount->save();
+
+                                // Associate the discount with the product
+                                $discountProduct = new DiscountProduct();
+                                $discountProduct->discount_id = $discount->id;
+                                $discountProduct->product_id = $product->id;
+                                $discountProduct->save();
+                            }
                         }
                     }
                 }
@@ -1093,54 +1106,67 @@ class ProductImporter extends Importer implements WithMapping
 
         $discountIds = $product->discounts->pluck('id')->toArray();
 
-        for ($i = 1; $i <= 3; $i++) {
-            // Check if the current iteration is optional (3rd discount)
-            $isOptional = ($i === 3);
+        // Required fields for discounts
+        $requiredFieldValues = [
+            'quantity1' => $row['buying_quantity_1'] ?? null,
+            'value1' => $row['discount_1'] ?? null,
+            'start_date1' => $row['start_date_1'] ?? null,
+            'quantity2' => $row['buying_quantity_2'] ?? null,
+            'value2' => $row['discount_2'] ?? null,
+            'start_date2' => $row['start_date_2'] ?? null,
+        ];
 
-            // Required fields for discounts
-            $requiredFields = [
-                'quantity' => $row['buying_quantity_' . $i] ?? null,
-                'value' => $row['discount_' . $i] ?? null,
-                'start_date' => $row['start_date_' . $i] ?? null,
-            ];
+        $requiredFieldsProvided = !empty($requiredFieldValues['quantity1']) && !empty($requiredFieldValues['value1']) && !empty($requiredFieldValues['start_date1']) && !empty($requiredFieldValues['quantity2']) && !empty($requiredFieldValues['value2']) && !empty($requiredFieldValues['start_date2']);
+        if ($requiredFieldsProvided) {
+            for ($i = 1; $i <= 3; $i++) {
+                // Check if the current iteration is optional (3rd discount)
+                $isOptional = ($i === 3);
 
-            // Check if all required fields are non-empty
-            $allFieldsProvided = !empty($requiredFields['quantity']) && !empty($requiredFields['value']) && !empty($requiredFields['start_date']);
+                // Required fields for discounts
+                $requiredFields = [
+                    'quantity' => $row['buying_quantity_' . $i] ?? null,
+                    'value' => $row['discount_' . $i] ?? null,
+                    'start_date' => $row['start_date_' . $i] ?? null,
+                ];
 
-            // Validate required fields for discounts
-            if (!$isOptional || ($isOptional && array_filter($requiredFields) && $allFieldsProvided)) {
-                // Check if the discount already exists
-                if (isset($discountIds[$i - 1])) {
-                    $discount = Discount::find($discountIds[$i - 1]);
-                    $discExist = true;
-                } else {
-                    $discount = new Discount();
-                    $discExist = false;
-                }
+                // Check if all required fields are non-empty
+                $allFieldsProvided = !empty($requiredFields['quantity']) && !empty($requiredFields['value']) && !empty($requiredFields['start_date']);
 
-                // Update or create the discount
-                $discount->product_quantity = $requiredFields['quantity'];
-                $discount->title = $discount->product_quantity . ' products';
-                $discount->type_option = 'percentage';
-                $discount->type = 'promotion';
-                $discount->value = $requiredFields['value'];
-                $discount->start_date = !empty($requiredFields['start_date']) ? Carbon::parse($requiredFields['start_date']) : null;
-                $discount->end_date = !empty($row['end_date_' . $i]) ? Carbon::parse($row['end_date_' . $i]) : null;
-                $discount->save();
+                // Validate required fields for discounts
+                if (!$isOptional || ($isOptional && array_filter($requiredFields) && $allFieldsProvided)) {
+                    // Check if the discount already exists
+                    if (isset($discountIds[$i - 1])) {
+                        $discount = Discount::find($discountIds[$i - 1]);
+                        $discExist = true;
+                    } else {
+                        $discount = new Discount();
+                        $discExist = false;
+                    }
 
-                // If new discount, associate it with the product
-                if (!$discExist) {
-                    $discountProduct = new DiscountProduct();
-                    $discountProduct->discount_id = $discount->id;
-                    $discountProduct->product_id = $product->id;
-                    $discountProduct->save();
-                }
-            } elseif ($isOptional) {
-                // Handle optional case for 3rd entry if fields are incomplete
-                if (isset($discountIds[$i - 1])) {
-                    // Delete the discount if it exists but the optional fields are incomplete
-                    $discount = Discount::find($discountIds[$i - 1]);
-                    $discount->delete();
+                    // Update or create the discount
+                    $discount->product_quantity = $requiredFields['quantity'];
+                    $discount->title = $discount->product_quantity . ' products';
+                    $discount->type_option = 'percentage';
+                    $discount->type = 'promotion';
+                    $discount->value = $requiredFields['value'];
+                    $discount->start_date = !empty($requiredFields['start_date']) ? Carbon::parse($requiredFields['start_date']) : null;
+                    $discount->end_date = !empty($row['end_date_' . $i]) ? Carbon::parse($row['end_date_' . $i]) : null;
+                    $discount->save();
+
+                    // If new discount, associate it with the product
+                    if (!$discExist) {
+                        $discountProduct = new DiscountProduct();
+                        $discountProduct->discount_id = $discount->id;
+                        $discountProduct->product_id = $product->id;
+                        $discountProduct->save();
+                    }
+                } elseif ($isOptional) {
+                    // Handle optional case for 3rd entry if fields are incomplete
+                    if (isset($discountIds[$i - 1])) {
+                        // Delete the discount if it exists but the optional fields are incomplete
+                        $discount = Discount::find($discountIds[$i - 1]);
+                        $discount->delete();
+                    }
                 }
             }
         }
