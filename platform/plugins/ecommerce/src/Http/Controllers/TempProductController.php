@@ -126,13 +126,17 @@ class TempProductController extends BaseController
 			}
 			unset($input['_token'], $input['id'], $input['initial_approval_status'], $input['approval_status'], $input['margin'], $input['discount']);
 			$tempProduct->product->update($input);
-			$tempProduct->update(['approval_status' => $request->approval_status]);
+			$tempProduct->update([
+				'approval_status' => $request->approval_status,
+				'approved_by' => auth()->id()
+			]);
 		}
 
 		if($request->initial_approval_status=='pending' && $request->approval_status=='rejected') {
 			$tempProduct->update([
 				'approval_status' => $request->approval_status,
 				'rejection_count' => \DB::raw('rejection_count + 1'),
+				'approved_by' => auth()->id(),
 				'remarks' => $request->remarks
 			]);
 		}
