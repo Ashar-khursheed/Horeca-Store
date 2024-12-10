@@ -19,6 +19,20 @@
 	</style>
 </head>
 <body>
+	<div class="row">
+		<div class="col-md-3 mb-3">
+			<label class="form-label bg-info text-white text-center py-3 h6">Content In Progress<br/><span class="h2">{{ $tempPricingProducts->where('approval_status', 'in-process')->count() }}</span></label>
+		</div>
+		<div class="col-md-3 mb-3">
+			<label class="form-label bg-warning text-white text-center py-3 h6">Submitted for Approval<br/><span class="h2">{{ $tempPricingProducts->where('approval_status', 'pending')->count() }}</span></label>
+		</div>
+		<div class="col-md-3 mb-3">
+			<label class="form-label bg-success text-white text-center py-3 h6">Ready to Publish<br/><span class="h2">{{ $tempPricingProducts->where('approval_status', 'approved')->count() }}</span></label>
+		</div>
+		<div class="col-md-3 mb-3">
+			<label class="form-label bg-danger text-white text-center py-3 h6">Rejected for Corrections<br/><span class="h2">{{ $tempPricingProducts->sum('rejection_count') }}</span></label>
+		</div>
+	</div>
 	<div class="table-responsive">
 		<table class="table table-striped">
 			<thead>
@@ -28,7 +42,7 @@
 					<th>SKU</th>
 					<th>Price</th>
 					<th>Sale Price</th>
-					<th>Current Status</th>
+					{{-- <th>Current Status</th> --}}
 					<th>Approval Status</th>
 					<th>Edit</th>
 				</tr>
@@ -41,10 +55,10 @@
 					<td class="product-description">{{ $tempPricingProduct->sku }}</td>
 					<td class="product-description">{{ $tempPricingProduct->price }}</td>
 					<td class="product-description">{{ $tempPricingProduct->sale_price }}</td>
-					<td class="product-description">{{ $tempPricingProduct->status }}</td>
-					<td class="product-description">{{ $tempPricingProduct->approval_status }}</td>
+					{{-- <td class="product-description">{{ $tempPricingProduct->status }}</td> --}}
+					<td class="product-description">{{ $approvalStatuses[$tempPricingProduct->approval_status] ?? '' }}</td>
 					<td>
-						@if($tempPricingProduct->approval_status != 'approved')
+						@if($tempPricingProduct->approval_status == 'in-process' || $tempPricingProduct->approval_status == 'rejected')
 							<button type="button" id="edit_pricing_modal" data-toggle="modal" data-target="#editPricingModal" data-product="{{ htmlspecialchars(json_encode($tempPricingProduct->toArray(), JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8') }}">
 								<i class="fas fa-pencil-alt"></i>
 							</button>
@@ -84,7 +98,7 @@
 
 								<div class="mb-3 col-md-6">
 									<label for="price" class="form-label">Price</label>
-									<input type="number" class="form-control" id="pricing_price" name="price" onchange="calculateMargin()">
+									<input type="number" step="0.01" class="form-control" id="pricing_price" name="price" onchange="calculateMargin()">
 								</div>
 
 								<div class="mb-3 col-md-6">
@@ -93,7 +107,7 @@
 										<a href="javascript:void(0)" id="chooseDiscountPeriod">Choose Discount Period</a>
 									</div>
 
-									<input type="number" class="form-control me-2" id="pricing_sale_price" name="sale_price" onchange="calculateMargin()">
+									<input type="number" step="0.01" class="form-control me-2" id="pricing_sale_price" name="sale_price" onchange="calculateMargin()">
 								</div>
 
 								<div class="col-md-6 mb-3">
@@ -122,7 +136,7 @@
 							<div class="row">
 								<div class="col-md-6 mb-3">
 									<label for="costPerItem" class="form-label">Cost per Item</label>
-									<input type="number" class="form-control" id="pricing_cost_per_item" name="cost_per_item" placeholder="Enter cost per item" onchange="calculateMargin()">
+									<input type="number" step="0.01" class="form-control" id="pricing_cost_per_item" name="cost_per_item" placeholder="Enter cost per item" onchange="calculateMargin()">
 								</div>
 								<div class="col-md-6 mb-3">
 									<label for="costPerItem" class="form-label">Margin (%)</label>
@@ -223,6 +237,16 @@
 								<div class="col-md-6 mb-3">
 									<label for="boxQuantity" class="form-label">Box Quantity</label>
 									<input type="number" class="form-control" id="pricing_box_quantity" name="box_quantity" placeholder="Enter box quantity" min="1" step="1">
+								</div>
+							</div>
+
+
+							<div class="row g-3 mb-3 ms-1">
+								<div class="col-md-4 d-flex align-items-center">
+									<div class="form-check">
+										<input class="form-check-input me-2" type="checkbox" id="pricing_in_process" name="in_process" value="1" checked>
+										<label class="form-check-label" for="in_process">Is Draft</label>
+									</div>
 								</div>
 							</div>
 
@@ -568,7 +592,83 @@
 			// updateRemarksRequirement();
 
 			// Update requirement whenever the approval status changes
-			$approvalStatus.on('change', updateRemarksRequirement);
+			// $approvalStatus.on('change', updateRemarksRequirement);
+		});
+
+		const discountGroup = document.getElementById('discount-group');
+		discountGroup.addEventListener('click', (event) => {
+			if (event.target.classList.contains('add-btn')) {
+				// Disable the "Add" button temporarily
+				event.target.classList.add('disabled');
+				event.target.disabled = true;
+
+				/* Find the current count of discount items */
+				const count = discountGroup.querySelectorAll('.discount-item').length;
+
+				if (count < 3) {
+					/* Create a new input field group with updated name attributes */
+					const newField = document.createElement('div');
+					newField.classList.add('discount-item');
+					newField.innerHTML = `
+						<div class="row g-3 mb-3">
+							<div class="col-md-6">
+								<label for="product_quantity" class="form-label quantity-label">Buying Quantity</label>
+								<input type="number" class="form-control product-quantity" name="discount[${count}][product_quantity]" onchange="calculateDiscount(this)">
+							</div>
+							<div class="col-md-6">
+								<label for="discount" class="form-label">Discount (%)</label>
+								<input type="number" class="form-control discount-percentage" name="discount[${count}][discount]" onchange="calculateDiscount(this)">
+							</div>
+							<div class="col-md-6">
+								<label for="price_after_discount" class="form-label">Price after Discount</label>
+								<input type="number" class="form-control price-after-discount" name="discount[${count}][price_after_discount]" readonly>
+							</div>
+							<div class="col-md-6">
+								<label for="margin" class="form-label">Margin (%)</label>
+								<input type="number" class="form-control margin" name="discount[${count}][margin]" readonly>
+							</div>
+						</div>
+						<div class="row g-3 mb-3">
+							<div class="col-md-4">
+								<label for="fromDate" class="form-label">From Date</label>
+								<input type="datetime-local" class="form-control" name="discount[${count}][discount_from_date]">
+							</div>
+							<div class="col-md-4">
+								<label for="toDate" class="form-label">To Date</label>
+								<input type="datetime-local" class="form-control to-date" name="discount[${count}][discount_to_date]">
+							</div>
+							<div class="col-md-4 d-flex align-items-center">
+								<div class="form-check">
+									<input class="form-check-input me-2 never-expired-checkbox" type="checkbox" name="discount[${count}][never_expired]" value="1" onchange="toggleToDateField(this)">
+									<label class="form-check-label" for="never_expired">Never Expired</label>
+								</div>
+							</div>
+						</div>
+						<div class="row g-3 mb-3">
+							<div class="col-md-12 text-end">
+								<button type="button" class="btn btn-danger remove-btn1"><i class="fas fa-minus"></i> Remove</button>
+							</div>
+						</div>
+					`;
+					discountGroup.appendChild(newField);
+
+					// Ensure the new label reflects the current UoM
+					updateAllQuantityLabels();
+				}
+			} else if (event.target.classList.contains('remove-btn1')) {
+				/* Remove input fields */
+				const discountItem = event.target.closest('.discount-item');
+				if (discountItem) {
+					discountItem.remove();
+				}
+
+				// Re-enable the Add button after a remove
+				const addButton = discountGroup.querySelector('.add-btn');
+				if (addButton) {
+					addButton.classList.remove('disabled');
+					addButton.disabled = false;
+				}
+			}
 		});
 
 		// Trigger label updates when the UoM dropdown changes

@@ -25,9 +25,10 @@ class TempProductStatusController extends BaseController
 			$stores = Store::pluck('name', 'id')->toArray();
 
 			$approvalStatuses = [
-				'pending' => 'Pending',
-				'approved' => 'Approved',
-				'rejected' => 'Rejected',
+				'in-process' => 'Content In Progress',
+				'pending' => 'Submitted for Approval',
+				'approved' => 'Ready to Publish',
+				'rejected' => 'Rejected for Corrections',
 			];
 			return view('plugins/ecommerce::products.partials.pricing-product-status', compact('tempPricingProducts', 'unitOfMeasurements', 'stores', 'approvalStatuses'));
 		} else {
@@ -60,9 +61,11 @@ class TempProductStatusController extends BaseController
 
 		$tempProduct = TempProduct::find($request->id);
 		$input = $request->all();
-		if($tempProduct->approval_status=='pending') {
+		if($tempProduct->approval_status=='in-process' || $tempProduct->approval_status=='rejected') {
 			unset($input['_token'], $input['id'], $input['initial_approval_status'], $input['approval_status']);
 			$input['discount'] = json_encode($input['discount']);
+			$input['approval_status'] = isset($request->in_process) && $request->in_process==1 ? 'in-process' : 'pending';
+
 			$tempProduct->update($input);
 		}
 

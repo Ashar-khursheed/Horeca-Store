@@ -76,7 +76,8 @@ class TempProduct extends BaseModel
         'box_quantity',
         'discount',
         'margin',
-        'remarks'
+        'remarks',
+        'rejection_count'
     ];
 
     public function product()
