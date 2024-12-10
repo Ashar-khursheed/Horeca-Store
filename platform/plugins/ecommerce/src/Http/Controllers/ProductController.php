@@ -991,24 +991,29 @@ class ProductController extends BaseController
             // dd($request->all());
             // Validate incoming request data
             $this->validate($request, [
-                'discount.0.product_quantity' => 'required|numeric|min:1', // First group product_quantity is required
-                'discount.0.discount' => 'required|numeric|min:1|max:100', // First group discount is required
-                'discount.0.discount_from_date' => 'required', // First group discount_from_date is required
+                // Group 0 Validation
+                'discount.0.product_quantity' => 'required_with:discount.1.product_quantity|numeric|min:1',
+                'discount.0.discount' => 'required_with:discount.1.discount|numeric|min:1|max:100',
+                'discount.0.discount_from_date' => 'required_with:discount.1.discount_from_date|date',
 
-                'discount.1.product_quantity' => 'required|numeric|min:1', // Second group product_quantity is required
-                'discount.1.discount' => 'required|numeric|min:1|max:100', // Second group discount is required
-                'discount.1.discount_from_date' => 'required', // Second group discount_from_date is required
+                // Group 1 Validation
+                'discount.1.product_quantity' => 'required_with:discount.0.product_quantity|numeric|min:1',
+                'discount.1.discount' => 'required_with:discount.0.discount|numeric|min:1|max:100',
+                'discount.1.discount_from_date' => 'required_with:discount.0.discount_from_date|date',
 
                 'discount.*.product_quantity' => 'nullable|numeric|min:1', // Additional groups are optional but must be valid
                 'discount.*.discount' => 'nullable|numeric|min:1|max:100',
                 'discount.*.discount_from_date' => 'nullable',
             ], [
-                'discount.0.product_quantity.required' => 'Product quantity for the first discount is required.',
-                'discount.1.product_quantity.required' => 'Product quantity for the second discount is required.',
-                'discount.0.discount.required' => 'Discount percentage for the first discount is required.',
-                'discount.1.discount.required' => 'Discount percentage for the second discount is required.',
-                'discount.0.discount_from_date.required' => 'The start date for the first discount is required.',
-                'discount.1.discount_from_date.required' => 'The start date for the second discount is required.',
+                // Messages for Group 0
+                'discount.0.product_quantity.required_with' => 'The product quantity for the first discount is required when the second discount product quantity is provided.',
+                'discount.0.discount.required_with' => 'The discount percentage for the first discount is required when the second discount percentage is provided.',
+                'discount.0.discount_from_date.required_with' => 'The start date for the first discount is required when the second discount start date is provided.',
+
+                // Messages for Group 1
+                'discount.1.product_quantity.required_with' => 'The product quantity for the second discount is required when the first discount product quantity is provided.',
+                'discount.1.discount.required_with' => 'The discount percentage for the second discount is required when the first discount percentage is provided.',
+                'discount.1.discount_from_date.required_with' => 'The start date for the second discount is required when the first discount start date is provided.',
             ]);
 
             if ($product) {  // Check if the product exists
@@ -1047,34 +1052,38 @@ class ProductController extends BaseController
                 $tempProduct->save();
             }
             return redirect()->route('products.index')->with('success', 'Product update request submitted and saved for approval.');
-        }
-          else {
-                    // Validate incoming request data
-                    $this->validate($request, [
-                        'discount.0.product_quantity' => 'required|numeric|min:1', // First group product_quantity is required
-                        'discount.0.discount' => 'required|numeric|min:1|max:100', // First group discount is required
-                        'discount.0.discount_from_date' => 'required', // First group discount_from_date is required
+        } else {
+            // Validate incoming request data
+            $this->validate($request, [
+                // Group 0 Validation
+                'discount.0.product_quantity' => 'required_with:discount.1.product_quantity|numeric|min:1',
+                'discount.0.discount' => 'required_with:discount.1.discount|numeric|min:1|max:100',
+                'discount.0.discount_from_date' => 'required_with:discount.1.discount_from_date|date',
 
-                        'discount.1.product_quantity' => 'required|numeric|min:1', // Second group product_quantity is required
-                        'discount.1.discount' => 'required|numeric|min:1|max:100', // Second group discount is required
-                        'discount.1.discount_from_date' => 'required', // Second group discount_from_date is required
+                // Group 1 Validation
+                'discount.1.product_quantity' => 'required_with:discount.0.product_quantity|numeric|min:1',
+                'discount.1.discount' => 'required_with:discount.0.discount|numeric|min:1|max:100',
+                'discount.1.discount_from_date' => 'required_with:discount.0.discount_from_date|date',
 
-                        'discount.*.product_quantity' => 'nullable|numeric|min:1', // Additional groups are optional but must be valid
-                        'discount.*.discount' => 'nullable|numeric|min:1|max:100',
-                        'discount.*.discount_from_date' => 'nullable',
+                'discount.*.product_quantity' => 'nullable|numeric|min:1', // Additional groups are optional but must be valid
+                'discount.*.discount' => 'nullable|numeric|min:1|max:100',
+                'discount.*.discount_from_date' => 'nullable',
 
-                        'documents.*' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
-                        'titles.*' => 'nullable|string|max:255',
-                        'compare_type' => 'nullable|string',
-                        'compare_products' => 'nullable|string',
-                    ], [
-                        'discount.0.product_quantity.required' => 'Product quantity for the first discount is required.',
-                        'discount.1.product_quantity.required' => 'Product quantity for the second discount is required.',
-                        'discount.0.discount.required' => 'Discount percentage for the first discount is required.',
-                        'discount.1.discount.required' => 'Discount percentage for the second discount is required.',
-                        'discount.0.discount_from_date.required' => 'The start date for the first discount is required.',
-                        'discount.1.discount_from_date.required' => 'The start date for the second discount is required.',
-                    ]);
+                'documents.*' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+                'titles.*' => 'nullable|string|max:255',
+                'compare_type' => 'nullable|string',
+                'compare_products' => 'nullable|string',
+            ], [
+                // Messages for Group 0
+                'discount.0.product_quantity.required_with' => 'The product quantity for the first discount is required when the second discount product quantity is provided.',
+                'discount.0.discount.required_with' => 'The discount percentage for the first discount is required when the second discount percentage is provided.',
+                'discount.0.discount_from_date.required_with' => 'The start date for the first discount is required when the second discount start date is provided.',
+
+                // Messages for Group 1
+                'discount.1.product_quantity.required_with' => 'The product quantity for the second discount is required when the first discount product quantity is provided.',
+                'discount.1.discount.required_with' => 'The discount percentage for the second discount is required when the first discount percentage is provided.',
+                'discount.1.discount_from_date.required_with' => 'The start date for the second discount is required when the first discount start date is provided.',
+            ]);
 
 
                     // Load existing documents if any
