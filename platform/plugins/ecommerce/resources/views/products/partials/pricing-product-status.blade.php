@@ -19,184 +19,57 @@
 	</style>
 </head>
 <body>
-	<ul class="nav nav-tabs" id="myTab" role="tablist">
-		<li class="nav-item" role="presentation">
-			<button class="nav-link active" id="pricing-tab" data-bs-toggle="tab" data-bs-target="#pricing" type="button" role="tab" aria-controls="pricing" aria-selected="true">Pricing</button>
-		</li>
-		<li class="nav-item" role="presentation">
-			<button class="nav-link" id="content_writer-tab" data-bs-toggle="tab" data-bs-target="#content_writer" type="button" role="tab" aria-controls="content_writer" aria-selected="false">Content Writer</button>
-		</li>
-		<li class="nav-item" role="presentation">
-			<button class="nav-link" id="graphics-tab" data-bs-toggle="tab" data-bs-target="#graphics" type="button" role="tab" aria-controls="graphics" aria-selected="false">Graphics</button>
-		</li>
-	</ul>
-	<div class="tab-content" id="myTabContent">
-
-		<div class="tab-pane fade show active" id="pricing" role="tabpanel" aria-labelledby="pricing-tab">
-			<div class="container mt-1">
-				<div class="row">
-					<div class="col-md-3 mb-3">
-						<label class="form-label bg-info text-white text-center py-3 h6">Content In Progress<br/><span class="h2">{{ $tempPricingProducts->where('approval_status', 'in-process')->count() }}</span></label>
-					</div>
-					<div class="col-md-3 mb-3">
-						<label class="form-label bg-warning text-white text-center py-3 h6">Submitted for Approval<br/><span class="h2">{{ $tempPricingProducts->where('approval_status', 'pending')->count() }}</span></label>
-					</div>
-					<div class="col-md-3 mb-3">
-						<label class="form-label bg-success text-white text-center py-3 h6">Ready to Publish<br/><span class="h2">{{ $tempPricingProducts->where('approval_status', 'approved')->count() }}</span></label>
-					</div>
-					<div class="col-md-3 mb-3">
-						<label class="form-label bg-danger text-white text-center py-3 h6">Rejected for Corrections<br/><span class="h2">{{ $tempPricingProducts->sum('rejection_count') }}</span></label>
-					</div>
-				</div>
-				<form action="{{ route('temp-products.approve') }}" method="POST">
-					@csrf
-					<div class="table-responsive">
-						<table class="table table-striped">
-							<thead>
-								<tr>
-									<th>Product ID</th>
-									<th>Product Name</th>
-									<th>SKU</th>
-									<th>Price</th>
-									<th>Sale Price</th>
-									{{-- <th>Current Status</th> --}}
-									<th>Approval Status</th>
-									<th>Edit</th>
-								</tr>
-							</thead>
-							<tbody>
-								@foreach ($tempPricingProducts as $tempPricingProduct)
-									@if($tempPricingProduct->approval_status == 'pending')
-										<tr id="product-row-{{ $tempPricingProduct->id }}">
-											<td>{{ $tempPricingProduct->product_id }}</td>
-											<td class="product-name">{{ $tempPricingProduct->name }}</td>
-											<td class="product-description">{{ $tempPricingProduct->sku }}</td>
-											<td class="product-description">{{ $tempPricingProduct->price }}</td>
-											<td class="product-description">{{ $tempPricingProduct->sale_price }}</td>
-											<td class="product-description">{{ $approvalStatuses[$tempPricingProduct->approval_status] ?? '' }}</td>
-											{{-- <td class="product-status">{{ $tempPricingProduct->status }}</td> --}}
-											{{-- <td>
-												<select name="approval_status[{{ $tempPricingProduct->id }}]" class="form-control approval-status-dropdown">
-													<option value="pending" {{ $tempPricingProduct->approval_status == 'pending' ? 'selected' : '' }}>Pending</option>
-													<option value="approved" {{ $tempPricingProduct->approval_status == 'approved' ? 'selected' : '' }}>Approved</option>
-													<option value="rejected" {{ $tempPricingProduct->approval_status == 'rejected' ? 'selected' : '' }}>Rejected</option>
-												</select>
-											</td> --}}
-											<td>
-												<button type="button" id="edit_pricing_modal" data-toggle="modal" data-target="#editPricingModal" data-product="{{ htmlspecialchars(json_encode($tempPricingProduct->toArray(), JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8') }}">
-													<i class="fas fa-pencil-alt"></i>
-												</button>
-											</td>
-										</tr>
-									@endif
-								@endforeach
-							</tbody>
-						</table>
-					</div>
-				</form>
-			</div>
+	<div class="row">
+		<div class="col-md-3 mb-3">
+			<label class="form-label bg-info text-white text-center py-3 h6">Content In Progress<br/><span class="h2">{{ $tempPricingProducts->where('approval_status', 'in-process')->count() }}</span></label>
 		</div>
-
-		<div class="tab-pane fade" id="content_writer" role="tabpanel" aria-labelledby="content_writer-tab">
-			<div class="container mt-5">
-				<form action="{{ route('temp-products.approve') }}" method="POST">
-					@csrf
-					<div class="table-responsive">
-						<table class="table table-striped">
-							<thead>
-								<tr>
-									<th>Product ID</th>
-									<th>Product Name</th>
-									<th>Change Description</th>
-									<th>Current Status</th>
-									<th>Approval Status</th>
-									<th>Edit</th>
-								</tr>
-							</thead>
-							<tbody>
-								@foreach ($tempContentProducts as $tempContentProduct)
-								<tr id="product-row-{{ $tempContentProduct->id }}">
-									<td>{{ $tempContentProduct->product_id }}</td>
-									<td class="product-name">{{ $tempContentProduct->name }}</td>
-									<td class="product-description">{{ $tempContentProduct->description }}</td>
-									<td class="product-status">{{ $tempContentProduct->status }}</td>
-									<td>
-										<select name="approval_status[{{ $tempContentProduct->id }}]" class="form-control approval-status-dropdown">
-											<option value="pending" {{ $tempContentProduct->approval_status == 'pending' ? 'selected' : '' }}>Pending</option>
-											<option value="approved" {{ $tempContentProduct->approval_status == 'approved' ? 'selected' : '' }}>Approved</option>
-											<option value="rejected" {{ $tempContentProduct->approval_status == 'rejected' ? 'selected' : '' }}>Rejected</option>
-										</select>
-									</td>
-									<td>
-										<button type="button" class="edit-icon" data-toggle="modal" data-target="#editContentModal"
-										data-id="{{ $tempContentProduct->id }}"
-										data-name="{{ $tempContentProduct->name }}"
-										data-description="{{ $tempContentProduct->description }}"
-										data-content="{{ $tempContentProduct->content }}"
-										data-status="{{ $tempContentProduct->status }}"
-										data-approval-status="{{ $tempContentProduct->approval_status }}"></button>
-									</td>
-								</tr>
-								@endforeach
-							</tbody>
-						</table>
-					</div>
-
-					<button type="submit" class="btn btn-success" id="save-changes-btn">Save Approval Changes</button>
-				</form>
-			</div>
+		<div class="col-md-3 mb-3">
+			<label class="form-label bg-warning text-white text-center py-3 h6">Submitted for Approval<br/><span class="h2">{{ $tempPricingProducts->where('approval_status', 'pending')->count() }}</span></label>
 		</div>
-
-		<div class="tab-pane fade" id="graphics" role="tabpanel" aria-labelledby="graphics-tab">
-			<div class="container mt-5">
-				<form action="{{ route('temp-products.approve') }}" method="POST">
-					@csrf
-					<div class="table-responsive">
-						<table class="table table-striped">
-							<thead>
-								<tr>
-									<th>Product ID</th>
-									<th>Product Name</th>
-									<th>Change Description</th>
-									<th>Current Status</th>
-									<th>Approval Status</th>
-									<th>Edit</th>
-								</tr>
-							</thead>
-							<tbody>
-								@foreach ($tempGraphicsProducts as $tempGraphicsProduct)
-								<tr id="product-row-{{ $tempGraphicsProduct->id }}">
-									<td>{{ $tempGraphicsProduct->product_id }}</td>
-									<td class="product-name">{{ $tempGraphicsProduct->name }}</td>
-									<td class="product-description">{{ $tempGraphicsProduct->description }}</td>
-									<td class="product-status">{{ $tempGraphicsProduct->status }}</td>
-									<td>
-										<select name="approval_status[{{ $tempGraphicsProduct->id }}]" class="form-control approval-status-dropdown">
-											<option value="pending" {{ $tempGraphicsProduct->approval_status == 'pending' ? 'selected' : '' }}>Pending</option>
-											<option value="approved" {{ $tempGraphicsProduct->approval_status == 'approved' ? 'selected' : '' }}>Approved</option>
-											<option value="rejected" {{ $tempGraphicsProduct->approval_status == 'rejected' ? 'selected' : '' }}>Rejected</option>
-										</select>
-									</td>
-									<td>
-										<button type="button" class="edit-icon" data-toggle="modal" data-target="#editProductModal"
-										data-id="{{ $tempGraphicsProduct->id }}"
-										data-name="{{ $tempGraphicsProduct->name }}"
-										data-description="{{ $tempGraphicsProduct->description }}"
-										data-content="{{ $tempGraphicsProduct->content }}"
-										data-status="{{ $tempGraphicsProduct->status }}"
-										data-approval-status="{{ $tempGraphicsProduct->approval_status }}"></button>
-									</td>
-								</tr>
-								@endforeach
-							</tbody>
-						</table>
-					</div>
-
-					<button type="submit" class="btn btn-success" id="save-changes-btn">Save Approval Changes</button>
-				</form>
-			</div>
+		<div class="col-md-3 mb-3">
+			<label class="form-label bg-success text-white text-center py-3 h6">Ready to Publish<br/><span class="h2">{{ $tempPricingProducts->where('approval_status', 'approved')->count() }}</span></label>
+		</div>
+		<div class="col-md-3 mb-3">
+			<label class="form-label bg-danger text-white text-center py-3 h6">Rejected for Corrections<br/><span class="h2">{{ $tempPricingProducts->sum('rejection_count') }}</span></label>
 		</div>
 	</div>
+	<div class="table-responsive">
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>Product ID</th>
+					<th>Product Name</th>
+					<th>SKU</th>
+					<th>Price</th>
+					<th>Sale Price</th>
+					{{-- <th>Current Status</th> --}}
+					<th>Approval Status</th>
+					<th>Edit</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach ($tempPricingProducts as $tempPricingProduct)
+				<tr id="product-row-{{ $tempPricingProduct->id }}">
+					<td>{{ $tempPricingProduct->product_id }}</td>
+					<td class="product-name">{{ $tempPricingProduct->name }}</td>
+					<td class="product-description">{{ $tempPricingProduct->sku }}</td>
+					<td class="product-description">{{ $tempPricingProduct->price }}</td>
+					<td class="product-description">{{ $tempPricingProduct->sale_price }}</td>
+					{{-- <td class="product-description">{{ $tempPricingProduct->status }}</td> --}}
+					<td class="product-description">{{ $approvalStatuses[$tempPricingProduct->approval_status] ?? '' }}</td>
+					<td>
+						@if($tempPricingProduct->approval_status == 'in-process' || $tempPricingProduct->approval_status == 'rejected')
+							<button type="button" id="edit_pricing_modal" data-toggle="modal" data-target="#editPricingModal" data-product="{{ htmlspecialchars(json_encode($tempPricingProduct->toArray(), JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8') }}">
+								<i class="fas fa-pencil-alt"></i>
+							</button>
+						@endif
+					</td>
+				</tr>
+				@endforeach
+			</tbody>
+		</table>
+	</div>
+
 
 	<!-- Pricing Modal -->
 	<div class="modal fade" id="editPricingModal" tabindex="-1" role="dialog" aria-labelledby="editPricingModalLabel" aria-hidden="true">
@@ -209,7 +82,7 @@
 					</button>
 				</div>
 				<div class="modal-body">
-					<form action="{{ route('temp-products.admin_pricing_approve') }}" method="POST">
+					<form action="{{ route('temp-products.pricing_approve') }}" method="POST">
 						@csrf
 						<div class="product-card">
 							<div class="product-header">
@@ -367,7 +240,17 @@
 								</div>
 							</div>
 
-							<div class="mb-3">
+
+							<div class="row g-3 mb-3 ms-1">
+								<div class="col-md-4 d-flex align-items-center">
+									<div class="form-check">
+										<input class="form-check-input me-2" type="checkbox" id="pricing_in_process" name="in_process" value="1" checked>
+										<label class="form-check-label" for="in_process">Is Draft</label>
+									</div>
+								</div>
+							</div>
+
+							{{-- <div class="mb-3">
 								<input type="hidden" id="pricing_initial_approval_status" name="initial_approval_status">
 								<label for="pricing_approval_status" class="form-label">Approval Status</label>
 								<select class="form-select" id="pricing_approval_status" name="approval_status">
@@ -375,11 +258,11 @@
 									<option value="{{ $value }}">{{ $label }}</option>
 									@endforeach
 								</select>
-							</div>
+							</div> --}}
 
 							<div class="mb-3">
 								<label for="pricing_remarks" class="form-label">Remarks</label>
-								<textarea class="form-select" id="pricing_remarks" name="remarks"></textarea>
+								<textarea class="form-select" id="pricing_remarks" name="remarks" readonly></textarea>
 							</div>
 
 							<button type="submit" class="btn btn-primary">Submit</button>
@@ -391,95 +274,12 @@
 	</div>
 	<!-- Pricing Modal -->
 
-	<!-- Edit Content Modal -->
-	<div class="modal fade" id="editContentModal" tabindex="-1" role="dialog" aria-labelledby="editContentModalLabel" aria-hidden="true">
-		<div class="modal-dialog modal-lg" role="document">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="editContentModalLabel">Edit Product</h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-				</div>
-				<div class="modal-body">
-					<form action="{{ route('temp-products.approve') }}" method="POST">
-						@csrf
-						<div class="products-container">
-							@foreach ($tempContentProducts as $tempContentProduct)
-							<div class="product-card" id="product-row-{{ $tempContentProduct->id }}">
-								<div class="product-header">
-									<h6>Product ID: {{ $tempContentProduct->product_id }}</h6>
-									<h4>{{ $tempContentProduct->name }}</h4>
-								</div>
-
-								<div class="product-description">
-									<label for="description-{{ $tempContentProduct->id }}">Change Description:</label>
-									<textarea id="description-{{ $tempContentProduct->id }}" class="editor" name="description[{{ $tempContentProduct->id }}]">
-										{{ $tempContentProduct->description }}
-									</textarea>
-								</div>
-								<div class="product-content">
-									<label for="content-{{ $tempContentProduct->id }}">Change Content:</label>
-									<textarea id="description-{{ $tempContentProduct->id }}" class="editor" name="content[{{ $tempContentProduct->id }}]">
-										{{ $tempContentProduct->content }}
-									</textarea>
-								</div>
-								<div class="approval-status-container">
-									<label for="approval-status-{{ $tempContentProduct->id }}">Approval Status:</label>
-									<select name="approval_status[{{ $tempContentProduct->id }}]" id="approval-status-{{ $tempContentProduct->id }}" class="form-control approval-status-dropdown">
-										<option value="pending" {{ $tempContentProduct->approval_status == 'pending' ? 'selected' : '' }}>Pending</option>
-										<option value="approved" {{ $tempContentProduct->approval_status == 'approved' ? 'selected' : '' }}>Approved</option>
-										<option value="rejected" {{ $tempContentProduct->approval_status == 'rejected' ? 'selected' : '' }}>Rejected</option>
-									</select>
-								</div>
-								<div class="edit-button-container">
-									<button type="button" class="edit-icon" data-toggle="modal" data-target="#editContentModal"
-									data-id="{{ $tempContentProduct->id }}"
-									data-name="{{ $tempContentProduct->name }}"
-									data-description="{{ $tempContentProduct->description }}"
-									data-content="{{ $tempContentProduct->content }}"
-									data-status="{{ $tempContentProduct->status }}"
-									data-approval-status="{{ $tempContentProduct->approval_status }}"></button>
-								</div>
-							</div>
-							@endforeach
-						</div>
-						<button type="submit" class="btn btn-success" id="save-changes-btn">Save Approval Changes</button>
-					</form>
-				</div>
-			</div>
-		</div>
-	</div>
-	<!-- Edit Content Modal -->
 
 	<!-- jQuery -->
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-	<script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
 
 	<!-- Bootstrap JS -->
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-	<script>
-		document.querySelectorAll('.editor').forEach((element) => {
-			ClassicEditor
-			.create(element)
-			.catch((error) => {
-				console.error(error);
-			});
-		});
-
-		// tinymce.init({
-		// 	selector: '.editor',
-		// 	menubar: false,
-		// 	toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright | bullist numlist outdent indent | link image',
-		// 	plugins: 'lists link image',
-		// 	content_style: "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
-		// 	setup: function (editor) {
-		// 		editor.on('change', function () {
-		// 			editor.save(); // This ensures that the data is saved into the textarea
-		// 		});
-		// 	}
-		// });
-	</script>
 
 	<style>
 
@@ -626,7 +426,7 @@
 			$('#pricing_variant_requires_shipping').val(product.variant_requires_shipping);
 			$('#pricing_refund').val(product.refund);
 			$('#pricing_initial_approval_status').val(product.approval_status);
-			$('#pricing_approval_status').val(product.approval_status);
+			// $('#pricing_approval_status').val(product.approval_status);
 			$('#pricing_remarks').val(product.remarks);
 
 			// Set checkbox values
@@ -776,23 +576,23 @@
 
 
 			// Get references to the select and textarea elements
-			const $approvalStatus = $('#pricing_approval_status');
-			const $remarks = $('#pricing_remarks');
+			// const $approvalStatus = $('#pricing_approval_status');
+			// const $remarks = $('#pricing_remarks');
 
-			// Function to update the "required" attribute based on approval status
-			function updateRemarksRequirement() {
-				if ($approvalStatus.val() === 'rejected') { // Replace 'rejected' with the actual value for rejection
-					$remarks.attr('required', 'required');
-				} else {
-					$remarks.removeAttr('required');
-				}
-			}
+			// // Function to update the "required" attribute based on approval status
+			// function updateRemarksRequirement() {
+			// 	if ($approvalStatus.val() === 'rejected') { // Replace 'rejected' with the actual value for rejection
+			// 		$remarks.attr('required', 'required');
+			// 	} else {
+			// 		$remarks.removeAttr('required');
+			// 	}
+			// }
 
 			// Initial check when the page loads
-			updateRemarksRequirement();
+			// updateRemarksRequirement();
 
 			// Update requirement whenever the approval status changes
-			$approvalStatus.on('change', updateRemarksRequirement);
+			// $approvalStatus.on('change', updateRemarksRequirement);
 		});
 
 		const discountGroup = document.getElementById('discount-group');
@@ -874,26 +674,6 @@
 		// Trigger label updates when the UoM dropdown changes
 		unitOfMeasurementDropdown.addEventListener('change', updateAllQuantityLabels);
 	</script>
-	<script>
-		$(document).ready(function () {
-		// Edit Product button click
-			$(document).on('click', '.edit-icon', function () {
-				var currentProductId = $(this).data('id');
-				var productName = $(this).data('name');
-				var productDescription = $(this).data('description');
-				var productContent = $(this).data('content');
-				var approvalStatus = $(this).data('approval-status');
-
-			// Populate modal fields
-				$('#edit-product-id').val(currentProductId);
-				$('#product-name').val(productName);
-				$('#product-description').val(productDescription);
-				$('#product-content').val(productContent);
-				$('#approval-status').val(approvalStatus);
-			});
-		});
-	</script>
-
 </body>
 
 @endsection

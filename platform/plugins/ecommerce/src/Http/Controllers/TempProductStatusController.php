@@ -14,131 +14,58 @@ class TempProductStatusController extends BaseController
 {
 	public function index()
 	{
-		// Fetch all temporary product changes
-		$tempPricingProducts = TempProduct::where('role_id', 22)->where('approval_status', 'pending')->get()->map(function ($product) {
-			$product->discount = $product->discount ? json_decode($product->discount) : [];
-			return $product;
-		});
+		$userRoleId = auth()->user()->roles->value('id');
+		if ($userRoleId == 22) {
+			// Fetch all temporary product changes
+			$tempPricingProducts = TempProduct::where('role_id', $userRoleId)->where('created_by_id', auth()->id())->get()->map(function ($product) {
+				$product->discount = $product->discount ? json_decode($product->discount) : [];
+				return $product;
+			});
+			$unitOfMeasurements = UnitOfMeasurement::pluck('name', 'id')->toArray();
+			$stores = Store::pluck('name', 'id')->toArray();
 
-		// dd($tempPricingProducts->toArray());
+			$approvalStatuses = [
+				'in-process' => 'Content In Progress',
+				'pending' => 'Submitted for Approval',
+				'approved' => 'Ready to Publish',
+				'rejected' => 'Rejected for Corrections',
+			];
+			return view('plugins/ecommerce::products.partials.pricing-product-status', compact('tempPricingProducts', 'unitOfMeasurements', 'stores', 'approvalStatuses'));
+		} else {
+			$tempContentProducts = TempProduct::where('role_id', 18)->where('approval_status', 'pending')->get();
+			$tempGraphicsProducts = TempProduct::where('role_id', 19)->where('approval_status', 'pending')->get();
 
-		$tempContentProducts = TempProduct::where('role_id', 18)->where('approval_status', 'pending')->get();
-		$tempGraphicsProducts = TempProduct::where('role_id', 19)->where('approval_status', 'pending')->get();
+			$unitOfMeasurements = UnitOfMeasurement::pluck('name', 'id')->toArray();
+			$stores = Store::pluck('name', 'id')->toArray();
 
-		$unitOfMeasurements = UnitOfMeasurement::pluck('name', 'id')->toArray();
-		$stores = Store::pluck('name', 'id')->toArray();
+			$approvalStatuses = [
+				'pending' => 'Pending',
+				'approved' => 'Approved',
+				'rejected' => 'Rejected',
+			];
 
-		$approvalStatuses = [
-			'pending' => 'Pending',
-			'approved' => 'Approved',
-			'rejected' => 'Rejected',
-		];
-
-		return view('plugins/ecommerce::products.partials.temp-product-status', compact('tempPricingProducts', 'tempContentProducts', 'tempGraphicsProducts', 'unitOfMeasurements', 'stores', 'approvalStatuses'));
+			return view('plugins/ecommerce::products.partials.temp-product-status', compact('tempPricingProducts', 'tempContentProducts', 'tempGraphicsProducts', 'unitOfMeasurements', 'stores', 'approvalStatuses'));
+		}
 	}
 
 	public function approvePricingChanges(Request $request)
 	{
 		logger()->info('approvePricingChanges method called.');
 		logger()->info('Request Data: ', $request->all());
-		$request->validate([
-			'approval_status' => 'required',
-			'remarks' => [
-				'required_if:approval_status,rejected'
-			]
-		]);
-// dd($request->all());
+		// $request->validate([
+		// 	'approval_status' => 'required',
+		// 	'remarks' => [
+		// 		'required_if:approval_status,rejected'
+		// 	]
+		// ]);
+
 		$tempProduct = TempProduct::find($request->id);
 		$input = $request->all();
-		if($request->initial_approval_status=='pending' && $request->approval_status=='approved') {
-
-			if ($request->discount) {
-				// Fetch existing discount IDs related to the product
-				$product = $tempProduct->product;
-				$existingDiscountIds = $product->discounts->pluck('id')->toArray();
-
-				// Keep track of processed discount IDs
-				$processedDiscountIds = [];
-
-				foreach ($request->discount as $discountDetail) {
-					if (
-						array_key_exists('product_quantity', $discountDetail) && $discountDetail['product_quantity']
-						&& array_key_exists('discount', $discountDetail) && $discountDetail['discount']
-						&& array_key_exists('discount_from_date', $discountDetail) && $discountDetail['discount_from_date']
-					) {
-						if (array_key_exists('discount_id', $discountDetail) && $discountDetail['discount_id']) {
-							// Update existing discount
-							$discountId = $discountDetail['discount_id'];
-							$discount = Discount::find($discountId);
-
-							if ($discount) {
-								$discount->product_quantity = $discountDetail['product_quantity'];
-								$discount->title = ($discountDetail['product_quantity']) . ' products';
-								$discount->value = $discountDetail['discount'];
-								$discount->start_date = Carbon::parse($discountDetail['discount_from_date']);
-								$discount->end_date = array_key_exists('never_expired', $discountDetail) && $discountDetail['never_expired'] == 1
-								? null
-								: Carbon::parse($discountDetail['discount_to_date']);
-								$discount->save();
-
-								// Update relation
-								DiscountProduct::updateOrCreate(
-									['discount_id' => $discountId, 'product_id' => $product->id],
-									['discount_id' => $discountId, 'product_id' => $product->id]
-								);
-							}
-
-							// Mark this discount ID as processed
-							$processedDiscountIds[] = $discountId;
-						} else {
-							// Create new discount
-							$discount = new Discount();
-							$discount->product_quantity = $discountDetail['product_quantity'];
-							$discount->title = ($discountDetail['product_quantity']) . ' products';
-							$discount->type_option = 'percentage';
-							$discount->type = 'promotion';
-							$discount->value = $discountDetail['discount'];
-							$discount->start_date = Carbon::parse($discountDetail['discount_from_date']);
-							$discount->end_date = array_key_exists('never_expired', $discountDetail) && $discountDetail['never_expired'] == 1
-							? null
-							: Carbon::parse($discountDetail['discount_to_date']);
-							$discount->save();
-
-							// Save relation
-							$discountProduct = new DiscountProduct();
-							$discountProduct->discount_id = $discount->id;
-							$discountProduct->product_id = $product->id;
-							$discountProduct->save();
-
-							// Mark this discount ID as processed
-							$processedDiscountIds[] = $discount->id;
-						}
-					}
-				}
-
-				// Delete removed discounts
-				$discountsToDelete = array_diff($existingDiscountIds, $processedDiscountIds);
-				if (!empty($discountsToDelete)) {
-					Discount::whereIn('id', $discountsToDelete)->delete();
-					DiscountProduct::whereIn('discount_id', $discountsToDelete)->delete();
-				}
-			}
-			unset($input['_token'], $input['id'], $input['initial_approval_status'], $input['approval_status'], $input['margin'], $input['discount']);
-			$tempProduct->product->update($input);
-			$tempProduct->update(['approval_status' => $request->approval_status]);
-		}
-
-		if($request->initial_approval_status=='pending' && $request->approval_status=='rejected') {
-			$tempProduct->update([
-				'approval_status' => $request->approval_status,
-				'remarks' => $request->remarks
-			]);
-		}
-
-		if($request->initial_approval_status=='pending' && $request->approval_status=='pending') {
+		if($tempProduct->approval_status=='in-process' || $tempProduct->approval_status=='rejected') {
 			unset($input['_token'], $input['id'], $input['initial_approval_status'], $input['approval_status']);
 			$input['discount'] = json_encode($input['discount']);
-			// dd($input);
+			$input['approval_status'] = isset($request->in_process) && $request->in_process==1 ? 'in-process' : 'pending';
+
 			$tempProduct->update($input);
 		}
 

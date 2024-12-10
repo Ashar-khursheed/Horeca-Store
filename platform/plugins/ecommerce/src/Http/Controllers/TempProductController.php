@@ -15,7 +15,7 @@ class TempProductController extends BaseController
 	public function index()
 	{
 		// Fetch all temporary product changes
-		$tempPricingProducts = TempProduct::where('role_id', 22)->where('approval_status', 'pending')->get()->map(function ($product) {
+		$tempPricingProducts = TempProduct::where('role_id', 22)->get()->map(function ($product) {
 			$product->discount = $product->discount ? json_decode($product->discount) : [];
 			return $product;
 		});
@@ -29,9 +29,10 @@ class TempProductController extends BaseController
 		$stores = Store::pluck('name', 'id')->toArray();
 
 		$approvalStatuses = [
-			'pending' => 'Pending',
-			'approved' => 'Approved',
-			'rejected' => 'Rejected',
+			'in-process' => 'Content In Progress',
+			'pending' => 'Submitted for Approval',
+			'approved' => 'Ready to Publish',
+			'rejected' => 'Rejected for Corrections',
 		];
 
 		return view('plugins/ecommerce::products.partials.temp-product-changes', compact('tempPricingProducts', 'tempContentProducts', 'tempGraphicsProducts', 'unitOfMeasurements', 'stores', 'approvalStatuses'));
@@ -131,12 +132,13 @@ class TempProductController extends BaseController
 		if($request->initial_approval_status=='pending' && $request->approval_status=='rejected') {
 			$tempProduct->update([
 				'approval_status' => $request->approval_status,
+				'rejection_count' => \DB::raw('rejection_count + 1'),
 				'remarks' => $request->remarks
 			]);
 		}
 
-		if($request->initial_approval_status=='pending' && $request->approval_status=='pending') {
-			unset($input['_token'], $input['id'], $input['initial_approval_status'], $input['approval_status']);
+		if($request->initial_approval_status=='pending' && ($request->approval_status=='pending' || $request->approval_status=='in-process')) {
+			unset($input['_token'], $input['id'], $input['initial_approval_status']);
 			$input['discount'] = json_encode($input['discount']);
 			// dd($input);
 			$tempProduct->update($input);
