@@ -175,7 +175,7 @@ return [
     'product_create_validate_sale_price_max' => 'The discount must be less than the original price',
     'product_create_validate_cost_per_item_max' => 'The cost per item must be less than the original price',
     'product_create_validate_sale_price_required_if' => 'Must enter a discount when you want to schedule a promotion',
-    'product_create_validate_end_date_after' => 'End date must be after start date',
+    'product_create_validate_end_date_after' => 'End date must be after the start date and cannot be earlier than the current date.',
     'product_create_validate_start_date_required_if' => 'Discount start date cannot be left blank when scheduling is selected',
     'product_create_validate_sale_price' => 'Discounts cannot be left blank when scheduling is selected',
     'stock_statuses' => [

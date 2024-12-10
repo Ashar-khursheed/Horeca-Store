@@ -988,7 +988,6 @@ class ProductController extends BaseController
         }
         else if(auth()->user() && DB::table('role_users')->where('user_id', auth()->user()->id)->where('role_id', 22)->exists())
         {
-            // dd($request->all());
             // Validate incoming request data
             $this->validate($request, [
                 // Group 0 Validation
@@ -1017,8 +1016,7 @@ class ProductController extends BaseController
             ]);
 
             if ($product) {  // Check if the product exists
-                // dd($request->all(), $product->toArray());
-                $tempProduct = TempProduct::where('created_by_id', auth()->id())->where('role_id', 22)->where('approval_status', 'pending')->first();
+                $tempProduct = TempProduct::where('created_by_id', auth()->id())->where('role_id', 22)->where('approval_status', 'in-process')->first();
                 if(!$tempProduct) {
                     $tempProduct = new TempProduct();
                 }
@@ -1048,6 +1046,8 @@ class ProductController extends BaseController
                 $tempProduct->updated_at = now();
                 $tempProduct->product_id = $product->id;
                 $tempProduct->role_id = 22;
+                $tempProduct->approval_status = isset($request->in_process) && $request->in_process==1 ? 'in-process' : 'pending';
+
 
                 $tempProduct->save();
             }

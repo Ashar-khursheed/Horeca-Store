@@ -348,6 +348,16 @@
     </div>
 </x-core::form.fieldset>
 
+
+<div class="row g-3 mb-3">
+    <div class="col-md-4 d-flex align-items-center">
+        <div class="form-check">
+            <input class="form-check-input me-2" type="checkbox" name="in_process" value="1" checked>
+            <label class="form-check-label" for="in_process">Is Draft</label>
+        </div>
+    </div>
+</div>
+
 @else
 @if (!$productspec)
 
