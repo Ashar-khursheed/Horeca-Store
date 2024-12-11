@@ -23,6 +23,11 @@ return [
     'parent_flag' => 'plugins.ecommerce',
    ],
    [
+    'name' => 'Product Content Status',
+    'flag' => 'ecommerce::partials.temp-product-content',
+    'parent_flag' => 'plugins.ecommerce',
+   ],
+   [
     'name' => 'Import Specifications',
     'flag' => 'ecommerce::partials.upload-specifications',
     'parent_flag' => 'plugins.ecommerce',
