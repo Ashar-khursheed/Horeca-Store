@@ -320,59 +320,7 @@ class ProductForm extends FormAbstract
                             'value' => old('product_collections', $selectedProductCollections),
                         ]);
                     })
-                    // ->when($productLabels, function () use ($productLabels) {
-                    //     $selectedProductLabels = [];
-
-                    //     if ($this->getModel() && $this->getModel()->getKey()) {
-                    //         $selectedProductLabels = $this->getModel()->productLabels()->pluck('product_label_id')->all();
-                    //     }
-
-                    //     $this
-                    //         ->add('product_labels[]', MultiCheckListField::class, [
-                    //             'label' => trans('plugins/ecommerce::products.form.labels'),
-                    //             'choices' => $productLabels,
-                    //             'value' => old('product_labels', $selectedProductLabels),
-                    //         ]);
-                    // })
-                    // ->when(EcommerceHelper::isTaxEnabled(), function () {
-                    //     $taxes = Tax::query()->orderBy('percentage')->get()->pluck('title_with_percentage', 'id')->all();
-
-                    //     if ($taxes) {
-                    //         $selectedTaxes = [];
-                    //         if ($this->getModel() && $this->getModel()->getKey()) {
-                    //             $selectedTaxes = $this->getModel()->taxes()->pluck('tax_id')->all();
-                    //         } elseif ($defaultTaxRate = get_ecommerce_setting('default_tax_rate')) {
-                    //             $selectedTaxes = [$defaultTaxRate];
-                    //         }
-
-                    //         $this->add('taxes[]', MultiCheckListField::class, [
-                    //             'label' => trans('plugins/ecommerce::products.form.taxes'),
-                    //             'choices' => $taxes,
-                    //             'value' => old('taxes', $selectedTaxes),
-                    //         ]);
-                    //     }
-                    // })
-                    // ->when(EcommerceHelper::isCartEnabled(), function (ProductForm $form) {
-                    //     $form
-                    //         ->add(
-                    //             'minimum_order_quantity',
-                    //             NumberField::class,
-                    //             NumberFieldOption::make()
-                    //                 ->label(trans('plugins/ecommerce::products.form.minimum_order_quantity'))
-                    //                 ->helperText(trans('plugins/ecommerce::products.form.minimum_order_quantity_helper'))
-                    //                 ->defaultValue(0)
-                    //                 ->toArray()
-                    //         )
-                    //         ->add(
-                    //             'maximum_order_quantity',
-                    //             NumberField::class,
-                    //             NumberFieldOption::make()
-                    //                 ->label(trans('plugins/ecommerce::products.form.maximum_order_quantity'))
-                    //                 ->helperText(trans('plugins/ecommerce::products.form.maximum_order_quantity_helper'))
-                    //                 ->defaultValue(0)
-                    //                 ->toArray()
-                    //         );
-                    // })
+             
                     ->add('tag', TagField::class, [
                         'label' => trans('plugins/ecommerce::products.form.tags'),
                         'value' => $tags,
@@ -399,117 +347,13 @@ class ProductForm extends FormAbstract
                         'value' => $frequently_bought_together, // fetch the value from the request or model
                     ])
 
-                    // ->addMetaBoxes([
-                    //     'admin_reviews' => [
-                    //         'title' => 'Admin Reviews',
-                    //         'content' => view('plugins/ecommerce::products.partials.admin-reviews', [
-                    //             'reviews' => Review::where('product_id', $this->getModel()->id)
-                    //                               ->whereNotNull('star')
-                    //                               ->when(auth('web')->check() && auth('web')->user()->is_admin, function($query) {
-                    //                                   // Adjust the condition based on how you identify admin users
-                    //                                   $query->whereHas('user', function($query) {
-                    //                                       $query->whereIn('id', User::where('is_admin', true)->pluck('id'));
-                    //                                   });
-                    //                               })
-                    //                               ->get()
-                    //         ])->render(), // Ensure the content is a string
-                    //         'wrap' => false,
-                    //         'priority' => 6,
-                    //     ],
-                    //     // 'add_testimonials' => [
-                    //     //     'title' => 'Add Testimonials',
-                    //     //     'content' => view('plugins/ecommerce::products.partials.Testimonials-form', [
-                    //     //         'testimonials' => $this->getModel()->reviews ?? []
-                    //     //     ])->render(), // Ensure the content is a string
-                    //     //     'wrap' => false,
-                    //     //     'priority' => 7,
-                    //     // ],
-                    // ])
-
-
-
-
-                    //->add('handle', 'text', ['label' => 'Handle'])
-                // ->add('variant_grams', 'text', ['label' => 'Variant Grams'])
-                // ->add('variant_inventory_tracker', 'text', ['label' => 'Variant Inventory Tracker'])
-                // ->add('variant_inventory_quantity', 'number', ['label' => 'Variant Inventory Quantity'])
-                // ->add('variant_inventory_policy', 'text', ['label' => 'Variant Inventory Policy'])
-                // ->add('variant_fulfillment_service', 'text', ['label' => 'Variant Fulfillment Service'])
-                // ->add('variant_requires_shipping', 'text', ['label' => 'Variant Grams'])
-                // ->add('variant_barcode', 'text', ['label' => 'Variant Barcode'])
-                // ->add('gift_card', 'text', ['label' => 'Variant Grams'])
-                // ->add('seo_title', 'text', ['label' => 'SEO Title'])
-                // ->add('seo_description', 'textarea', ['label' => 'SEO Description'])
-                // ->add('variant_requires_shipping', 'select', [
-                //     'label' => 'Variant Requires Shipping',
-                //     'choices' => [
-                //         1 => 'Yes',   // True
-                //         0 => 'No'     // False
-                //     ],
-
-                //     'attr' => ['class' => 'form-control']
-                // ])
-                // ->add('Refund Policy', 'select', [
-                //     'label' => 'Refund Policy',
-                //     'choices' => [
-                //         0 => '15 Days',
-                //         1 => '90 Days' ,
-                //         2 => 'Non Refundable'
-                //     ],
-                //     'selected' => $model->refund ?? 2,  // Set default selected value if needed
-                //     'attr' => ['class' => 'form-control']
-
-
-                // ])
-                // ->add('refund', 'text', ['label' => 'Refund Policy'])
-                // ->add('refund', 'select', [
-                //     'label' => 'Refund Policy',
-                //     'choices' => [
-                //         'non-refundable' => 'Non-refundable',
-                //         '15 days' => '15 Days Refund',
-                //         '90 days' => '90 Days Refund',
-                //     ],
-
-                //     'attr' => [
-                //         'class' => 'form-control',
-                //     ],
-
-                // ])
+         
 
                 ->add('google_shopping_category', 'text', ['label' => 'Google Shopping / Google Product Category'])
 
-            //  ->add('unit_of_measurement_id', 'select', [
-            //         'label' => 'Unit of Measurement',
-            //         'choices' => UnitOfMeasurement::pluck('name', 'id')->toArray(), // Fetch the list of units from the DB
-            //         'empty_value' => 'Select a Unit' // Optional placeholder
-            //     ])
-            //     ->add('delivery_date', 'date', ['label' => 'Delivery Date'])
 
-                // ->add('google_shopping_gender', 'text', ['label' => 'Google Shopping / Gender'])
-                // ->add('google_shopping_age_group', 'text', ['label' => 'Google Shopping / Age Group'])
                 ->add('google_shopping_mpn', 'text', ['label' => 'Google Shopping / MPN'])
-                // ->add('google_shopping_condition', 'text', ['label' => 'Google Shopping / Condition'])
-                // ->add('google_shopping_custom_product', 'text', ['label' => 'Google Shopping / Custom Product'])
-                // ->add('google_shopping_custom_label_0', 'text', ['label' => 'Google Shopping / Custom Label 0'])
-                // ->add('google_shopping_custom_label_1', 'text', ['label' => 'Google Shopping / Custom Label 1'])
-                // ->add('google_shopping_custom_label_2', 'text', ['label' => 'Google Shopping / Custom Label 2'])
-                // ->add('google_shopping_custom_label_3', 'text', ['label' => 'Google Shopping / Custom Label 3'])
-                // ->add('google_shopping_custom_label_4', 'text', ['label' => 'Google Shopping / Custom Label 4'])
-                // ->add('box_quantity', 'number', ['label' => 'Box Quantity'])
-                // ->add('technical_table', 'text', ['label' => 'Technical Table'])
-                // ->add('technical_spec', 'text', ['label' => 'Technical Spec'])
-                // ->add('product_label', 'text', ['label' => 'Product Label'])
-
-
-                    // ->addMetaBoxes([
-                    //     'add_specs' => [
-                    //         'title' => 'Add Specs',
-                    //         'content' => view('plugins/ecommerce::products.partials.add-specs-form'),
-                    //         'priority' => 5,
-                    //         'before_wrapper' => '<div id="specs-wrapper" style="display: flex; flex-wrap: wrap; gap: 10px;">',
-                    //         'after_wrapper' => '</div>',
-                    //     ],
-                    // ])
+            
 
 
                     ->setBreakFieldPoint('status');
@@ -841,16 +685,25 @@ class ProductForm extends FormAbstract
             ->add('sku', TextField::class, TextFieldOption::make()->label(trans('plugins/ecommerce::products.sku')))
 
 
-          
             ->addMetaBoxes([
-                            'documents' => [
-                    'title' => 'Product Documents',
-                    'content' => view('plugins/ecommerce::products.partials.documents-form', [
-                        'documents' => $this->getModel()->documents ?? [], // Fetch existing documents if editing
+                'specs' => [
+                    'title' => 'Specifications',
+                    'content' => view('plugins/ecommerce::products.partials.specs-form', [
+                        'specs' => $this->getModel()->specifications ?? [], // Fetch existing specs if editing
                     ]),
-                    'priority' => 60,
+                    'priority' => 50,
                 ],
             ])
+
+            // ->addMetaBoxes([
+            //                 'documents' => [
+            //         'title' => 'Product Documents',
+            //         'content' => view('plugins/ecommerce::products.partials.documents-form', [
+            //             'documents' => $this->getModel()->documents ?? [], // Fetch existing documents if editing
+            //         ]),
+            //         'priority' => 60,
+            //     ],
+            // ])
 
 
             ->add('product_type', 'hidden', [
@@ -1135,11 +988,19 @@ class ProductForm extends FormAbstract
                                 ->placeholder(trans('core/base::forms.description_placeholder'))->toArray()
                         )
                         // ->add('warranty_information', EditorField::class, ContentFieldOption::make()->allowedShortcodes()->toArray())
+                        // ->add('images[]', MediaImagesField::class, [
+                        //     'label' => trans('plugins/ecommerce::products.form.image'),
+                        //     'values' => $productId ? $this->getModel()->images : [],
+                        // ])
+
                         ->add('images[]', MediaImagesField::class, [
                             'label' => trans('plugins/ecommerce::products.form.image'),
-                            'values' => $productId ? $this->getModel()->images : [],
+                            'values' => $this->getModel() ? $this->getModel()->images : [],
+                            'attributes' => [
+                                'id' => 'media-images-field',
+                                'class' => 'form-control media-upload-field', // Add a class for JavaScript targeting
+                            ]
                         ])
-
                 //          ->addMetaBoxes([
                 //     'Video' => [
                 //         'title' => 'Product Videos',
