@@ -10,7 +10,7 @@
     class="slug-field-wrapper"
     data-field-name="{{ SlugHelper::getColumnNameToGenerateSlug($model) }}"
 >
-	@if(auth()->user() && DB::table('role_users')->where('user_id', auth()->user()->id)->where('role_id', 22)->exists() )
+	@if(auth()->user() && DB::table('role_users')->where('user_id', auth()->user()->id)->whereIn('role_id', [19, 22])->exists() )
 	    @if (in_array(
 	        Route::currentRouteName(), ['pages.create', 'pages.edit'])
 	        && BaseHelper::isHomepage(Route::current()->parameter('page.id'))

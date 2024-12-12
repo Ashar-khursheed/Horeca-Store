@@ -715,19 +715,30 @@ class ProductController extends BaseController
 
         /* Check if the user has role ID 19 (Graphic Designer) */
         else if ($userId && DB::table('role_users')->where('user_id', $userId)->where('role_id',19)->exists()) {
-            dd('called', $request->all());
-
+            if ($product) {  // Check if the product exists
                 // Validate the incoming request
+                // dd($request->all());
                 $this->validate($request, [
                     'documents.*' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
                     'titles.*' => 'nullable|string|max:255',
                 ]);
 
+                $tempProduct = TempProduct::where('created_by_id', auth()->id())->where('role_id', 19)->where('approval_status', 'in-process')->first();
+                if(!$tempProduct) {
+                    $tempProduct = new TempProduct();
+                }
+                $tempProduct->name = $product->name;
+                $tempProduct->sku = $product->sku;
+                $tempProduct->created_by_id = $userId;
+                $tempProduct->created_at = now();
+                $tempProduct->updated_at = now();
+                $tempProduct->product_id = $product->id;
+                $tempProduct->role_id = 19;
+                $tempProduct->approval_status = isset($request->in_process) && $request->in_process==1 ? 'in-process' : 'pending';
+
                 // Load existing documents
                 $existingDocuments = json_decode($product->documents, true) ?? [];
-
                 $documentsPath = storage_path('app/public/products/documents');
-
                 // Check if the directory exists, if not, create it
                 if (!is_dir($documentsPath)) {
                     mkdir($documentsPath, 0775, true);
@@ -735,7 +746,6 @@ class ProductController extends BaseController
 
                 // Initialize documents array with existing documents
                 $documents = $existingDocuments;
-
                 // Handle new document uploads
                 if ($request->hasFile('documents')) {
                     foreach ($request->file('documents') as $index => $document) {
@@ -769,28 +779,59 @@ class ProductController extends BaseController
                 }
 
                 // Save the updated documents as JSON in the product
-                $product->documents = json_encode($documents);
+                $tempProduct->documents = json_encode($documents);
 
-                        $product->frequently_bought_together = $request->input('frequently_bought_together');
 
-                $product->google_shopping_mpn = $request->input('google_shopping_mpn');
-                $product->box_quantity = $request->input('box_quantity');
-                $product->minimum_order_quantity = $request->input('minimum_order_quantity');
-                $product->maximum_order_quantity = $request->input('maximum_order_quantity');
-                $product->quantity = $request->input('quantity');
+                /* Manage Video */
+                $videoPaths = [];
 
-                // Additional processing
-                $product->status = $request->input('status');
-                if (EcommerceHelper::isEnabledSupportDigitalProducts() && $productType = $request->input('product_type')) {
-                    $product->product_type = $productType;
+                // Check if there are any uploaded videos
+                if ($request->hasFile('videos')) {
+                    foreach ($request->file('videos') as $video) {
+                        // Store the video and get the path
+                        $videoPaths[] = $video->store('videos', 'public');
+                    }
                 }
-                $product = $service->execute($request, $product);
 
+                // Retrieve existing video paths
+                $existingVideos = is_string($product->video_path)
+                    ? json_decode($product->video_path, true) // Decode if it's a JSON string
+                    : (is_array($product->video_path) ? $product->video_path : []); // Already an array
+
+                // Handle deleted videos
+                if ($request->has('deleted_videos')) {
+                    $deletedVideos = explode(',', $request->input('deleted_videos'));
+
+                    // Ensure $existingVideos is an array
+                    $existingVideos = $existingVideos ?? [];
+
+                    // Filter existing videos
+                    $existingVideos = array_filter($existingVideos, fn($video) => !in_array($video, $deletedVideos));
+                }
+
+                // Merge with newly uploaded video paths
+                $allVideos = array_merge($existingVideos, $videoPaths);
+                $allVideos = array_values(array_unique($allVideos)); // Ensure unique paths
+
+                // Encode the final paths as JSON
+                $tempProduct->video_path = json_encode($allVideos, JSON_UNESCAPED_SLASHES);
+
+                $images = [];
+
+                if ($imagesInput = $request->input('images', [])) {
+                    $images = array_values(array_filter((array) $imagesInput));
+                }
+
+                $tempProduct->images = json_encode($images);
+
+                $tempProduct->save();
+            }
+            return redirect()->route('products.index')->with('success', 'Product update request submitted and saved for approval.');
             // Return success response
-            return $this->httpResponse()
-                ->setPreviousUrl(route('products.index'))
-                ->setNextUrl(route('products.edit', $product->id))
-                ->withUpdatedSuccessMessage();
+            // return $this->httpResponse()
+            //     ->setPreviousUrl(route('products.index'))
+            //     ->setNextUrl(route('products.edit', $product->id))
+            //     ->withUpdatedSuccessMessage();
         }
 
         /* Check if the user has role ID 22 (Pricing) */

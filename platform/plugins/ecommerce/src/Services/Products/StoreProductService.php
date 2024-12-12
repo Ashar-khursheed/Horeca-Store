@@ -157,10 +157,6 @@ class StoreProductService
         return $product;
     }
 
-  
-
-
-
     public function saveProductFiles(Request $request, Product $product, bool $exists = true): Product
     {
         if ($exists) {
