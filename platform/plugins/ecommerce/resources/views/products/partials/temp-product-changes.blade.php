@@ -142,7 +142,9 @@
 										data-description="{{ $tempContentProduct->description }}"
 										data-content="{{ $tempContentProduct->content }}"
 										data-status="{{ $tempContentProduct->status }}"
-										data-approval-status="{{ $tempContentProduct->approval_status }}"></button>
+										data-approval-status="{{ $tempContentProduct->approval_status }}"
+										data-productid="{{ $tempContentProduct->product_id }}">
+									</button>
 									</td>
 								</tr>
 								@endforeach
@@ -518,7 +520,14 @@
 	<script src="https://cdn.ckeditor.com/ckeditor5-premium-features/44.0.0/ckeditor5-premium-features.umd.js" crossorigin></script>
 		<!-- For Product Description -->
 		<script>
-						const {
+
+		$(document).ready(function () {
+		// Edit Product button click
+			$(document).on('click', '.edit-icon', function () {
+
+
+			
+					const {
 					DecoupledEditor,
 					Plugin,
 					ButtonView,
@@ -570,7 +579,14 @@
 				 * Read more: https://ckeditor.com/docs/ckeditor5/latest/api/module_collaboration-core_config-RealTimeCollaborationConfig.html
 				 */
 				// const DOCUMENT_ID = '12346';
-				const DOCUMENT_ID = '{{ $tempContentProduct->product_id }}';
+
+
+				
+				
+				 const DOCUMENT_ID = "'"+$(this).data('productid')+"'";
+				console.log($(this).data('productid'));
+				
+				
 				const CLOUD_SERVICES_TOKEN_URL =
 					'https://124068.cke-cs.com/token/dev/ff1755ae0a1f80bc0c7eff88a367666925e5d9dc5b87e982947f42b43863?limit=10';
 				const CLOUD_SERVICES_WEBSOCKET_URL = 'wss://124068.cke-cs.com/ws';
@@ -638,9 +654,9 @@
 						return super.destroy();
 					}
 				}
-                const productDescription = '{{ $tempContentProduct->description }}';
-
-
+                
+				
+				const productDescription = $(this).data('description');
 				const editorConfig = {
 					toolbar: {
 						items: [
@@ -888,7 +904,9 @@
 						);
 					}
 				}
-
+			});
+		});
+			
 	</script>
 
 
@@ -1312,7 +1330,7 @@
 		// Trigger label updates when the UoM dropdown changes
 		unitOfMeasurementDropdown.addEventListener('change', updateAllQuantityLabels);
 	</script>
-	<script>
+	{{-- <script>
 		$(document).ready(function () {
 		// Edit Product button click
 			$(document).on('click', '.edit-icon', function () {
@@ -1330,7 +1348,7 @@
 				$('#approval-status').val(approvalStatus);
 			});
 		});
-	</script>
+	</script> --}}
 
 
 
