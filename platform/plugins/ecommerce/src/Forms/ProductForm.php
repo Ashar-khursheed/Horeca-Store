@@ -173,7 +173,7 @@ class ProductForm extends FormAbstract
                 // Script to open the media upload modal when the user clicks on the field
 
         }
-
+       
         elseif ( $productspec)
         {
 
@@ -320,7 +320,7 @@ class ProductForm extends FormAbstract
                             'value' => old('product_collections', $selectedProductCollections),
                         ]);
                     })
-
+             
                     ->add('tag', TagField::class, [
                         'label' => trans('plugins/ecommerce::products.form.tags'),
                         'value' => $tags,
@@ -347,13 +347,13 @@ class ProductForm extends FormAbstract
                         'value' => $frequently_bought_together, // fetch the value from the request or model
                     ])
 
-
+         
 
                 ->add('google_shopping_category', 'text', ['label' => 'Google Shopping / Google Product Category'])
 
 
                 ->add('google_shopping_mpn', 'text', ['label' => 'Google Shopping / MPN'])
-
+            
 
 
                     ->setBreakFieldPoint('status');
@@ -768,7 +768,7 @@ class ProductForm extends FormAbstract
                     'value' => old('product_collections', $selectedProductCollections),
                 ]);
             })
-
+          
             ->when(EcommerceHelper::isTaxEnabled(), function () {
                 $taxes = Tax::query()->orderBy('percentage')->get()->pluck('title_with_percentage', 'id')->all();
 
@@ -826,7 +826,7 @@ class ProductForm extends FormAbstract
                 ],
             ])
 
-
+         
                     ->add('frequently_bought_together', TagField::class, [
                         'label' => trans('plugins/ecommerce::products.form.frequently_bought_together'),
                         'attr' => [
@@ -837,11 +837,11 @@ class ProductForm extends FormAbstract
                         'value' => $frequently_bought_together, // Pass existing values to the field
                     ])
 
-
+        
             ->add('google_shopping_category', 'text', ['label' => 'Google Shopping / Google Product Category'])
-
+    
             ->add('box_quantity', 'number', ['label' => 'Box Quantity'])
-
+           
             ->add('product_label', 'text', ['label' => 'Product Label'])
 
 
