@@ -496,9 +496,9 @@
 							</div>
 
 							<div class="mb-3">
-								<input type="hidden" id="pricing_initial_approval_status" name="initial_approval_status">
-								<label for="pricing_approval_status" class="form-label">Approval Status</label>
-								<select class="form-select" id="pricing_approval_status" name="approval_status">
+								<input type="hidden" id="graphics_initial_approval_status" name="initial_approval_status">
+								<label for="graphics_approval_status" class="form-label">Approval Status</label>
+								<select class="form-select" id="graphics_approval_status" name="approval_status">
 									@foreach ($approvalStatuses as $value => $label)
 									<option value="{{ $value }}">{{ $label }}</option>
 									@endforeach
@@ -506,8 +506,8 @@
 							</div>
 
 							<div class="mb-3">
-								<label for="pricing_remarks" class="form-label">Remarks</label>
-								<textarea class="form-select" id="pricing_remarks" name="remarks"></textarea>
+								<label for="graphics_remarks" class="form-label">Remarks</label>
+								<textarea class="form-select" id="graphics_remarks" name="remarks"></textarea>
 							</div>
 
 							<button type="submit" class="btn btn-primary">Submit</button>
@@ -961,6 +961,16 @@
 	});
 </script>
 <script>
+	// Function to update the "required" attribute based on approval status
+	function updateGraphicsRemarksRequirement() {
+		const graphicsAprovalStatus = $('#graphics_approval_status');
+		const graphicsRemarks = $('#graphics_remarks');
+		if (graphicsAprovalStatus.val() === 'rejected') { // Replace 'rejected' with the actual value for rejection
+			graphicsRemarks.attr('required', 'required');
+		} else {
+			graphicsRemarks.removeAttr('required');
+		}
+	}
 	$(document).on('click', '#edit_graphics_modal', function () {
 		/* Get the product data from the button's data-product attribute */
 		const productData = $(this).attr('data-product');
@@ -1074,7 +1084,16 @@
 		} else {
 			$('#document-container').append('<p>No documents available.</p>');
 		}
+		$('#graphics_initial_approval_status').val(product.approval_status);
+		$('#graphics_approval_status').val(product.approval_status);
+		$('#graphics_remarks').val(product.remarks);
+
+		// Initial check when the page loads
+		updateGraphicsRemarksRequirement();
 	});
+
+	// Update requirement whenever the approval status changes
+	$('#graphics_approval_status').on('change', updateGraphicsRemarksRequirement);
 </script>
 
 </body>
