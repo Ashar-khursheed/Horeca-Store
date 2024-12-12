@@ -12,6 +12,7 @@
 */
 use Botble\Ecommerce\Http\Controllers\TempProductController;
 use Botble\Ecommerce\Http\Controllers\TempProductStatusController;
+use Botble\Ecommerce\Http\Controllers\TempContentController;
 use Botble\Ecommerce\Http\Controllers\ProductController;
 use Botble\Ecommerce\Http\Controllers\DocumentController;
 use Botble\Base\Facades\AdminHelper;
@@ -35,6 +36,11 @@ Route::post('temp-products/approve', [TempProductController::class, 'approveChan
 Route::get('ecommerce/temp-products-status', [TempProductStatusController::class, 'index'])->name('ecommerce/temp-products-status.index');
 Route::post('ecommerce/temp-products-status/pricing-approve', [TempProductStatusController::class, 'approvePricingChanges'])->name('temp-products.pricing_approve');
 Route::post('ecommerce/temp-products-status/approve', [TempProductStatusController::class, 'approveChanges'])->name('temp-products.approve');
+
+
+Route::get('ecommerce/temp-products-content', [TempContentController::class, 'index'])->name('ecommerce/temp-product-content.index');
+Route::post('ecommerce/temp-products-content/pricing-approve', [TempContentController::class, 'approvePricingChanges'])->name('temp-product.pricing_approve');
+Route::post('ecommerce/temp-products-content/approve', [TempContentController::class, 'approveChanges'])->name('temp-products.approve');
 
 Route::post('/delete-document', [DocumentController::class, 'deleteDocument'])
      ->name('document.delete');
