@@ -53,6 +53,10 @@ Route::post('/forgot-password', [ForgotPasswordApiController::class, 'sendResetL
 
 
 Route::middleware('auth:sanctum')->get('/customer-reviews', [UserReviewApiController::class, 'getCustomerReviews']);
+Route::middleware('auth:sanctum')->post('/add-customer-reviews', [UserReviewApiController::class, 'createReview']);
+Route::middleware('auth:sanctum')->put('/customer-reviews-update/{id}', [UserReviewApiController::class, 'updateReview']);
+Route::middleware('auth:sanctum')->delete('/customer-reviews-delete/{id}', [UserReviewApiController::class, 'deleteReview']);
+
 
 Route::middleware('auth:sanctum')->post('/save-for-later', [SaveForLaterController::class, 'saveForLater']);
 Route::middleware('auth:sanctum')->get('/show-save-for-later', [SaveForLaterController::class, 'showSaveForLater']);

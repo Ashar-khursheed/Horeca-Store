@@ -714,6 +714,16 @@ class EcommerceServiceProvider extends ServiceProvider
                     'url' => fn () => route('ecommerce/temp-products-status.index'),
                     'permissions' => ['ecommerce::partials.temp-product-status'], // Specify the permissions here
                 ])
+
+                ->registerItem([
+                    'id' => 'cms-plugins-ecommerce::partials.temp-product-content',
+                    'priority' => 14000,
+                    'parent_id' => 'cms-plugins-ecommerce::partials',
+                    'name' => 'Product Content Status',
+                    'icon' => 'ti ti-report-analytics',
+                    'url' => fn () => route('ecommerce/temp-product-content.index'),
+                    'permissions' => ['ecommerce::partials.temp-product-content'], // Specify the permissions here
+                ])
                 // ->registerItem([
                 //     'id' => 'cms-plugins-ecommerce::partials.upload-specifications', // Unique identifier for the menu item
                 //     'priority' => 1300, // Adjust this value as needed for ordering in the menu
