@@ -142,7 +142,9 @@
 										data-description="{{ $tempContentProduct->description }}"
 										data-content="{{ $tempContentProduct->content }}"
 										data-status="{{ $tempContentProduct->status }}"
-										data-approval-status="{{ $tempContentProduct->approval_status }}"></button>
+										data-approval-status="{{ $tempContentProduct->approval_status }}"
+										data-productid="{{ $tempContentProduct->product_id }}">
+									</button>
 									</td>
 								</tr>
 								@endforeach
@@ -421,7 +423,7 @@
 										<h6>Product ID: {{ $tempContentProduct->product_id }}</h6>
 										<h4>{{ $tempContentProduct->name }}</h4>
 									</div>
-								
+
 									{{-- <div class="product-description">
 										<label for="description-{{ $tempContentProduct->id }}">Change Description:</label>
 										<textarea id="description-{{ $tempContentProduct->id }}" class="editor" name="description[{{ $tempContentProduct->id }}]">
@@ -435,7 +437,7 @@
 											<div class="editor-container__toolbar" id="editor-toolbar"></div>
 											<div class="editor-container__editor-wrapper">
 												<div class="editor-container__editor"><div id="editor">
-													
+
 													<div id="product-description"></div>
 
 												</div></div>
@@ -456,7 +458,7 @@
 											<div class="editor-container__toolbar" id="editor-toolbar1"></div>
 											<div class="editor-container__editor-wrapper">
 												<div class="editor-container__editor"><div id="editor1">
-													
+
 													<div id="product-content"></div>
 
 												</div></div>
@@ -471,8 +473,8 @@
 										</div>
 									</div>
 									 --}}
-									
-									  
+
+
 									<div class="product-content">
 										<label for="content-{{ $tempContentProduct->id }}">Change Content:</label>
 										<textarea id="description-{{ $tempContentProduct->id }}" class="editor" name="content[{{ $tempContentProduct->id }}]">
@@ -488,24 +490,24 @@
 										</select>
 									</div>
 									<div class="edit-button-container">
-										<button type="button" class="edit-icon" data-toggle="modal" data-target="#editProductModal" 
+										<button type="button" class="edit-icon" data-toggle="modal" data-target="#editProductModal"
 											data-id="{{ $tempContentProduct->id }}"
 											data-name="{{ $tempContentProduct->name }}"
 											data-description="{{ $tempContentProduct->description }}"
 											data-content="{{ $tempContentProduct->content }}"
 											data-status="{{ $tempContentProduct->status }}"
 											data-approval-status="{{ $tempContentProduct->approval_status }}">
-											
+
 										</button>
 									</div>
 								</div>
 							@endforeach
 						</div>
-					
+
 						<button type="submit" class="btn btn-success" id="save-changes-btn">Save Approval Changes</button>
 					</form>
-					
-					
+
+
 				</div>
 			</div>
 		</div>
@@ -585,7 +587,14 @@
 	<script src="https://cdn.ckeditor.com/ckeditor5-premium-features/44.0.0/ckeditor5-premium-features.umd.js" crossorigin></script>
 		<!-- For Product Description -->
 		<script>
-						const {
+
+		$(document).ready(function () {
+		// Edit Product button click
+			$(document).on('click', '.edit-icon', function () {
+
+
+
+					const {
 					DecoupledEditor,
 					Plugin,
 					ButtonView,
@@ -637,7 +646,14 @@
 				 * Read more: https://ckeditor.com/docs/ckeditor5/latest/api/module_collaboration-core_config-RealTimeCollaborationConfig.html
 				 */
 				// const DOCUMENT_ID = '12346';
-				const DOCUMENT_ID = '{{ $tempContentProduct->product_id }}';
+
+
+
+
+				 const DOCUMENT_ID = "'"+$(this).data('productid')+"'";
+				console.log($(this).data('productid'));
+
+
 				const CLOUD_SERVICES_TOKEN_URL =
 					'https://124068.cke-cs.com/token/dev/ff1755ae0a1f80bc0c7eff88a367666925e5d9dc5b87e982947f42b43863?limit=10';
 				const CLOUD_SERVICES_WEBSOCKET_URL = 'wss://124068.cke-cs.com/ws';
@@ -705,9 +721,9 @@
 						return super.destroy();
 					}
 				}
-                const productDescription = '{{ $tempContentProduct->description }}';
 
 
+				const productDescription = $(this).data('description');
 				const editorConfig = {
 					toolbar: {
 						items: [
@@ -955,6 +971,8 @@
 						);
 					}
 				}
+			});
+		});
 
 	</script>
 
@@ -1490,7 +1508,6 @@
 			$('#video-container').append(videoElement);
 		});
 
-
 		/* Clear the existing documents in the container */
 		$('#document-container').empty();
 
@@ -1534,18 +1551,16 @@
 	$('#graphics_approval_status').on('change', updateGraphicsRemarksRequirement);
 </script>
 
-
-
 <style>
 
 	@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400;1,700&display=swap');
-	
+
 	@media print {
 		body {
 			margin: 0 !important;
 		}
 	}
-	
+
 	.modal-dialog.modal-lg.content-model {
     max-width: 70% !important;
 }
@@ -1557,32 +1572,32 @@
 		margin-left: auto;
 		margin-right: auto;
 	}
-	
+
 	.main-container .presence {
 		margin-bottom: 8px;
 	}
-	
+
 	.ck-content {
 		font-family: 'Lato';
 		line-height: 1.6;
 		word-break: break-word;
 	}
-	
+
 	.editor-container__editor-wrapper {
 		display: flex;
 		width: fit-content;
 	}
-	
+
 	.editor-container_document-editor {
 		border: 1px solid var(--ck-color-base-border);
 	}
-	
+
 	.editor-container_document-editor .editor-container__toolbar {
 		display: flex;
 		position: relative;
 		box-shadow: 0 2px 3px hsla(0, 0%, 0%, 0.078);
 	}
-	
+
 	.editor-container_document-editor .editor-container__toolbar > .ck.ck-toolbar {
 		flex-grow: 1;
 		width: 0;
@@ -1592,20 +1607,20 @@
 		border-left: 0;
 		border-right: 0;
 	}
-	
+
 	.editor-container_document-editor .editor-container__editor-wrapper {
 		max-height: var(--ckeditor5-preview-height);
 		min-height: var(--ckeditor5-preview-height);
 		overflow-y: scroll;
 		background: var(--ck-color-base-foreground);
 	}
-	
+
 	.editor-container_document-editor .editor-container__editor {
 		margin-top: 28px;
 		margin-bottom: 28px;
 		height: 100%;
 	}
-	
+
 	.editor-container_document-editor .editor-container__editor .ck.ck-editor__editable {
 		box-sizing: border-box;
 		min-width: calc(210mm + 2px);
@@ -1620,11 +1635,11 @@
 		margin-left: 72px;
 		margin-right: 72px;
 	}
-	
+
 	.editor-container_include-annotations .editor-container__editor .ck.ck-editor__editable {
 		margin-right: 0;
 	}
-	
+
 	.editor-container__sidebar {
 		min-width: var(--ckeditor5-preview-sidebar-width);
 		max-width: var(--ckeditor5-preview-sidebar-width);
@@ -1632,33 +1647,33 @@
 		margin-left: 10px;
 		margin-right: 10px;
 	}
-	
+
 	.revision-history {
 		display: none;
 	}
-	
+
 	.revision-history__wrapper {
 		display: flex;
 	}
-	
+
 	.revision-history__wrapper .ck.ck-editor {
 		margin: 0;
 		width: 795px;
 	}
-	
+
 	.revision-history__wrapper .revision-history__sidebar {
 		border: 1px solid var(--ck-color-base-border);
 		border-left: 0;
 		width: var(--ckeditor5-preview-sidebar-width);
 		min-height: 100%;
 	}
-	
+
 	.revision-history__wrapper .revision-history__sidebar .ck-revision-history-sidebar {
 		height: 100%;
 	}
-	
+
 		</style>
-	
+
 </body>
 
 @endsection

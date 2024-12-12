@@ -41,6 +41,9 @@ use App\Http\Controllers\API\ApiResetPasswordController;
 use App\Http\Controllers\API\SaveForLaterController;
 use App\Http\Controllers\CartController; // Adjust if the controller name is different
 use App\Http\Controllers\API\CountryController;
+ use App\Http\Controllers\API\OrderTrackingController;
+
+Route::get('order-tracking', [OrderTrackingController::class, 'trackOrder']);
 
 
 Route::get('/countries', [CountryController::class, 'index']);
