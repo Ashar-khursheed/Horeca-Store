@@ -31,6 +31,7 @@ use Botble\Ecommerce\Http\Controllers\EliteShipmentController;
 
 Route::get('temp-products', [TempProductController::class, 'index'])->name('temp-products.index');
 Route::post('temp-products/pricing-approve', [TempProductController::class, 'approvePricingChanges'])->name('temp-products.admin_pricing_approve');
+Route::post('temp-products/graphics-approve', [TempProductController::class, 'approveGraphicsChanges'])->name('temp-products.admin_graphics_approve');
 Route::post('temp-products/approve', [TempProductController::class, 'approveChanges'])->name('temp-products.approve');
 
 Route::get('ecommerce/temp-products-status', [TempProductStatusController::class, 'index'])->name('ecommerce/temp-products-status.index');

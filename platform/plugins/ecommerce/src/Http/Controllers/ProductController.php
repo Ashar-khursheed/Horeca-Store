@@ -685,7 +685,7 @@ class ProductController extends BaseController
     {
         // dd($request->discount);
         // Get the currently authenticated user
-        $user = Auth::user();
+        $userId = Auth::id();
 
         // Check if the product exists in ec_products
         $product = Product::find($id);
@@ -698,9 +698,8 @@ class ProductController extends BaseController
             'video' => 'nullable|mimes:mp4,avi,mov,wmv|max:51200', // Max size of 50 MB
         ]);
 
-
-        // Check if the user has role ID 18 (user role)
-        if ($user && DB::table('role_users')->where('user_id', $user->id)->where('role_id',18)->exists()) {
+        /* Check if the user has role ID 18 (Copywriter) */
+        if ($userId && DB::table('role_users')->where('user_id', $userId)->where('role_id',18)->exists()) {
             // Create a copy in temp_products
             DB::table('temp_products')->insert([
                 'product_id' => $product->id, // Foreign key reference to ec_products
@@ -714,116 +713,32 @@ class ProductController extends BaseController
             return redirect()->route('products.index')->with('success', 'Product update request submitted and saved for approval.');
         }
 
-
-        // Check if the user has role ID 18 (user role)
-        if ($user && DB::table('role_users')->where('user_id', $user->id)->where('role_id',19)->exists()){
-            // Update the product directly in ec_products
-
-            // $request->validate([
-            //     'documents.*' => 'file|mimes:pdf,doc,docx|max:2048',
-            // ]);
-
-            // $documents = json_decode($product->documents, true) ?? [];
-
-            // if ($request->hasFile('documents')) {
-            //     foreach ($request->file('documents') as $document) {
-            //         $path = $document->store('products/documents', 'public');
-            //         $documents[] = $path;
-            //     }
-            // }
-
-            // $this->validate($request, [
-            //     'documents.*' => 'required|file|mimes:pdf,doc,docx|max:2048',
-            //     'titles.*' => 'nullable|string|max:255',
-            // ]);
-
-            // $documentsPath = storage_path('app/public/products/documents');
-
-            // // Check if the directory exists, if not, create it
-            // if (!is_dir($documentsPath)) {
-            //     mkdir($documentsPath, 0775, true);
-            // }
-
-            // $documents = [];
-            // $fixedTitles = ['Document 1', 'Document 2', 'Document 3', 'Document 4'];
-
-            // if ($request->hasFile('documents')) {
-            //     foreach ($request->file('documents') as $index => $document) {
-            //         // Save each document to storage
-            //         $path = $document->store('products/documents', 'public');
-
-            //         // Assign title based on the index
-            //         if ($index < 4) {
-            //             $title = $fixedTitles[$index]; // Fixed titles for the first four documents
-            //         } else {
-            //             $title = $request->titles[$index] ?: 'Untitled'; // Custom title or default
-            //         }
-
-            //         // Store the title and path as an associative array
-            //         $documents[] = [
-            //             'title' => $title,
-            //             'path' => $path,
-            //         ];
-            //     }
-            // }
-
-            // $product->documents = json_encode($documents);
-
-              // Validate the incoming request
-                // $this->validate($request, [
-                //     'documents.*' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
-                //     'titles.*' => 'nullable|string|max:255',
-                // ]);
-
-                // // Load existing documents
-                // $existingDocuments = json_decode($product->documents, true) ?? [];
-
-                // $documentsPath = storage_path('app/public/products/documents');
-
-                // // Check if the directory exists, if not, create it
-                // if (!is_dir($documentsPath)) {
-                //     mkdir($documentsPath, 0775, true);
-                // }
-
-                // // Initialize documents array with existing documents
-                // $documents = $existingDocuments;
-
-                // // Handle new document uploads
-                // if ($request->hasFile('documents')) {
-                //     foreach ($request->file('documents') as $index => $document) {
-                //         // Store the new document
-                //         $path = $document->store('products/documents', 'public');
-
-                //         // Determine the title for the document
-                //         if ($index < 4) {
-                //             $title = 'Document ' . ($index + 1); // Fixed titles for the first four documents
-                //         } else {
-                //             $title = $request->titles[$index] ?? 'Untitled'; // Custom title or default
-                //         }
-
-                //         // Add the new document to the array
-                //         $documents[] = [
-                //             'title' => $title,
-                //             'path' => $path,
-                //         ];
-                //     }
-                // }
-
-                // // Save the updated documents as JSON in the product
-                // $product->documents = json_encode($documents);
-
-
+        /* Check if the user has role ID 19 (Graphic Designer) */
+        else if ($userId && DB::table('role_users')->where('user_id', $userId)->where('role_id',19)->exists()) {
+            if ($product) {  // Check if the product exists
                 // Validate the incoming request
+                // dd($request->all());
                 $this->validate($request, [
                     'documents.*' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
                     'titles.*' => 'nullable|string|max:255',
                 ]);
 
+                $tempProduct = TempProduct::where('created_by_id', auth()->id())->where('role_id', 19)->where('approval_status', 'in-process')->first();
+                if(!$tempProduct) {
+                    $tempProduct = new TempProduct();
+                }
+                $tempProduct->name = $product->name;
+                $tempProduct->sku = $product->sku;
+                $tempProduct->created_by_id = $userId;
+                $tempProduct->created_at = now();
+                $tempProduct->updated_at = now();
+                $tempProduct->product_id = $product->id;
+                $tempProduct->role_id = 19;
+                $tempProduct->approval_status = isset($request->in_process) && $request->in_process==1 ? 'in-process' : 'pending';
+
                 // Load existing documents
                 $existingDocuments = json_decode($product->documents, true) ?? [];
-
                 $documentsPath = storage_path('app/public/products/documents');
-
                 // Check if the directory exists, if not, create it
                 if (!is_dir($documentsPath)) {
                     mkdir($documentsPath, 0775, true);
@@ -831,7 +746,6 @@ class ProductController extends BaseController
 
                 // Initialize documents array with existing documents
                 $documents = $existingDocuments;
-
                 // Handle new document uploads
                 if ($request->hasFile('documents')) {
                     foreach ($request->file('documents') as $index => $document) {
@@ -865,128 +779,63 @@ class ProductController extends BaseController
                 }
 
                 // Save the updated documents as JSON in the product
-                $product->documents = json_encode($documents);
-                // $product->handle = $request->input('handle');
-                // $product->variant_grams = $request->input('variant_grams');
-                // $product->variant_inventory_tracker = $request->input('variant_inventory_tracker');
-                // $product->variant_inventory_quantity = $request->input('variant_inventory_quantity');
-                // $product->variant_inventory_policy = $request->input('variant_inventory_policy');
-                // $product->variant_fulfillment_service = $request->input('variant_fulfillment_service');
-
-                // $product->variant_barcode = $request->input('variant_barcode');
-                // $product->gift_card = $request->input('gift_card');
-                // $product->seo_title = $request->input('seo_title');
-                // $product->seo_description = $request->input('seo_description');
+                $tempProduct->documents = json_encode($documents);
 
 
+                /* Manage Video */
+                $videoPaths = [];
 
-
-
-             // Decode the JSON data for compare_type and compare_products
-                // $compareTypes = $product->compare_type ? json_decode($product->compare_type, true) : [];
-                // $compareProducts = $product->compare_products ? json_decode($product->compare_products, true) : [];
-
-
-
-                        $product->frequently_bought_together = $request->input('frequently_bought_together');
-
-                // $product->google_shopping_gender = $request->input('google_shopping_gender');
-                // $product->google_shopping_age_group = $request->input('google_shopping_age_group');
-                $product->google_shopping_mpn = $request->input('google_shopping_mpn');
-                // $product->google_shopping_condition = $request->input('google_shopping_condition');
-                // $product->google_shopping_custom_product = $request->input('google_shopping_custom_product');
-                // $product->google_shopping_custom_label_0 = $request->input('google_shopping_custom_label_0');
-                // $product->google_shopping_custom_label_1 = $request->input('google_shopping_custom_label_1');
-                // $product->google_shopping_custom_label_2 = $request->input('google_shopping_custom_label_2');
-                // $product->google_shopping_custom_label_3 = $request->input('google_shopping_custom_label_3');
-                // $product->google_shopping_custom_label_4 = $request->input('google_shopping_custom_label_4');
-                $product->box_quantity = $request->input('box_quantity');
-                // $product->technical_table = $request->input('technical_table');
-                // $product->technical_spec = $request->input('technical_spec');
-                $product->minimum_order_quantity = $request->input('minimum_order_quantity');
-                $product->maximum_order_quantity = $request->input('maximum_order_quantity');
-                $product->quantity = $request->input('quantity');
-                // if ($request->filled('video_url')) {
-                //     $product->video_url = $request->video_url;
-                // }
-
-                // Handle file upload
-                // if ($request->hasFile('video')) {
-                //     $path = $request->file('video')->store('videos', 'public');
-                //     $product->video_path = $path;
-                // }
-
-
-                // Additional processing
-                $product->status = $request->input('status');
-                if (EcommerceHelper::isEnabledSupportDigitalProducts() && $productType = $request->input('product_type')) {
-                    $product->product_type = $productType;
-                }
-                $product = $service->execute($request, $product);
-
-                $storeProductTagService->execute($request, $product);
-
-                $storeProductTypesService->execute($request, $product);
-
-
-
-                // Handle product variations and attributes
-                $addedAttributes = $request->input('added_attributes', []);
-                if ($request->input('is_added_attributes') == 1 && $addedAttributes) {
-                    $storeAttributesOfProductService->execute(
-                    $product,
-                    array_keys($addedAttributes),
-                    array_values($addedAttributes)
-                );
-
-                $variation = ProductVariation::query()->create([
-                    'configurable_product_id' => $product->id,
-                ]);
-
-                new CreatedContentEvent(PRODUCT_VARIATIONS_MODULE_SCREEN_NAME, request(), $variation);
-
-                foreach ($addedAttributes as $attribute) {
-                    ProductVariationItem::query()->create([
-                        'attribute_id' => $attribute,
-                        'variation_id' => $variation->id,
-                    ]);
+                // Check if there are any uploaded videos
+                if ($request->hasFile('videos')) {
+                    foreach ($request->file('videos') as $video) {
+                        // Store the video and get the path
+                        $videoPaths[] = $video->store('videos', 'public');
+                    }
                 }
 
-                $variation = $variation->toArray();
-                $variation['variation_default_id'] = $variation['id'];
-                $variation['sku'] = $product->sku;
-                $variation['auto_generate_sku'] = true;
-                $variation['images'] = array_filter((array) $request->input('images', []));
+                // Retrieve existing video paths
+                $existingVideos = is_string($product->video_path)
+                    ? json_decode($product->video_path, true) // Decode if it's a JSON string
+                    : (is_array($product->video_path) ? $product->video_path : []); // Already an array
 
-                $this->postSaveAllVersions(
-                    [$variation['id'] => $variation],
-                    $product->id,
-                    $this->httpResponse()
-                );
+                // Handle deleted videos
+                if ($request->has('deleted_videos')) {
+                    $deletedVideos = explode(',', $request->input('deleted_videos'));
+
+                    // Ensure $existingVideos is an array
+                    $existingVideos = $existingVideos ?? [];
+
+                    // Filter existing videos
+                    $existingVideos = array_filter($existingVideos, fn($video) => !in_array($video, $deletedVideos));
+                }
+
+                // Merge with newly uploaded video paths
+                $allVideos = array_merge($existingVideos, $videoPaths);
+                $allVideos = array_values(array_unique($allVideos)); // Ensure unique paths
+
+                // Encode the final paths as JSON
+                $tempProduct->video_path = json_encode($allVideos, JSON_UNESCAPED_SLASHES);
+
+                $images = [];
+
+                if ($imagesInput = $request->input('images', [])) {
+                    $images = array_values(array_filter((array) $imagesInput));
+                }
+
+                $tempProduct->images = json_encode($images);
+
+                $tempProduct->save();
             }
-
-            // Handle grouped products
-            if ($request->has('grouped_products')) {
-                GroupedProduct::createGroupedProducts(
-                    $product->id,
-                    array_map(function ($item) {
-                        return [
-                            'id' => $item,
-                            'qty' => 1,
-                        ];
-                    }, array_filter(explode(',', $request->input('grouped_products', ''))))
-                );
-            }
-
-            $this->saveSpecifications($product, $request->specs);
-
+            return redirect()->route('products.index')->with('success', 'Product update request submitted and saved for approval.');
             // Return success response
-            return $this->httpResponse()
-                ->setPreviousUrl(route('products.index'))
-                ->setNextUrl(route('products.edit', $product->id))
-                ->withUpdatedSuccessMessage();
+            // return $this->httpResponse()
+            //     ->setPreviousUrl(route('products.index'))
+            //     ->setNextUrl(route('products.edit', $product->id))
+            //     ->withUpdatedSuccessMessage();
         }
-        else if(auth()->user() && DB::table('role_users')->where('user_id', auth()->user()->id)->where('role_id', 22)->exists())
+
+        /* Check if the user has role ID 22 (Pricing) */
+        else if($userId && DB::table('role_users')->where('user_id', $userId)->where('role_id', 22)->exists())
         {
             // Validate incoming request data
             $this->validate($request, [
@@ -1052,7 +901,10 @@ class ProductController extends BaseController
                 $tempProduct->save();
             }
             return redirect()->route('products.index')->with('success', 'Product update request submitted and saved for approval.');
-        } else {
+        }
+
+        /* Default User */
+        else {
             // Validate incoming request data
             $this->validate($request, [
                 // Group 0 Validation
@@ -1404,14 +1256,7 @@ class ProductController extends BaseController
                 ->setNextUrl(route('products.edit', $product->id))
                 ->withUpdatedSuccessMessage();
         }
-
-
     }
-
-
-
-
-
 
     public function show(Product $product)
     {

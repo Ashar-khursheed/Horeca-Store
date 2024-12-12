@@ -140,12 +140,13 @@ class ProductForm extends FormAbstract
                     ->addAfter('brand_id', 'sku', TextField::class, TextFieldOption::make()->label(trans('plugins/ecommerce::products.sku')));
          }
 
-
-
         else if ($hasGraphicsRole) {
-
-              $this
-              ->add('name', TextField::class, NameFieldOption::make()->required()->toArray())
+            $this
+            ->add('name', TextField::class, array_merge(NameFieldOption::make()->toArray(), [
+               'attr' => [
+                  'readonly' => true, // Disable the field
+               ],
+            ]))
             ->add('images[]', MediaImagesField::class, [
                 'label' => trans('plugins/ecommerce::products.form.image'),
                 'values' => $this->getModel() ? $this->getModel()->images : [],
@@ -154,26 +155,33 @@ class ProductForm extends FormAbstract
                     'class' => 'form-control media-upload-field', // Add a class for JavaScript targeting
                 ]
             ])
-            ->add('sku', TextField::class, TextFieldOption::make()->label(trans('plugins/ecommerce::products.sku')))
+            ->add('sku', TextField::class, array_merge(TextFieldOption::make()->label(trans('plugins/ecommerce::products.sku'))->toArray(), [
+               'attr' => [
+                  'readonly' => true, // Disable the field
+               ],
+            ]))
              ->addMetaBoxes([
-                    'Video' => [
-                        'title' => 'Product Videos',
-                        'content' => view('plugins/ecommerce::products.partials.video-upload', [
-                            // Decode the video paths JSON before passing to the view
-                            'videos' => !empty($this->getModel()->video_path) ? json_decode($this->getModel()->video_path, true) : [],
-                        ]),
-                        'priority' => 50,
-                    ],
-                ]);
-            // ->add('video', 'file', [
-            //     'label' => trans('Upload Video'), // Label for the field
-            //     'accept' => 'video/*', // Accept video files only
-            //     'maxFileSize' => 5000, // Max file size in kilobytes (5MB)
-            // ]);
-                // Script to open the media upload modal when the user clicks on the field
-
+                'Video' => [
+                    'title' => 'Product Videos',
+                    'content' => view('plugins/ecommerce::products.partials.video-upload', [
+                        // Decode the video paths JSON before passing to the view
+                        'videos' => !empty($this->getModel()->video_path) ? json_decode($this->getModel()->video_path, true) : [],
+                    ]),
+                ],
+            ])
+            ->addMetaBoxes([
+                'documents' => [
+                    'title' => 'Product Documents',
+                    'content' => view('plugins/ecommerce::products.partials.documents-form', [
+                        'documents' => $this->getModel()->documents ?? [], // Fetch existing documents if editing
+                    ]),
+                ],
+            ]);
+            $this->add(
+                'in_process', OnOffField::class, OnOffFieldOption::make()->label('Is Draft')->defaultValue(true)->toArray()
+            );
         }
-       
+
         elseif ( $productspec)
         {
 
@@ -320,7 +328,7 @@ class ProductForm extends FormAbstract
                             'value' => old('product_collections', $selectedProductCollections),
                         ]);
                     })
-             
+
                     ->add('tag', TagField::class, [
                         'label' => trans('plugins/ecommerce::products.form.tags'),
                         'value' => $tags,
@@ -347,13 +355,13 @@ class ProductForm extends FormAbstract
                         'value' => $frequently_bought_together, // fetch the value from the request or model
                     ])
 
-         
+
 
                 ->add('google_shopping_category', 'text', ['label' => 'Google Shopping / Google Product Category'])
 
 
                 ->add('google_shopping_mpn', 'text', ['label' => 'Google Shopping / MPN'])
-            
+
 
 
                     ->setBreakFieldPoint('status');
@@ -768,7 +776,7 @@ class ProductForm extends FormAbstract
                     'value' => old('product_collections', $selectedProductCollections),
                 ]);
             })
-          
+
             ->when(EcommerceHelper::isTaxEnabled(), function () {
                 $taxes = Tax::query()->orderBy('percentage')->get()->pluck('title_with_percentage', 'id')->all();
 
@@ -826,7 +834,7 @@ class ProductForm extends FormAbstract
                 ],
             ])
 
-         
+
                     ->add('frequently_bought_together', TagField::class, [
                         'label' => trans('plugins/ecommerce::products.form.frequently_bought_together'),
                         'attr' => [
@@ -837,11 +845,11 @@ class ProductForm extends FormAbstract
                         'value' => $frequently_bought_together, // Pass existing values to the field
                     ])
 
-        
+
             ->add('google_shopping_category', 'text', ['label' => 'Google Shopping / Google Product Category'])
-    
+
             ->add('box_quantity', 'number', ['label' => 'Box Quantity'])
-           
+
             ->add('product_label', 'text', ['label' => 'Product Label'])
 
 

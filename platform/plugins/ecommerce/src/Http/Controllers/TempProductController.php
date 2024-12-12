@@ -23,7 +23,7 @@ class TempProductController extends BaseController
 		// dd($tempPricingProducts->toArray());
 
 		$tempContentProducts = TempProduct::where('role_id', 18)->where('approval_status', 'pending')->get();
-		$tempGraphicsProducts = TempProduct::where('role_id', 19)->where('approval_status', 'pending')->get();
+		$tempGraphicsProducts = TempProduct::where('role_id', 19)->get();
 
 		$unitOfMeasurements = UnitOfMeasurement::pluck('name', 'id')->toArray();
 		$stores = Store::pluck('name', 'id')->toArray();
@@ -48,7 +48,6 @@ class TempProductController extends BaseController
 				'required_if:approval_status,rejected'
 			]
 		]);
-// dd($request->all());
 		$tempProduct = TempProduct::find($request->id);
 		$input = $request->all();
 		if($request->initial_approval_status=='pending' && $request->approval_status=='approved') {
@@ -126,13 +125,17 @@ class TempProductController extends BaseController
 			}
 			unset($input['_token'], $input['id'], $input['initial_approval_status'], $input['approval_status'], $input['margin'], $input['discount']);
 			$tempProduct->product->update($input);
-			$tempProduct->update(['approval_status' => $request->approval_status]);
+			$tempProduct->update([
+				'approval_status' => $request->approval_status,
+				'approved_by' => auth()->id()
+			]);
 		}
 
 		if($request->initial_approval_status=='pending' && $request->approval_status=='rejected') {
 			$tempProduct->update([
 				'approval_status' => $request->approval_status,
 				'rejection_count' => \DB::raw('rejection_count + 1'),
+				'approved_by' => auth()->id(),
 				'remarks' => $request->remarks
 			]);
 		}
@@ -142,6 +145,47 @@ class TempProductController extends BaseController
 			$input['discount'] = json_encode($input['discount']);
 			// dd($input);
 			$tempProduct->update($input);
+		}
+
+		return redirect()->route('temp-products.index')->with('success', 'Product changes approved and updated successfully.');
+	}
+
+	public function approveGraphicsChanges(Request $request)
+	{
+		logger()->info('approveGraphicsChanges method called.');
+		logger()->info('Request Data: ', $request->all());
+		$request->validate([
+			'approval_status' => 'required',
+			'remarks' => [
+				'required_if:approval_status,rejected'
+			]
+		]);
+		$tempProduct = TempProduct::find($request->id);
+		$input = $request->all();
+
+		if($request->initial_approval_status=='pending' && $request->approval_status=='approved') {
+			unset($input['_token'], $input['id'], $input['initial_approval_status'], $input['approval_status']);
+			$tempProduct->product->update([
+				'images' => $tempProduct->images,
+				'documents' => $tempProduct->documents,
+				'video_path' => $tempProduct->video_path,
+			]);
+			$tempProduct->update([
+				'approval_status' => $request->approval_status,
+				'approved_by' => auth()->id()
+			]);
+		}
+
+		if($request->initial_approval_status=='pending' && $request->approval_status=='rejected') {
+			$tempProduct->update([
+				'approval_status' => $request->approval_status,
+				'rejection_count' => \DB::raw('rejection_count + 1'),
+				'approved_by' => auth()->id(),
+				'remarks' => $request->remarks
+			]);
+		}
+
+		if($request->initial_approval_status=='pending' && ($request->approval_status=='pending' || $request->approval_status=='in-process')) {
 		}
 
 		return redirect()->route('temp-products.index')->with('success', 'Product changes approved and updated successfully.');
