@@ -700,16 +700,23 @@ class ProductController extends BaseController
 
         /* Check if the user has role ID 18 (Copywriter) */
         if ($userId && DB::table('role_users')->where('user_id', $userId)->where('role_id',18)->exists()) {
-            // Create a copy in temp_products
-            DB::table('temp_products')->insert([
-                'product_id' => $product->id, // Foreign key reference to ec_products
-                'name' => $request->input('name'),
-                'description' => $request->input('description'),
-                'content' => $request->input('content'),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            if ($product) {
+                $tempProduct = TempProduct::where('created_by_id', $userId)->where('role_id', 18)->where('approval_status', 'in-process')->first();
+                if(!$tempProduct) {
+                    $tempProduct = new TempProduct();
+                }
+                $tempProduct->name = $product->name;
+                $tempProduct->description = $product->description;
+                $tempProduct->content = $product->content;
+                $tempProduct->created_by_id = $userId;
+                $tempProduct->created_at = now();
+                $tempProduct->updated_at = now();
+                $tempProduct->product_id = $product->id;
+                $tempProduct->role_id = 18;
+                $tempProduct->approval_status = isset($request->in_process) && $request->in_process==1 ? 'in-process' : 'pending';
 
+                $tempProduct->save();
+            }
             return redirect()->route('products.index')->with('success', 'Product update request submitted and saved for approval.');
         }
 
@@ -827,11 +834,6 @@ class ProductController extends BaseController
                 $tempProduct->save();
             }
             return redirect()->route('products.index')->with('success', 'Product update request submitted and saved for approval.');
-            // Return success response
-            // return $this->httpResponse()
-            //     ->setPreviousUrl(route('products.index'))
-            //     ->setNextUrl(route('products.edit', $product->id))
-            //     ->withUpdatedSuccessMessage();
         }
 
         /* Check if the user has role ID 22 (Pricing) */

@@ -41,6 +41,16 @@ class TempProductStatusController extends BaseController
 				'rejected' => 'Rejected for Corrections',
 			];
 			return view('plugins/ecommerce::products.partials.product-status-graphics', compact('tempGraphicsProducts', 'approvalStatuses'));
+		} else if ($userRoleId == 18) {
+			// Fetch all temporary product changes
+			$tempContentProducts = TempProduct::where('role_id', $userRoleId)->where('created_by_id', auth()->id())->get();
+			$approvalStatuses = [
+				'in-process' => 'Content In Progress',
+				'pending' => 'Submitted for Approval',
+				'approved' => 'Ready to Publish',
+				'rejected' => 'Rejected for Corrections',
+			];
+			return view('plugins/ecommerce::products.partials.temp-product-status', compact('tempContentProducts', 'approvalStatuses'));
 		} else {
 			$tempContentProducts = TempProduct::where('role_id', 18)->where('approval_status', 'pending')->get();
 			$tempGraphicsProducts = TempProduct::where('role_id', 19)->where('approval_status', 'pending')->get();
