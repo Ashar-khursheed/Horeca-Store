@@ -381,7 +381,9 @@
 								<label for="pricing_approval_status" class="form-label">Approval Status</label>
 								<select class="form-select" id="pricing_approval_status" name="approval_status">
 									@foreach ($approvalStatuses as $value => $label)
-									<option value="{{ $value }}">{{ $label }}</option>
+										@if(in_array($value, ['pending', 'rejected']))
+											<option value="{{ $value }}">{{ $label }}</option>
+										@endif
 									@endforeach
 								</select>
 							</div>
@@ -464,7 +466,9 @@
 								<label for="content_approval_status" class="form-label">Approval Status</label>
 								<select class="form-select" id="content_approval_status" name="approval_status">
 									@foreach ($approvalStatuses as $value => $label)
-									<option value="{{ $value }}">{{ $label }}</option>
+										@if(in_array($value, ['pending', 'rejected']))
+											<option value="{{ $value }}">{{ $label }}</option>
+										@endif
 									@endforeach
 								</select>
 							</div>
@@ -529,7 +533,9 @@
 								<label for="graphics_approval_status" class="form-label">Approval Status</label>
 								<select class="form-select" id="graphics_approval_status" name="approval_status">
 									@foreach ($approvalStatuses as $value => $label)
-									<option value="{{ $value }}">{{ $label }}</option>
+										@if(in_array($value, ['pending', 'rejected']))
+											<option value="{{ $value }}">{{ $label }}</option>
+										@endif
 									@endforeach
 								</select>
 							</div>
@@ -1427,22 +1433,26 @@
 		/* Append videos to the video container */
 		const baseUrl1 = "{{asset('storage')}}";
 		$('#video-container').append('<h5>Videos</h5>');
-		videoArray.forEach(function (video) {
-			const videoElement = $('<div>', { class: 'uploaded-video mt-2' }).append(
-				$('<video>', {
-					width: 320,
-					height: 240,
-					controls: true,
-				}).append(
-					$('<source>', {
-						src: `${baseUrl1}/${video}`,
-						type: 'video/mp4',
-					})
-				),
+			if(videoArray.length > 0) {
+				videoArray.forEach(function (video) {
+					const videoElement = $('<div>', { class: 'uploaded-video mt-2' }).append(
+						$('<video>', {
+							width: 320,
+							height: 240,
+							controls: true,
+						}).append(
+							$('<source>', {
+								src: `${baseUrl1}/${video}`,
+								type: 'video/mp4',
+							})
+						),
 
-			);
-			$('#video-container').append(videoElement);
-		});
+					);
+					$('#video-container').append(videoElement);
+				});
+			} else {
+				$('#video-container').append('<p>No videos available.</p>');
+			}
 
 		/* Clear the existing documents in the container */
 		$('#document-container').empty();
@@ -1456,8 +1466,8 @@
 			documents = {};
 		}
 		/* Check if documents exist and append them */
+		$('#document-container').append('<h5>Existing Documents</h5>');
 		if (Object.keys(documents).length > 0) {
-			$('#document-container').append('<h5>Existing Documents</h5>');
 			const documentList = $('<ul>', { class: 'uploaded-docs' });
 
 			$.each(documents, function (key, document) {

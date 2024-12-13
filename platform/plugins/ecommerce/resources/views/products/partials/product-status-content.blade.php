@@ -149,9 +149,8 @@
 
 							<div class="mb-3">
 								<label for="content_remarks" class="form-label">Remarks</label>
-								<textarea class="form-select" id="content_remarks" name="remarks"></textarea>
+								<textarea class="form-select" id="content_remarks" name="remarks" readonly></textarea>
 							</div>
-
 							<button type="submit" class="btn btn-primary">Submit</button>
 						</div>
 					</form>

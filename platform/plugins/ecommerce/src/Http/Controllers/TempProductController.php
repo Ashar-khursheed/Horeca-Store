@@ -172,7 +172,8 @@ class TempProductController extends BaseController
 			]);
 			$tempProduct->update([
 				'approval_status' => $request->approval_status,
-				'approved_by' => auth()->id()
+				'approved_by' => auth()->id(),
+				'remarks' => $request->remarks
 			]);
 		}
 

@@ -730,7 +730,7 @@ class ProductController extends BaseController
                     'titles.*' => 'nullable|string|max:255',
                 ]);
 
-                $tempProduct = TempProduct::where('created_by_id', auth()->id())->where('role_id', 19)->where('approval_status', 'in-process')->first();
+                $tempProduct = TempProduct::where('created_by_id', auth()->id())->where('role_id', 19)->whereIn('approval_status', ['in-process', 'rejected'])->first();
                 if(!$tempProduct) {
                     $tempProduct = new TempProduct();
                 }
