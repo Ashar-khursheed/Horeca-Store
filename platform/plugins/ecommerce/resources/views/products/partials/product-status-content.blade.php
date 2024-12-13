@@ -90,7 +90,7 @@
 					</button>
 				</div>
 				<div class="modal-body">
-					<form action="{{ route('temp-products.admin_content_approve') }}" method="POST">
+					<form action="{{ route('temp-products.content_update') }}" method="POST">
 						@csrf
 						<div class="product-card">
 							<div class="product-header">

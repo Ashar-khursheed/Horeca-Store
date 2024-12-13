@@ -92,6 +92,47 @@ class TempProductStatusController extends BaseController
 		return redirect()->route('ecommerce/temp-products-status.index')->with('success', 'Product changes approved and updated successfully.');
 	}
 
+	public function updateGraphicsChanges(Request $request)
+	{
+		logger()->info('updateGraphicsChanges method called.');
+		logger()->info('Request Data: ', $request->all());
+		// $request->validate([
+		// 	'approval_status' => 'required',
+		// 	'remarks' => [
+		// 		'required_if:approval_status,rejected'
+		// 	]
+		// ]);
+
+		$tempProduct = TempProduct::find($request->id);
+		$input = $request->all();
+		if($tempProduct->approval_status=='in-process' || $tempProduct->approval_status=='rejected') {
+			$approvalStatus = isset($request->in_process) && $request->in_process==1 ? 'in-process' : 'pending';
+
+			$tempProduct->update(['approval_status' => $approvalStatus]);
+		}
+
+		return redirect()->route('ecommerce/temp-products-status.index')->with('success', 'Product changes approved and updated successfully.');
+	}
+
+	public function updateContentChanges(Request $request)
+	{
+		logger()->info('updateContentChanges method called.');
+		logger()->info('Request Data: ', $request->all());
+
+		$tempProduct = TempProduct::find($request->id);
+		$input = $request->all();
+		if($tempProduct->approval_status=='in-process' || $tempProduct->approval_status=='rejected') {
+			$approvalStatus = isset($request->in_process) && $request->in_process==1 ? 'in-process' : 'pending';
+
+			$tempProduct->update([
+				'approval_status' => $request->content,
+				'approval_status' => $approvalStatus
+			]);
+		}
+
+		return redirect()->route('ecommerce/temp-products-status.index')->with('success', 'Product changes approved and updated successfully.');
+	}
+
 
 	public function approveChanges(Request $request)
 	{

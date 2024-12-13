@@ -381,7 +381,7 @@
 								<label for="pricing_approval_status" class="form-label">Approval Status</label>
 								<select class="form-select" id="pricing_approval_status" name="approval_status">
 									@foreach ($approvalStatuses as $value => $label)
-										@if(in_array($value, ['pending', 'rejected']))
+										@if(in_array($value, ['approved', 'rejected']))
 											<option value="{{ $value }}">{{ $label }}</option>
 										@endif
 									@endforeach
@@ -466,7 +466,7 @@
 								<label for="content_approval_status" class="form-label">Approval Status</label>
 								<select class="form-select" id="content_approval_status" name="approval_status">
 									@foreach ($approvalStatuses as $value => $label)
-										@if(in_array($value, ['pending', 'rejected']))
+										@if(in_array($value, ['approved', 'rejected']))
 											<option value="{{ $value }}">{{ $label }}</option>
 										@endif
 									@endforeach
@@ -533,7 +533,7 @@
 								<label for="graphics_approval_status" class="form-label">Approval Status</label>
 								<select class="form-select" id="graphics_approval_status" name="approval_status">
 									@foreach ($approvalStatuses as $value => $label)
-										@if(in_array($value, ['pending', 'rejected']))
+										@if(in_array($value, ['approved', 'rejected']))
 											<option value="{{ $value }}">{{ $label }}</option>
 										@endif
 									@endforeach
@@ -638,7 +638,7 @@
 			$('#content_temp_id').val(id);
 
 			$('#content_initial_approval_status').val(approvalStatus);
-			$('#content_approval_status').val(approvalStatus);
+			// $('#content_approval_status').val(approvalStatus);
 			$('#content_content').val(content);
 			$('#content_remarks').val(remarks);
 
@@ -1109,7 +1109,7 @@
 		$('#pricing_variant_requires_shipping').val(product.variant_requires_shipping);
 		$('#pricing_refund').val(product.refund);
 		$('#pricing_initial_approval_status').val(product.approval_status);
-		$('#pricing_approval_status').val(product.approval_status);
+		// $('#pricing_approval_status').val(product.approval_status);
 		$('#pricing_remarks').val(product.remarks);
 
 		// Set checkbox values
@@ -1486,7 +1486,7 @@
 			$('#document-container').append('<p>No documents available.</p>');
 		}
 		$('#graphics_initial_approval_status').val(product.approval_status);
-		$('#graphics_approval_status').val(product.approval_status);
+		// $('#graphics_approval_status').val(product.approval_status);
 		$('#graphics_remarks').val(product.remarks);
 
 		// Initial check when the page loads
