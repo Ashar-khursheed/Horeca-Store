@@ -706,8 +706,8 @@ class ProductController extends BaseController
                     $tempProduct = new TempProduct();
                 }
                 $tempProduct->name = $product->name;
-                $tempProduct->description = $product->description;
-                $tempProduct->content = $product->content;
+                $tempProduct->description = $request->description;
+                $tempProduct->content = $request->content;
                 $tempProduct->created_by_id = $userId;
                 $tempProduct->created_at = now();
                 $tempProduct->updated_at = now();
