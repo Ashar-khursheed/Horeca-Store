@@ -700,7 +700,7 @@
 				}
 			}
 
-			const documentID = productID.toString();
+			const documentID = id.toString();
 			const productDescription = $(this).data('description');
 			const editorConfig = {
 				toolbar: {
