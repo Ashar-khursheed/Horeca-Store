@@ -9,7 +9,6 @@
 
 	<!-- Bootstrap CSS -->
 	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
-	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
 	<link rel="icon" type="image/png" href="https://ckeditor.com/assets/images/favicons/32x32.png" sizes="32x32">
 	<link rel="icon" type="image/png" href="https://ckeditor.com/assets/images/favicons/96x96.png" sizes="96x96">
 	<link rel="apple-touch-icon" type="image/png" href="https://ckeditor.com/assets/images/favicons/120x120.png" sizes="120x120">
@@ -141,12 +140,9 @@
 												data-name="{{ $tempContentProduct->name }}"
 												data-description="{{ $tempContentProduct->description }}"
 												data-content="{{ $tempContentProduct->content }}"
-												data-status="{{ $tempContentProduct->status }}"
 												data-approval_status="{{ $tempContentProduct->approval_status }}"
 												data-remarks="{{ $tempContentProduct->remarks }}"
-												data-product_id="{{ $tempContentProduct->product_id }}">
-												<i class="fas fa-pencil-alt"></i>
-											</button>
+												data-product_id="{{ $tempContentProduct->product_id }}"><i class="fas fa-pencil-alt"></i></button>
 											</td>
 										</tr>
 									@endif
@@ -560,6 +556,16 @@
 	<script src="https://cdn.ckeditor.com/ckeditor5-premium-features/44.0.0/ckeditor5-premium-features.umd.js" crossorigin></script>
 		<!-- For Product Description -->
 	<script>
+		// Function to update the "required" attribute based on approval status
+		function updateContentRemarksRequirement() {
+			const contentAprovalStatus = $('#content_approval_status');
+			const contentRemarks = $('#content_remarks');
+			if (contentAprovalStatus.val() === 'rejected') { // Replace 'rejected' with the actual value for rejection
+				contentRemarks.attr('required', 'required');
+			} else {
+				contentRemarks.removeAttr('required');
+			}
+		}
 		$(document).on('click', '#edit_content_modal', function () {
 			const {
 				DecoupledEditor,
@@ -615,12 +621,10 @@
 			var name = $(this).data('name');
 			var description = $(this).data('description');
 			var content = $(this).data('content');
-			var status = $(this).data('status');
 			var approvalStatus = $(this).data('approval_status');
 			var productID = $(this).data('product_id');
 			var remarks = $(this).data('remarks');
 
-console.log(content);
 			// Populate the modal fields
 			$('#content_temp_header_id').text(productID);
 			$('#content_temp_header_name').text(name);
@@ -696,7 +700,7 @@ console.log(content);
 				}
 			}
 
-			const documentID = productID.toString();
+			const documentID = id.toString();
 			const productDescription = $(this).data('description');
 			const editorConfig = {
 				toolbar: {
@@ -890,7 +894,6 @@ console.log(content);
 			};
 
 			configUpdateAlert(editorConfig);
-console.log(111, editorConfig);
 			DecoupledEditor.create(document.querySelector('#editor'), editorConfig).then(editor => {
 				document.querySelector('#editor-toolbar').appendChild(editor.ui.view.toolbar.element);
 
@@ -945,8 +948,12 @@ console.log(111, editorConfig);
 					);
 				}
 			}
+			// Initial check when the page loads
+			updateContentRemarksRequirement();
 		});
 
+		// Update requirement whenever the approval status changes
+		$('#content_approval_status').on('change', updateContentRemarksRequirement);
 	</script>
 
 	<!-- Bootstrap JS -->
@@ -1599,8 +1606,7 @@ console.log(111, editorConfig);
 	.revision-history__wrapper .revision-history__sidebar .ck-revision-history-sidebar {
 		height: 100%;
 	}
-
-		</style>
+</style>
 
 </body>
 
