@@ -22,7 +22,7 @@ class TempProductController extends BaseController
 
 		// dd($tempPricingProducts->toArray());
 
-		$tempContentProducts = TempProduct::where('role_id', 18)->where('approval_status', 'pending')->get();
+		$tempContentProducts = TempProduct::where('role_id', 18)->get();
 		$tempGraphicsProducts = TempProduct::where('role_id', 19)->get();
 
 		$unitOfMeasurements = UnitOfMeasurement::pluck('name', 'id')->toArray();
@@ -191,9 +191,9 @@ class TempProductController extends BaseController
 		return redirect()->route('temp-products.index')->with('success', 'Product changes approved and updated successfully.');
 	}
 
-
-	public function approveChanges(Request $request)
+	public function approveContentChanges(Request $request)
 	{
+		dd($request->all());
 		logger()->info('approveChanges method called.');
 		logger()->info('Request Data: ', $request->all());
 
