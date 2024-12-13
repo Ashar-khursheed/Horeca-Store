@@ -82,37 +82,91 @@ class UserReviewApiController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
+    // public function createReview(Request $request)
+    // {
+    //     $userId = Auth::id();
+
+    //     if (!$userId) {
+    //         return response()->json(['message' => 'User not authenticated.'], 401);
+    //     }
+
+    //     // Validate the incoming request
+    //     $request->validate([
+    //         'product_id' => 'required|exists:ec_products,id',
+    //         'star' => 'required|integer|min:1|max:5',
+    //         'comment' => 'required|string',
+    //         'images' => 'nullable|array',
+    //         'images.*' => 'url',
+    //     ]);
+
+    //     // Create the review
+    //     $review = Review::create([
+    //         'customer_id' => $userId,
+    //         'customer_name' => Auth::user()->name,
+    //         'customer_email' => Auth::user()->email,
+    //         'product_id' => $request->product_id,
+    //         'star' => $request->star,
+    //         'comment' => $request->comment,
+    //         'status' => 'pending', // Default status
+    //         'images' => $request->images ? json_encode($request->images) : null,
+    //     ]);
+
+    //     return response()->json(['message' => 'Review created successfully.', 'review' => $review], 201);
+    // }
+
     public function createReview(Request $request)
-    {
-        $userId = Auth::id();
+{
+    $userId = Auth::id();
 
-        if (!$userId) {
-            return response()->json(['message' => 'User not authenticated.'], 401);
+    if (!$userId) {
+        return response()->json(['message' => 'User not authenticated.', 'success' => false], 401);
+    }
+
+    // Validate request
+    $request->validate([
+        'product_id' => 'required|exists:ec_products,id',
+        'star' => 'required|integer|min:1|max:5',
+        'comment' => 'required|string',
+        'images' => 'nullable|array',
+        'images.*' => 'file|mimes:jpeg,png,jpg,gif|max:2048',
+    ]);
+
+    // Handle file uploads
+    $imageUrls = [];
+    try {
+        if ($request->has('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->storeAs('sssp-1', $image->getClientOriginalName(), 'public');
+                $imageUrls[] = asset("storage/sssp-1/{$image->getClientOriginalName()}");
+            }
         }
-
-        // Validate the incoming request
-        $request->validate([
-            'product_id' => 'required|exists:ec_products,id',
-            'star' => 'required|integer|min:1|max:5',
-            'comment' => 'required|string',
-            'images' => 'nullable|array',
-            'images.*' => 'url',
-        ]);
 
         // Create the review
         $review = Review::create([
             'customer_id' => $userId,
             'customer_name' => Auth::user()->name,
-            'customer_email' => Auth::user()->email,
             'product_id' => $request->product_id,
             'star' => $request->star,
             'comment' => $request->comment,
-            'status' => 'pending', // Default status
-            'images' => $request->images ? json_encode($request->images) : null,
+            'status' => 'pending',
+            'images' => !empty($imageUrls) ? json_encode($imageUrls) : null,
         ]);
 
-        return response()->json(['message' => 'Review created successfully.', 'review' => $review], 201);
+        if ($review) {
+            return response()->json([
+                'message' => 'Review successfully added',
+                'success' => true,
+                'review' => $review,
+            ], 201);
+        }
+
+        return response()->json(['message' => 'Review failed', 'success' => false], 500);
+
+    } catch (\Exception $e) {
+        return response()->json(['message' => 'Error occurred: ' . $e->getMessage(), 'success' => false], 500);
     }
+}
+
 
     /**
      * Update a specific review
