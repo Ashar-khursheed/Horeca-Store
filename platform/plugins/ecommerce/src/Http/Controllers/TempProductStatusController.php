@@ -50,7 +50,7 @@ class TempProductStatusController extends BaseController
 				'approved' => 'Ready to Publish',
 				'rejected' => 'Rejected for Corrections',
 			];
-			return view('plugins/ecommerce::products.partials.temp-product-status', compact('tempContentProducts', 'approvalStatuses'));
+			return view('plugins/ecommerce::products.partials.product-status-content', compact('tempContentProducts', 'approvalStatuses'));
 		} else {
 			$tempContentProducts = TempProduct::where('role_id', 18)->where('approval_status', 'pending')->get();
 			$tempGraphicsProducts = TempProduct::where('role_id', 19)->where('approval_status', 'pending')->get();
@@ -68,9 +68,9 @@ class TempProductStatusController extends BaseController
 		}
 	}
 
-	public function approvePricingChanges(Request $request)
+	public function updatePricingChanges(Request $request)
 	{
-		logger()->info('approvePricingChanges method called.');
+		logger()->info('updatePricingChanges method called.');
 		logger()->info('Request Data: ', $request->all());
 		// $request->validate([
 		// 	'approval_status' => 'required',

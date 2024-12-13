@@ -425,7 +425,7 @@
 			$('#pricing_unit_of_measurement_id').val(product.unit_of_measurement_id);
 			$('#pricing_variant_requires_shipping').val(product.variant_requires_shipping);
 			$('#pricing_refund').val(product.refund);
-			$('#pricing_initial_approval_status').val(product.approval_status);
+			// $('#pricing_initial_approval_status').val(product.approval_status);
 			// $('#pricing_approval_status').val(product.approval_status);
 			$('#pricing_remarks').val(product.remarks);
 
