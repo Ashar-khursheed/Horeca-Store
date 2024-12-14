@@ -28,6 +28,7 @@ class AddressController extends Controller
     
         return response()->json([
             'message' => 'Fetched addresses',
+             'success'=>true,
             'data' => $addresses
         ]);
     }
@@ -74,6 +75,7 @@ class AddressController extends Controller
     
             return response()->json([
                 'message' => 'Address created successfully.',
+                'success'=>true,
                 'data' => $address,
             ]);
         } catch (\Exception $e) {
@@ -104,7 +106,10 @@ class AddressController extends Controller
         $address->update($request->all());
         Log::info('Address updated: ', ['address' => $address]);
     
-        return response()->json(['message' => 'Address updated successfully.', 'data' => $address]);
+        return response()->json(
+            ['message' => 'Address updated successfully.', 
+              'success'=>true,
+            'data' => $address]);
     }
     
 
@@ -125,7 +130,8 @@ class AddressController extends Controller
         $address->delete();
         Log::info('Address deleted: ', ['id' => $id]);
     
-        return response()->json(['message' => 'Address deleted successfully']);
+        return response()->json(['message' => 'Address deleted successfully',
+          'success'=>true,]);
     }
     
 }
