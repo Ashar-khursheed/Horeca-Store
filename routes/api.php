@@ -42,9 +42,16 @@ use App\Http\Controllers\API\SaveForLaterController;
 use App\Http\Controllers\CartController; // Adjust if the controller name is different
 use App\Http\Controllers\API\CountryController;
  use App\Http\Controllers\API\OrderTrackingController;
+ use App\Http\Controllers\API\AddressController;
 
-Route::get('order-tracking', [OrderTrackingController::class, 'trackOrder']);
+Route::get('/order-tracking', [OrderTrackingController::class, 'trackOrder']);
 
+Route::middleware(['auth:sanctum'])->prefix('addresses')->group(function () {
+    Route::get('/', [AddressController::class, 'index']);
+    Route::post('/', [AddressController::class, 'store']);
+    Route::put('/{id}', [AddressController::class, 'update']);
+    Route::delete('/{id}', [AddressController::class, 'destroy']);
+});
 
 Route::get('/countries', [CountryController::class, 'index']);
 Route::get('/countries/{id}', [CountryController::class, 'show']);
