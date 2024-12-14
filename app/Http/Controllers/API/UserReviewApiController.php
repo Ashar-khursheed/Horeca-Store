@@ -76,45 +76,9 @@ class UserReviewApiController extends Controller
         return response()->json($reviews);
     }
 
-    /**
-     * Create a new review
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    // public function createReview(Request $request)
-    // {
-    //     $userId = Auth::id();
+  
 
-    //     if (!$userId) {
-    //         return response()->json(['message' => 'User not authenticated.'], 401);
-    //     }
-
-    //     // Validate the incoming request
-    //     $request->validate([
-    //         'product_id' => 'required|exists:ec_products,id',
-    //         'star' => 'required|integer|min:1|max:5',
-    //         'comment' => 'required|string',
-    //         'images' => 'nullable|array',
-    //         'images.*' => 'url',
-    //     ]);
-
-    //     // Create the review
-    //     $review = Review::create([
-    //         'customer_id' => $userId,
-    //         'customer_name' => Auth::user()->name,
-    //         'customer_email' => Auth::user()->email,
-    //         'product_id' => $request->product_id,
-    //         'star' => $request->star,
-    //         'comment' => $request->comment,
-    //         'status' => 'pending', // Default status
-    //         'images' => $request->images ? json_encode($request->images) : null,
-    //     ]);
-
-    //     return response()->json(['message' => 'Review created successfully.', 'review' => $review], 201);
-    // }
-
-    public function createReview(Request $request)
+public function createReview(Request $request)
 {
     $userId = Auth::id();
 
@@ -131,13 +95,26 @@ class UserReviewApiController extends Controller
         'images.*' => 'file|mimes:jpeg,png,jpg,gif|max:2048',
     ]);
 
+    // Check if the user already submitted a review for this product
+    $existingReview = Review::where('customer_id', $userId)
+        ->where('product_id', $request->product_id)
+        ->first();
+
+    if ($existingReview) {
+        return response()->json([
+            'message' => 'You have already submitted a review for this product.',
+            'success' => true,
+            'review' => $existingReview
+        ], 200);
+    }
+
     // Handle file uploads
     $imageUrls = [];
     try {
         if ($request->has('images')) {
             foreach ($request->file('images') as $image) {
-                $path = $image->storeAs('sssp-1', $image->getClientOriginalName(), 'public');
-                $imageUrls[] = asset("storage/sssp-1/{$image->getClientOriginalName()}");
+                $path = $image->storeAs('public/storage/products', $image->getClientOriginalName());
+                $imageUrls[] = asset("storage/products/{$image->getClientOriginalName()}");
             }
         }
 
@@ -175,9 +152,46 @@ class UserReviewApiController extends Controller
      * @param int $id
      * @return \Illuminate\Http\JsonResponse
      */
+    // public function updateReview(Request $request, $id)
+    // {
+    //     $userId = Auth::id();
+
+    //     if (!$userId) {
+    //         return response()->json(['message' => 'User not authenticated.'], 401);
+    //     }
+
+    //     // Find the review by ID
+    //     $review = Review::where('id', $id)->where('customer_id', $userId)->first();
+
+    //     if (!$review) {
+    //         return response()->json(['message' => 'Review not found or unauthorized.'], 404);
+    //     }
+
+    //     // Validate the incoming request
+    //     $request->validate([
+    //         'star' => 'nullable|integer|min:1|max:5',
+    //         'comment' => 'nullable|string',
+    //         'images' => 'nullable|array',
+    //         'images.*' => 'url', // Ensure each image is a valid URL
+    //     ]);
+
+    //     // Update the review
+    //     $review->update($request->only(['star', 'comment', 'images']));
+
+    //     return response()->json(['message' => 'Review updated successfully.', 'review' => $review]);
+    // }
+    
+    /**
+ * Update a specific review
+ *
+ * @param \Illuminate\Http\Request $request
+ * @param int $id
+ * @return \Illuminate\Http\JsonResponse
+ */
+
     public function updateReview(Request $request, $id)
     {
-        $userId = Auth::id();
+        $userId = Auth::id(); // Get the authenticated user's ID
 
         if (!$userId) {
             return response()->json(['message' => 'User not authenticated.'], 401);
@@ -190,19 +204,40 @@ class UserReviewApiController extends Controller
             return response()->json(['message' => 'Review not found or unauthorized.'], 404);
         }
 
-        // Validate the incoming request
+        // Validate incoming request
         $request->validate([
             'star' => 'nullable|integer|min:1|max:5',
             'comment' => 'nullable|string',
             'images' => 'nullable|array',
-            'images.*' => 'url', // Ensure each image is a valid URL
+            'images.*' => 'file|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // Update the review
-        $review->update($request->only(['star', 'comment', 'images']));
+        $uploadedImagePaths = [];
+        
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $filename = uniqid() . '_' . $image->getClientOriginalName();
+                $image->move(public_path('storage'), $filename);
 
-        return response()->json(['message' => 'Review updated successfully.', 'review' => $review]);
+                $uploadedImagePaths[] = asset('storage/' . $filename);
+            }
+        }
+
+        $dataToUpdate = $request->only(['star', 'comment']);
+        if (!empty($uploadedImagePaths)) {
+            $dataToUpdate['images'] = $uploadedImagePaths;
+        }
+
+        $review->update($dataToUpdate);
+
+        return response()->json([
+            'message' => 'Review updated successfully.',
+            'review' => $review,
+        ]);
     }
+
+
+
 
     /**
      * Delete a specific review
