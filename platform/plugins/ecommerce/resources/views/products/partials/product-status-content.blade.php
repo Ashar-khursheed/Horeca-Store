@@ -141,7 +141,7 @@
 							<div class="row g-3 mb-3 ms-1">
 								<div class="col-md-4 d-flex align-items-center">
 									<div class="form-check">
-										<input class="form-check-input me-2" type="checkbox" id="pricing_in_process" name="in_process" value="1" checked>
+										<input class="form-check-input me-2" type="checkbox" id="pricing_in_process" name="in_process" value="1">
 										<label class="form-check-label" for="in_process">Is Draft</label>
 									</div>
 								</div>

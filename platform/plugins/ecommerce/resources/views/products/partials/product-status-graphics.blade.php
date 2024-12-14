@@ -83,6 +83,7 @@
 								<h4 id="graphics_temp_header_name"></h4>
 								<input type="hidden" id="graphics_temp_id" name="id">
 							</div>
+
 							<div class="row">
 								<div class="mb-3 col-md-6">
 									<label for="sku" class="form-label">SKU</label>
@@ -118,7 +119,7 @@
 							<div class="row g-3 mb-3 ms-1">
 								<div class="col-md-4 d-flex align-items-center">
 									<div class="form-check">
-										<input class="form-check-input me-2" type="checkbox" id="pricing_in_process" name="in_process" value="1" checked>
+										<input class="form-check-input me-2" type="checkbox" id="pricing_in_process" name="in_process" value="1">
 										<label class="form-check-label" for="in_process">Is Draft</label>
 									</div>
 								</div>
@@ -128,7 +129,6 @@
 								<label for="graphics_remarks" class="form-label">Remarks</label>
 								<textarea class="form-select" id="graphics_remarks" name="remarks" readonly></textarea>
 							</div>
-							<a href="{{url('admin/ecommerce/products/edit/1713')}}" target="_blank">Edit Product</a>
 
 							<button type="submit" class="btn btn-primary">Submit</button>
 						</div>
@@ -175,6 +175,16 @@
 			width: 100%;
 			height: 150px; /* Set the height of the editor */
 		}
+		/* Optional styling to reinforce default link appearance */
+		.product-link {
+			color: blue; /* Ensure blue color for links */
+			text-decoration: underline; /* Underline the link text */
+			cursor: pointer; /* Show a pointer cursor */
+		}
+		.product-link:hover {
+			text-decoration: none; /* Remove underline on hover */
+			color: darkblue; /* Slightly darker blue on hover */
+		}
 	</style>
 
 	<script>
@@ -198,7 +208,18 @@
 
 			/* Populate the modal fields */
 			$('#graphics_temp_header_id').text(product.product_id);
-			$('#graphics_temp_header_name').text(product.name);
+			if (product.product_id && product.name) {
+				const editProductLink = `{{url('admin/ecommerce/products/edit/')}}/${product.product_id}`;
+				const productLink = $('<a>', {
+					href: editProductLink,
+					text: product.name,
+					target: '_blank',
+					class: 'product-link', // Optional: Add a class for styling
+				});
+				$('#graphics_temp_header_name').empty().append(productLink);
+			}
+
+			// $('#graphics_temp_header_name').text(product.name);
 			$('#graphics_temp_id').val(product.id);
 			$('#graphics_sku').val(product.sku);
 
