@@ -35,7 +35,9 @@ Route::post('temp-products/graphics-approve', [TempProductController::class, 'ap
 Route::post('temp-products/content-approve', [TempProductController::class, 'approveContentChanges'])->name('temp-products.admin_content_approve');
 
 Route::get('ecommerce/temp-products-status', [TempProductStatusController::class, 'index'])->name('ecommerce/temp-products-status.index');
-Route::post('ecommerce/temp-products-status/update-pricing-changes', [TempProductStatusController::class, 'updatePricingChanges'])->name('temp-products.pricing_approve');
+Route::post('ecommerce/temp-products-status/update-pricing-changes', [TempProductStatusController::class, 'updatePricingChanges'])->name('temp-products.pricing_update');
+Route::post('ecommerce/temp-products-status/update-graphics-changes', [TempProductStatusController::class, 'updateGraphicsChanges'])->name('temp-products.graphics_update');
+Route::post('ecommerce/temp-products-status/update-content-changes', [TempProductStatusController::class, 'updateContentChanges'])->name('temp-products.content_update');
 Route::post('ecommerce/temp-products-status/approve', [TempProductStatusController::class, 'approveChanges'])->name('temp-products.approve');
 
 

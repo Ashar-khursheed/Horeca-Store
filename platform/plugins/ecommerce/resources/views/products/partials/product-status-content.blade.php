@@ -90,7 +90,7 @@
 					</button>
 				</div>
 				<div class="modal-body">
-					<form action="{{ route('temp-products.admin_content_approve') }}" method="POST">
+					<form action="{{ route('temp-products.content_update') }}" method="POST">
 						@csrf
 						<div class="product-card">
 							<div class="product-header">
@@ -149,9 +149,8 @@
 
 							<div class="mb-3">
 								<label for="content_remarks" class="form-label">Remarks</label>
-								<textarea class="form-select" id="content_remarks" name="remarks"></textarea>
+								<textarea class="form-select" id="content_remarks" name="remarks" readonly></textarea>
 							</div>
-
 							<button type="submit" class="btn btn-primary">Submit</button>
 						</div>
 					</form>

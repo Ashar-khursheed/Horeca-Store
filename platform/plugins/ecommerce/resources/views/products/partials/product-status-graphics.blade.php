@@ -75,7 +75,7 @@
 					</button>
 				</div>
 				<div class="modal-body">
-					<form action="{{ route('temp-products.admin_graphics_approve') }}" method="POST">
+					<form action="{{ route('temp-products.graphics_update') }}" method="POST">
 						@csrf
 						<div class="product-card">
 							<div class="product-header">
@@ -115,10 +115,20 @@
 								</select>
 							</div>
 
+							<div class="row g-3 mb-3 ms-1">
+								<div class="col-md-4 d-flex align-items-center">
+									<div class="form-check">
+										<input class="form-check-input me-2" type="checkbox" id="pricing_in_process" name="in_process" value="1" checked>
+										<label class="form-check-label" for="in_process">Is Draft</label>
+									</div>
+								</div>
+							</div>
+
 							<div class="mb-3">
 								<label for="graphics_remarks" class="form-label">Remarks</label>
-								<textarea class="form-select" id="graphics_remarks" name="remarks"></textarea>
+								<textarea class="form-select" id="graphics_remarks" name="remarks" readonly></textarea>
 							</div>
+							<a href="{{url('admin/ecommerce/products/edit/1713')}}" target="_blank">Edit Product</a>
 
 							<button type="submit" class="btn btn-primary">Submit</button>
 						</div>
@@ -242,22 +252,26 @@
 			/* Append videos to the video container */
 			const baseUrl1 = "{{asset('storage')}}";
 			$('#video-container').append('<h5>Videos</h5>');
-			videoArray.forEach(function (video) {
-				const videoElement = $('<div>', { class: 'uploaded-video mt-2' }).append(
-					$('<video>', {
-						width: 320,
-						height: 240,
-						controls: true,
-					}).append(
-						$('<source>', {
-							src: `${baseUrl1}/${video}`,
-							type: 'video/mp4',
-						})
-					),
+			if(videoArray.length > 0) {
+				videoArray.forEach(function (video) {
+					const videoElement = $('<div>', { class: 'uploaded-video mt-2' }).append(
+						$('<video>', {
+							width: 320,
+							height: 240,
+							controls: true,
+						}).append(
+							$('<source>', {
+								src: `${baseUrl1}/${video}`,
+								type: 'video/mp4',
+							})
+						),
 
-				);
-				$('#video-container').append(videoElement);
-			});
+					);
+					$('#video-container').append(videoElement);
+				});
+			} else {
+				$('#video-container').append('<p>No videos available.</p>');
+			}
 
 
 			/* Clear the existing documents in the container */
@@ -271,9 +285,9 @@
 				console.error('Failed to parse documents:', error);
 				documents = {};
 			}
+			$('#document-container').append('<h5>Existing Documents</h5>');
 			/* Check if documents exist and append them */
 			if (Object.keys(documents).length > 0) {
-				$('#document-container').append('<h5>Existing Documents</h5>');
 				const documentList = $('<ul>', { class: 'uploaded-docs' });
 
 				$.each(documents, function (key, document) {

@@ -82,7 +82,7 @@
 					</button>
 				</div>
 				<div class="modal-body">
-					<form action="{{ route('temp-products.pricing_approve') }}" method="POST">
+					<form action="{{ route('temp-products.pricing_update') }}" method="POST">
 						@csrf
 						<div class="product-card">
 							<div class="product-header">

@@ -381,7 +381,9 @@
 								<label for="pricing_approval_status" class="form-label">Approval Status</label>
 								<select class="form-select" id="pricing_approval_status" name="approval_status">
 									@foreach ($approvalStatuses as $value => $label)
-									<option value="{{ $value }}">{{ $label }}</option>
+										@if(in_array($value, ['approved', 'rejected']))
+											<option value="{{ $value }}">{{ $label }}</option>
+										@endif
 									@endforeach
 								</select>
 							</div>
@@ -464,7 +466,9 @@
 								<label for="content_approval_status" class="form-label">Approval Status</label>
 								<select class="form-select" id="content_approval_status" name="approval_status">
 									@foreach ($approvalStatuses as $value => $label)
-									<option value="{{ $value }}">{{ $label }}</option>
+										@if(in_array($value, ['approved', 'rejected']))
+											<option value="{{ $value }}">{{ $label }}</option>
+										@endif
 									@endforeach
 								</select>
 							</div>
@@ -529,7 +533,9 @@
 								<label for="graphics_approval_status" class="form-label">Approval Status</label>
 								<select class="form-select" id="graphics_approval_status" name="approval_status">
 									@foreach ($approvalStatuses as $value => $label)
-									<option value="{{ $value }}">{{ $label }}</option>
+										@if(in_array($value, ['approved', 'rejected']))
+											<option value="{{ $value }}">{{ $label }}</option>
+										@endif
 									@endforeach
 								</select>
 							</div>
@@ -632,7 +638,7 @@
 			$('#content_temp_id').val(id);
 
 			$('#content_initial_approval_status').val(approvalStatus);
-			$('#content_approval_status').val(approvalStatus);
+			// $('#content_approval_status').val(approvalStatus);
 			$('#content_content').val(content);
 			$('#content_remarks').val(remarks);
 
@@ -1103,7 +1109,7 @@
 		$('#pricing_variant_requires_shipping').val(product.variant_requires_shipping);
 		$('#pricing_refund').val(product.refund);
 		$('#pricing_initial_approval_status').val(product.approval_status);
-		$('#pricing_approval_status').val(product.approval_status);
+		// $('#pricing_approval_status').val(product.approval_status);
 		$('#pricing_remarks').val(product.remarks);
 
 		// Set checkbox values
@@ -1427,22 +1433,26 @@
 		/* Append videos to the video container */
 		const baseUrl1 = "{{asset('storage')}}";
 		$('#video-container').append('<h5>Videos</h5>');
-		videoArray.forEach(function (video) {
-			const videoElement = $('<div>', { class: 'uploaded-video mt-2' }).append(
-				$('<video>', {
-					width: 320,
-					height: 240,
-					controls: true,
-				}).append(
-					$('<source>', {
-						src: `${baseUrl1}/${video}`,
-						type: 'video/mp4',
-					})
-				),
+			if(videoArray.length > 0) {
+				videoArray.forEach(function (video) {
+					const videoElement = $('<div>', { class: 'uploaded-video mt-2' }).append(
+						$('<video>', {
+							width: 320,
+							height: 240,
+							controls: true,
+						}).append(
+							$('<source>', {
+								src: `${baseUrl1}/${video}`,
+								type: 'video/mp4',
+							})
+						),
 
-			);
-			$('#video-container').append(videoElement);
-		});
+					);
+					$('#video-container').append(videoElement);
+				});
+			} else {
+				$('#video-container').append('<p>No videos available.</p>');
+			}
 
 		/* Clear the existing documents in the container */
 		$('#document-container').empty();
@@ -1456,8 +1466,8 @@
 			documents = {};
 		}
 		/* Check if documents exist and append them */
+		$('#document-container').append('<h5>Existing Documents</h5>');
 		if (Object.keys(documents).length > 0) {
-			$('#document-container').append('<h5>Existing Documents</h5>');
 			const documentList = $('<ul>', { class: 'uploaded-docs' });
 
 			$.each(documents, function (key, document) {
@@ -1476,7 +1486,7 @@
 			$('#document-container').append('<p>No documents available.</p>');
 		}
 		$('#graphics_initial_approval_status').val(product.approval_status);
-		$('#graphics_approval_status').val(product.approval_status);
+		// $('#graphics_approval_status').val(product.approval_status);
 		$('#graphics_remarks').val(product.remarks);
 
 		// Initial check when the page loads

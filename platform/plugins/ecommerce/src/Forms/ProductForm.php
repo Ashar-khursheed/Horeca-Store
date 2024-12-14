@@ -142,6 +142,7 @@ class ProductForm extends FormAbstract
 
         else if ($hasGraphicsRole) {
             $this
+            ->setFormOption('files', true)
             ->add('name', TextField::class, array_merge(NameFieldOption::make()->toArray(), [
                'attr' => [
                   'readonly' => true, // Disable the field
