@@ -170,29 +170,49 @@ class ProductController extends BaseController
             if (!is_dir($documentsPath)) {
                 mkdir($documentsPath, 0775, true);
             }
-
-            $documents = [];
-            $fixedTitles = ['Specsheet', 'Manual', 'Warranty', 'Brochure'];
-
+            
+            // Decode existing documents or initialize as an empty array
+            $documents = $existingDocuments ? json_decode($existingDocuments, true) : [];
+            
+            // Predefined document titles
+            $titles = ['Specsheet', 'Manual', 'Warranty', 'Brochure'];
+            
+            // Prepare an associative array for quick overwrite
+            $documentsByTitle = [];
+            foreach ($documents as $doc) {
+                $documentsByTitle[$doc['title']] = $doc['path'];
+            }
+            
             if ($request->hasFile('documents')) {
                 foreach ($request->file('documents') as $index => $document) {
-                    // Save each document to storage
-                    $path = $document->store('products/documents', 'public');
-
-                    // Assign title based on the index
-                    if ($index < 4) {
-                        $title = $fixedTitles[$index]; // Fixed titles for the first four documents
-                    } else {
-                        $title = $request->titles[$index] ?: 'Untitled'; // Custom title or default
+                    if ($document) {
+                        $path = $document->store('products/documents', 'public');
+            
+                        // Determine the title for the document
+                        if ($index < count($titles)) {
+                            $title = $titles[$index]; // Use predefined title
+                        } else {
+                            $title = $request->titles[$index] ?? 'Untitled'; // Custom title or default
+                        }
+            
+                        // Overwrite the existing document or add a new one
+                        $documentsByTitle[$title] = $path;
                     }
-
-                    // Store the title and path as an associative array
-                    $documents[] = [
-                        'title' => $title,
-                        'path' => $path,
-                    ];
                 }
             }
+            
+            // Rebuild the documents array
+            $documents = [];
+            foreach ($documentsByTitle as $title => $path) {
+                $documents[] = [
+                    'title' => $title,
+                    'path' => $path,
+                ];
+            }
+            
+            // Save the updated documents as JSON
+            $product->documents = json_encode($documents);
+    
 
             $request->validate([
                 'video_url' => 'nullable|url',
@@ -210,7 +230,7 @@ class ProductController extends BaseController
             // $product->technical_table = $request->input('technical_table');
             // $product->technical_spec = $request->input('technical_spec');
             $product->status = 'published'; // Automatically publish
-            $product->documents = json_encode($documents);
+            //$product->documents = json_encode($documents);
 
                         // Handle external video link
             // Handle file upload
@@ -429,7 +449,7 @@ class ProductController extends BaseController
             $product->refund= $request->input('refund');
 
                // Load existing documents
-            $existingDocuments = json_decode($product->documents, true) ?? [];
+            //$existingDocuments = json_decode($product->documents, true) ?? [];
 
             // $documentsPath = storage_path('app/public/products/documents');
 
@@ -475,16 +495,15 @@ class ProductController extends BaseController
 
             // // Save the documents as JSON in the product
             // $product->documents = json_encode($documents);
-            $documentsPath = storage_path('app/public/products/documents');
+            $existingDocuments = json_decode($product->documents, true) ?? [];
 
-                // Check if the directory exists, if not, create it
-                if (!is_dir($documentsPath)) {
-                    mkdir($documentsPath, 0775, true);
+                // Prepare associative array for easy updates
+                $documentsByTitle = [];
+                foreach ($existingDocuments as $doc) {
+                    $documentsByTitle[$doc['title']] = $doc['path'];
                 }
 
-                // Initialize $documents with existing documents or an empty array
-                $documents = $existingDocuments ?? [];
-
+                // Titles for predefined documents
                 $titles = ['Specsheet', 'Manual', 'Warranty', 'Brochure'];
 
                 if ($request->hasFile('documents')) {
@@ -492,24 +511,29 @@ class ProductController extends BaseController
                         if ($document) {
                             $path = $document->store('products/documents', 'public');
 
-                            // Determine the title for the document
-                            if ($index < count($titles)) {
-                                $title = $titles[$index]; // Fetch title from predefined array
-                            } else {
-                                $title = $request->titles[$index] ?? 'Untitled'; // Custom title or default
-                            }
+                            // Determine the title for the uploaded document
+                            $title = $index < count($titles)
+                                ? $titles[$index]
+                                : ($request->titles[$index] ?? 'Untitled');
 
-                            // Add the document to the list
-                            $documents[] = [
-                                'title' => $title,
-                                'path' => $path,
-                            ];
+                            // Overwrite existing document or add new one
+                            $documentsByTitle[$title] = $path;
                         }
                     }
                 }
 
-                // Save the documents as JSON in the product
-                $product->documents = json_encode($documents);
+                // Rebuild and save the documents array
+                $documents = [];
+                foreach ($documentsByTitle as $title => $path) {
+                    $documents[] = ['title' => $title, 'path' => $path];
+                }
+
+                // Save updated documents to the database
+                $product->documents = json_encode($documents, JSON_THROW_ON_ERROR);
+            
+            return redirect()->back()->with('success', 'Documents updated successfully.');
+            
+          
             $request->validate([
                 'video_url' => 'nullable|url',
                 'video' => 'nullable|mimes:mp4,avi,mov,wmv|max:51200', // Max size of 50 MB
@@ -780,16 +804,14 @@ class ProductController extends BaseController
 
                 // Load existing documents
                 $existingDocuments = json_decode($product->documents, true) ?? [];
-                $documentsPath = storage_path('app/public/products/documents');
 
-                // Check if the directory exists, if not, create it
-                if (!is_dir($documentsPath)) {
-                    mkdir($documentsPath, 0775, true);
+                // Prepare associative array for easy updates
+                $documentsByTitle = [];
+                foreach ($existingDocuments as $doc) {
+                    $documentsByTitle[$doc['title']] = $doc['path'];
                 }
                 
-                // Initialize $documents with existing documents or an empty array
-                $documents = $existingDocuments ?? [];
-                
+                // Titles for predefined documents
                 $titles = ['Specsheet', 'Manual', 'Warranty', 'Brochure'];
                 
                 if ($request->hasFile('documents')) {
@@ -797,24 +819,27 @@ class ProductController extends BaseController
                         if ($document) {
                             $path = $document->store('products/documents', 'public');
                 
-                            // Determine the title for the document
-                            if ($index < count($titles)) {
-                                $title = $titles[$index]; // Fetch title from predefined array
-                            } else {
-                                $title = $request->titles[$index] ?? 'Untitled'; // Custom title or default
-                            }
+                            // Determine the title for the uploaded document
+                            $title = $index < count($titles)
+                                ? $titles[$index]
+                                : ($request->titles[$index] ?? 'Untitled');
                 
-                            // Add the document to the list
-                            $documents[] = [
-                                'title' => $title,
-                                'path' => $path,
-                            ];
+                            // Overwrite existing document or add new one
+                            $documentsByTitle[$title] = $path;
                         }
                     }
                 }
                 
-                // Save the documents as JSON in the product
-                $product->documents = json_encode($documents);
+                // Rebuild and save the documents array
+                $documents = [];
+                foreach ($documentsByTitle as $title => $path) {
+                    $documents[] = ['title' => $title, 'path' => $path];
+                }
+                
+                // Save updated documents to the database
+                $product->documents = json_encode($documents, JSON_THROW_ON_ERROR);
+          
+                
 
 
                 /* Manage Video */
@@ -1003,41 +1028,43 @@ class ProductController extends BaseController
                     //     }
                     // }
                     // $product->documents = json_encode($documents);
-                    $documentsPath = storage_path('app/public/products/documents');
+                    $existingDocuments = json_decode($product->documents, true) ?? [];
 
-                    // Check if the directory exists, if not, create it
-                    if (!is_dir($documentsPath)) {
-                        mkdir($documentsPath, 0775, true);
+                    // Prepare associative array for easy updates
+                    $documentsByTitle = [];
+                    foreach ($existingDocuments as $doc) {
+                        $documentsByTitle[$doc['title']] = $doc['path'];
                     }
-    
-                    // Initialize $documents with existing documents or an empty array
-                    $documents = $existingDocuments ?? [];
-    
+                    
+                    // Titles for predefined documents
                     $titles = ['Specsheet', 'Manual', 'Warranty', 'Brochure'];
-    
+                    
                     if ($request->hasFile('documents')) {
                         foreach ($request->file('documents') as $index => $document) {
                             if ($document) {
                                 $path = $document->store('products/documents', 'public');
-    
-                                // Determine the title for the document
-                                if ($index < count($titles)) {
-                                    $title = $titles[$index]; // Fetch title from predefined array
-                                } else {
-                                    $title = $request->titles[$index] ?? 'Untitled'; // Custom title or default
-                                }
-    
-                                // Add the document to the list
-                                $documents[] = [
-                                    'title' => $title,
-                                    'path' => $path,
-                                ];
+                    
+                                // Determine the title for the uploaded document
+                                $title = $index < count($titles)
+                                    ? $titles[$index]
+                                    : ($request->titles[$index] ?? 'Untitled');
+                    
+                                // Overwrite existing document or add new one
+                                $documentsByTitle[$title] = $path;
                             }
                         }
                     }
-    
-                    // Save the documents as JSON in the product
-                    $product->documents = json_encode($documents);
+                    
+                    // Rebuild and save the documents array
+                    $documents = [];
+                    foreach ($documentsByTitle as $title => $path) {
+                        $documents[] = ['title' => $title, 'path' => $path];
+                    }
+                    
+                    // Save updated documents to the database
+                    $product->documents = json_encode($documents, JSON_THROW_ON_ERROR);
+
+
 
                     // $videoPaths = [];
                     // if ($request->hasFile('videos')) {
