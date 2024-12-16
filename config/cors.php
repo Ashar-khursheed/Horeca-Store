@@ -31,12 +31,14 @@ return [
 
     // 'supports_credentials' => false,
 
-    'paths' => ['api/*'], // or ['*'] to allow all paths
+    'paths' => ['api/*', 'sanctum/csrf-cookie'], // or ['*'] to allow all paths
     'allowed_methods' => ['*'], // Allows all methods
-    'allowed_origins' => [ '*'],
+    // 'allowed_origins' => [ '*'],
+    'allowed_origins' => ['http://localhost:3000'], // React dev server URL
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['*'], // Allows all headers
     'exposed_headers' => [],
     'max_age' => 0,
-    'supports_credentials' => false,
+    'supports_credentials' => true,
+    
 ];
