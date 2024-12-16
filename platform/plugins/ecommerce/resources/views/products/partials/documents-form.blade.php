@@ -220,25 +220,18 @@ function removeFile(element) {
 
 
 
-<div class="document-upload">
+
+
+
+
+
+
+
+
+
+{{-- <div class="document-upload">
     <h4>{{ __('Upload Documents (PDFs)') }}</h4>
 
-    {{-- <div class="documents-container">
-        @for ($i = 0; $i < 6; $i++)
-            <div class="document-item">
-                <label for="document_{{ $i }}">{{ __('Document ' . ($i + 1)) }}</label>
-                <input type="file" name="documents[]" id="document_{{ $i }}" class="file-input" accept=".pdf" onchange="handleFileUpload(this, {{ $i }})">
-
-                @if ($i < 4)
-                    <input type="text" value="Document {{ $i + 1 }}" disabled>
-                @else
-                    <input type="text" name="titles[{{ $i }}]" placeholder="Enter Custom Title">
-                @endif
-
-                <div class="preview-box" id="previewBox_{{ $i }}"></div>
-            </div>
-        @endfor
-    </div> --}}
     @php
     $titles = ['Specsheet', 'Manual', 'Warranty', 'Brochure'];
 
@@ -259,8 +252,32 @@ function removeFile(element) {
             <div class="preview-box" id="previewBox_{{ $i }}"></div>
         </div>
     @endfor
-</div>
+</div> --}}
 
+
+<div class="document-upload">
+    <h4>{{ __('Upload Documents (PDFs)') }}</h4>
+
+    @php
+        $titles = ['Specsheet', 'Manual', 'Warranty', 'Brochure'];
+    @endphp
+
+    <div class="documents-container">
+        @for ($i = 0; $i < 6; $i++)
+            <div class="document-item">
+                <label for="document_{{ $i }}">{{ __('Document ' . ($i + 1)) }}</label>
+                <input type="file" name="documents[]" id="document_{{ $i }}" class="file-input" accept=".pdf" onchange="handleFileUpload(this, {{ $i }})">
+
+                @if ($i < count($titles))
+                    <input type="text" value="{{ $titles[$i] }}" disabled>
+                @else
+                    <input type="text" name="titles[{{ $i }}]" placeholder="Enter Custom Title">
+                @endif
+
+                <div class="preview-box" id="previewBox_{{ $i }}"></div>
+            </div>
+        @endfor
+    </div>
     <div class="loader" id="loader" style="display: none;">
         <div class="progress" id="progressContainer" style="display: none;">
             <div class="progress-bar" id="progressBar" style="width: 0%;"></div>
@@ -268,18 +285,9 @@ function removeFile(element) {
         </div>
     </div>
 
-    {{-- @if (!empty($documents))
-        <h4>{{ __('Existing Documents') }}</h4>
-        <ul class="uploaded-docs">
-            @foreach (json_decode($documents) as $document)
-                <li>
-                    <a href="{{ Storage::url($document) }}" target="_blank">{{ basename($document) }}</a>
-                </li>
-            @endforeach
-        </ul>
-    @endif --}}
 
-    @if (!empty($documents))
+
+    {{-- @if (!empty($documents))
     <h4>{{ __('Existing Documents') }}</h4>
     <ul class="uploaded-docs">
         @foreach (json_decode($documents) as $document)
@@ -290,6 +298,18 @@ function removeFile(element) {
     </ul>
 @endif
 
+</div> --}}
+
+@if (!empty($documents))
+<h4>{{ __('Existing Documents') }}</h4>
+<ul class="uploaded-docs">
+    @foreach (json_decode($documents) as $document)
+        <li>
+            <a href="{{ Storage::url($document->path) }}" target="_blank">{{ $document->title }}</a>
+        </li>
+    @endforeach
+</ul>
+@endif
 </div>
 
 <style>
