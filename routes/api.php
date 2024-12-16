@@ -51,7 +51,11 @@ Route::middleware(['auth:sanctum'])->prefix('addresses')->group(function () {
     Route::post('/', [AddressController::class, 'store']);
     Route::put('/{id}', [AddressController::class, 'update']);
     Route::delete('/{id}', [AddressController::class, 'destroy']);
+ Route::post('/update-default-address', [AddressController::class, 'updateDefaultAddress']);
+    
 });
+
+
 
 Route::get('/countries', [CountryController::class, 'index']);
 Route::get('/countries/{id}', [CountryController::class, 'show']);
