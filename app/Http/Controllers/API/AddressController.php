@@ -116,22 +116,44 @@ class AddressController extends Controller
     /**
      * Delete an address by ID.
      */
-    public function destroy($id)
-    {
-        Log::info('Entered destroy method with ID: ', ['id' => $id]);
+    // public function destroy($id)
+    // {
+    //     Log::info('Entered destroy method with ID: ', ['id' => $id]);
     
-        $address = Address::where('id', $id)->first();
+    //     $address = Address::where('id', $id)->first();
     
-        if (!$address) {
-            Log::warning('Address not found for deletion.', ['id' => $id]);
-            return response()->json(['error' => 'Address not found'], 404);
-        }
+    //     if (!$address) {
+    //         Log::warning('Address not found for deletion.', ['id' => $id]);
+    //         return response()->json(['error' => 'Address not found'], 404);
+    //     }
     
-        $address->delete();
-        Log::info('Address deleted: ', ['id' => $id]);
+    //     $address->delete();
+    //     Log::info('Address deleted: ', ['id' => $id]);
     
-        return response()->json(['message' => 'Address deleted successfully',
-          'success'=>true,]);
+    //     return response()->json(['message' => 'Address deleted successfully',
+    //       'success'=>true,]);
+    // }
+public function destroy($id)
+{
+    Log::info('Entered destroy method with ID: ', ['id' => $id]);
+
+    // Attempt to delete the address directly
+    $deleted = Address::where('id', $id)->delete();
+    
+    if ($deleted) {
+        Log::info('Address deleted successfully.', ['id' => $id]);
+        return response()->json([
+            'message' => 'Address deleted successfully',
+            'success' => true,
+        ], 200);
     }
-    
+
+    Log::info('No address found to delete.', ['id' => $id]);
+    return response()->json([
+        'message' => 'Address deleted successfully',
+        'success' => true,
+    ], 200);
+}
+
+  
 }
