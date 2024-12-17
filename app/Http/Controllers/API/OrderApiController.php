@@ -3,120 +3,261 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use Botble\Ecommerce\Models\Order;
-use Botble\Ecommerce\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;  // Import the Str facade
+
+use Botble\Ecommerce\Models\Order;
+use Botble\Ecommerce\Models\Product;
+use Botble\Ecommerce\Models\Customer;
+use Botble\Ecommerce\Models\OrderHistory;
+use Botble\Ecommerce\Models\OrderAddress;
+use Botble\Ecommerce\Models\OrderProduct;
+
+use Botble\Ecommerce\Enums\OrderStatusEnum;
+use Botble\Ecommerce\Enums\OrderHistoryActionEnum;
 
 class OrderApiController extends Controller
 {
+    public function store(Request $request)
+    {
+        // Validate the incoming request data
+        $validator = Validator::make($request->all(), [
+            'shipping_method' => 'required|string',
+            'products' => 'required|array',
+            'products.*.id' => 'required|exists:ec_products,id',
+            'products.*.quantity' => 'required|integer|min:1',
+            // 'products.*.price' => 'required|numeric|min:0',
+        ]);
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        // Get the authenticated user's ID
+        $userId = auth()->id(); // This will get the ID of the logged-in user
+
+        if (!$userId) {
+            return response()->json(['error' => 'User not authenticated'], 401);
+        }
+        $customer = Customer::find($userId);
+        $customerAddress = $customer->addresses->where('is_default', 1)->first();
+
+        // Create the order
+        $order = new Order();
+        $order->user_id = $userId; // Use the authenticated user's ID
+        $order->shipping_option = $request->shipping_option ?? null;
+        $order->shipping_method = $request->shipping_method ?? null;
+        $order->status = OrderStatusEnum::PROCESSING;
+        $order->amount = $request->amount ?? null;
+        $order->tax_amount = $request->tax_amount ?? null;
+        $order->shipping_amount = $request->shipping_amount ?? null;
+        $order->description = $request->note ?? null;
+        $order->coupon_code = $request->coupon_code ?? null;
+        $order->discount_amount = $request->discount_amount ?? null;
+        $order->sub_total = $request->sub_amount ?? null;
+        $order->is_confirmed = $request->is_confirmed ?? 0;
+        $order->discount_description = $request->discount_description ?? null;
+        $order->is_finished = $request->is_finished ?? 0;
+        $order->token = $request->token ?? null;
+        $order->created_at = now();
+        $order->updated_at = now();
+        $order->proof_file = $request->proof_file ?? null;
+        $order->store_id = $request->store_id ?? null;
+        $order->save();
 
 
-public function store(Request $request)
-{
-    // Validate the incoming request data
-    $validator = Validator::make($request->all(), [
-        'shipping_method' => 'required|string',
-        'products' => 'required|array',
-        'products.*.product_id' => 'required|exists:ec_products,id',
-        'products.*.quantity' => 'required|integer|min:1',
-        'products.*.price' => 'required|numeric|min:0',
-    ]);
+        if ($order) {
+            OrderHistory::query()->create([
+                'action' => OrderHistoryActionEnum::CREATE_ORDER_FROM_ADMIN_PAGE,
+                'description' => trans('plugins/ecommerce::order.create_order_from_admin_page'),
+                'order_id' => $order->id,
+            ]);
 
-    if ($validator->fails()) {
-        return response()->json($validator->errors(), 422);
+            OrderHistory::query()->create([
+                'action' => OrderHistoryActionEnum::CREATE_ORDER,
+                'description' => trans(
+                    'plugins/ecommerce::order.new_order',
+                    ['order_id' => $order->code]
+                ),
+                'order_id' => $order->id,
+            ]);
+
+            OrderHistory::query()->create([
+                'action' => OrderHistoryActionEnum::CONFIRM_ORDER,
+                'description' => trans('plugins/ecommerce::order.order_was_verified_by'),
+                'order_id' => $order->id,
+                'user_id' => $userId,
+            ]);
+
+            if ($customerAddress) {
+                $orderAddress = new OrderAddress();
+                $orderAddress->name = $customerAddress->name;
+                $orderAddress->phone = $customerAddress->phone;
+                $orderAddress->email = $customerAddress->email;
+                $orderAddress->state = $customerAddress->state;
+                $orderAddress->city = $customerAddress->city;
+                $orderAddress->zip_code = $customerAddress->zip_code;
+                $orderAddress->country = $customerAddress->country;
+                $orderAddress->address = $customerAddress->address;
+                $orderAddress->order_id = $order->id;
+                $orderAddress->save();
+            }
+
+            foreach ($request->products as $product) {
+                $productDetail = Product::find($product['id']);
+
+                $orderProduct = new OrderProduct();
+                $orderProduct->order_id = $order->id;
+                $orderProduct->product_id = $productDetail->id;
+                $orderProduct->product_name = $productDetail->name;
+                $orderProduct->product_image = $productDetail->image;
+                $orderProduct->qty = $product['quantity'];
+                $orderProduct->weight = $productDetail->weight;
+                $orderProduct->price = $productDetail->original_price;
+                $orderProduct->tax_amount = $productDetail->tax_price ?? 0;
+                $orderProduct->product_options = $productDetail->cart_options ?? null;
+                $orderProduct->options = $productDetail->cart_options ?? null;
+                $orderProduct->product_type = $productDetail->product_type;
+                $orderProduct->save();
+            }
+        }
+
+        // Return the created order as JSON, including all the necessary fields
+        return response()->json([
+            'id' => $order->id,
+            'code' => $order->code,
+            'user_id' => $order->user_id,
+            'shipping_option' => '3', // This can be dynamic based on the shipping method
+            'shipping_method' => json_decode($order->shipping_method),
+            'status' => json_decode($order->status),
+            'amount' => $order->amount,
+            'tax_amount' => $order->tax_amount,
+            'shipping_amount' => $order->shipping_amount,
+            'description' => $order->description,
+            'coupon_code' => null, // You can adjust this if coupon codes are being used
+            'discount_amount' => 0.00, // Assuming no discount is applied
+            'sub_total' => $order->sub_total,
+            'is_confirmed' => $order->is_confirmed,
+            'discount_description' => null, // Assuming no discount description
+            'is_finished' => $order->is_finished,
+            'cancellation_reason' => $order->cancellation_reason,
+            'cancellation_reason_description' => $order->cancellation_reason_description,
+            'completed_at' => $order->completed_at,
+            'token' => $order->token,
+            'payment_id' => 5, // You can adjust this based on the actual payment method
+            'created_at' => $order->created_at,
+            'updated_at' => $order->updated_at,
+            'proof_file' => null, // Assuming no proof file is uploaded
+            'store_id' => $order->store_id,
+            'products' => json_decode($order->description) // Return the product details
+        ], 201);  // Return the full order data as JSON
     }
 
-    // Get the authenticated user's ID
-    $user_id = auth()->id(); // This will get the ID of the logged-in user
 
-    if (!$user_id) {
-        return response()->json(['error' => 'User not authenticated'], 401);
-    }
 
-    // Calculate sub_total and total
-    $sub_total = 0;
-    foreach ($request->products as $product) {
-        $sub_total += $product['price'] * $product['quantity'];
-    }
+// public function store(Request $request)
+// {
+//     // Validate the incoming request data
+//     $validator = Validator::make($request->all(), [
+//         'shipping_method' => 'required|string',
+//         'products' => 'required|array',
+//         'products.*.product_id' => 'required|exists:ec_products,id',
+//         'products.*.quantity' => 'required|integer|min:1',
+//         'products.*.price' => 'required|numeric|min:0',
+//     ]);
 
-    // Optionally, calculate shipping and taxes
-    $shipping_amount = 0; // For now, assume shipping is free
-    $tax_amount = $sub_total * 0.1; // Assuming 10% tax rate
-    $amount = $sub_total + $shipping_amount + $tax_amount;
+//     if ($validator->fails()) {
+//         return response()->json($validator->errors(), 422);
+//     }
 
-    // Create the order
-    $order = new Order();
-    $order->user_id = $user_id; // Use the authenticated user's ID
-    $order->shipping_method = json_encode([
-        'value' => $request->shipping_method,
-        'label' => 'Default' // You can modify this if you have dynamic shipping methods
-    ]);
-    $order->amount = $amount;
-    $order->sub_total = $sub_total;
-    $order->tax_amount = $tax_amount;
-    $order->shipping_amount = $shipping_amount;
-    $order->status = json_encode([
-        'value' => 'pending',
-        'label' => 'Pending'
-    ]);  // Setting status as pending
-    $order->code = '#100000' . rand(1, 9999);  // Generate order code
-    $order->token = Str::random(32);  // Generate a unique token for the order
-    $order->is_confirmed = 0; // Assuming the order is not confirmed yet
-    $order->is_finished = 1;  // Assuming the order is finished for now
-    $order->cancellation_reason = null; // Assuming no cancellation reason
-    $order->cancellation_reason_description = null; // Assuming no cancellation description
-    $order->completed_at = null; // Assuming the order is not completed yet
-    $order->store_id = 7; // Store ID should be set accordingly
-    $order->created_at = now();
-    $order->updated_at = now();
-    $order->save();
+//     // Get the authenticated user's ID
+//     $user_id = auth()->id(); // This will get the ID of the logged-in user
 
-    // Optionally, store products or other details here as part of the order
-    $product_details = [];
-    foreach ($request->products as $product) {
-        $product_details[] = [
-            'product_id' => $product['product_id'],
-            'quantity' => $product['quantity'],
-            'price' => $product['price'],
-        ];
-    }
-    
-    // Optionally, store product details in `description` field
-    $order->description = json_encode($product_details);
-    $order->save();
+//     if (!$user_id) {
+//         return response()->json(['error' => 'User not authenticated'], 401);
+//     }
 
-    // Return the created order as JSON, including all the necessary fields
-    return response()->json([
-        'id' => $order->id,
-        'code' => $order->code,
-        'user_id' => $order->user_id,
-        'shipping_option' => '3', // This can be dynamic based on the shipping method
-        'shipping_method' => json_decode($order->shipping_method),
-        'status' => json_decode($order->status),
-        'amount' => $order->amount,
-        'tax_amount' => $order->tax_amount,
-        'shipping_amount' => $order->shipping_amount,
-        'description' => $order->description,
-        'coupon_code' => null, // You can adjust this if coupon codes are being used
-        'discount_amount' => 0.00, // Assuming no discount is applied
-        'sub_total' => $order->sub_total,
-        'is_confirmed' => $order->is_confirmed,
-        'discount_description' => null, // Assuming no discount description
-        'is_finished' => $order->is_finished,
-        'cancellation_reason' => $order->cancellation_reason,
-        'cancellation_reason_description' => $order->cancellation_reason_description,
-        'completed_at' => $order->completed_at,
-        'token' => $order->token,
-        'payment_id' => 5, // You can adjust this based on the actual payment method
-        'created_at' => $order->created_at,
-        'updated_at' => $order->updated_at,
-        'proof_file' => null, // Assuming no proof file is uploaded
-        'store_id' => $order->store_id,
-        'products' => json_decode($order->description) // Return the product details
-    ], 201);  // Return the full order data as JSON
-}
+//     // Calculate sub_total and total
+//     $sub_total = 0;
+//     foreach ($request->products as $product) {
+//         $sub_total += $product['price'] * $product['quantity'];
+//     }
+
+//     // Optionally, calculate shipping and taxes
+//     $shipping_amount = 0; // For now, assume shipping is free
+//     $tax_amount = $sub_total * 0.1; // Assuming 10% tax rate
+//     $amount = $sub_total + $shipping_amount + $tax_amount;
+
+//     // Create the order
+//     $order = new Order();
+//     $order->user_id = $user_id; // Use the authenticated user's ID
+//     $order->shipping_method = json_encode([
+//         'value' => $request->shipping_method,
+//         'label' => 'Default' // You can modify this if you have dynamic shipping methods
+//     ]);
+//     $order->amount = $amount;
+//     $order->sub_total = $sub_total;
+//     $order->tax_amount = $tax_amount;
+//     $order->shipping_amount = $shipping_amount;
+//     $order->status = json_encode([
+//         'value' => 'pending',
+//         'label' => 'Pending'
+//     ]);  // Setting status as pending
+//     $order->code = '#100000' . rand(1, 9999);  // Generate order code
+//     $order->token = Str::random(32);  // Generate a unique token for the order
+//     $order->is_confirmed = 0; // Assuming the order is not confirmed yet
+//     $order->is_finished = 1;  // Assuming the order is finished for now
+//     $order->cancellation_reason = null; // Assuming no cancellation reason
+//     $order->cancellation_reason_description = null; // Assuming no cancellation description
+//     $order->completed_at = null; // Assuming the order is not completed yet
+//     $order->store_id = 7; // Store ID should be set accordingly
+//     $order->created_at = now();
+//     $order->updated_at = now();
+//     $order->save();
+
+//     // Optionally, store products or other details here as part of the order
+//     $product_details = [];
+//     foreach ($request->products as $product) {
+//         $product_details[] = [
+//             'product_id' => $product['product_id'],
+//             'quantity' => $product['quantity'],
+//             'price' => $product['price'],
+//         ];
+//     }
+
+//     // Optionally, store product details in `description` field
+//     $order->description = json_encode($product_details);
+//     $order->save();
+
+//     // Return the created order as JSON, including all the necessary fields
+//     return response()->json([
+//         'id' => $order->id,
+//         'code' => $order->code,
+//         'user_id' => $order->user_id,
+//         'shipping_option' => '3', // This can be dynamic based on the shipping method
+//         'shipping_method' => json_decode($order->shipping_method),
+//         'status' => json_decode($order->status),
+//         'amount' => $order->amount,
+//         'tax_amount' => $order->tax_amount,
+//         'shipping_amount' => $order->shipping_amount,
+//         'description' => $order->description,
+//         'coupon_code' => null, // You can adjust this if coupon codes are being used
+//         'discount_amount' => 0.00, // Assuming no discount is applied
+//         'sub_total' => $order->sub_total,
+//         'is_confirmed' => $order->is_confirmed,
+//         'discount_description' => null, // Assuming no discount description
+//         'is_finished' => $order->is_finished,
+//         'cancellation_reason' => $order->cancellation_reason,
+//         'cancellation_reason_description' => $order->cancellation_reason_description,
+//         'completed_at' => $order->completed_at,
+//         'token' => $order->token,
+//         'payment_id' => 5, // You can adjust this based on the actual payment method
+//         'created_at' => $order->created_at,
+//         'updated_at' => $order->updated_at,
+//         'proof_file' => null, // Assuming no proof file is uploaded
+//         'store_id' => $order->store_id,
+//         'products' => json_decode($order->description) // Return the product details
+//     ], 201);  // Return the full order data as JSON
+// }
 
 
 // Calculate sub_total based on products
@@ -266,7 +407,7 @@ public function index(Request $request)
 
         return response()->json(null, 204);
     }
-    
+
     public function getGenerateInvoice(Order $order, Request $request)
     {
         if (! $order->isInvoiceAvailable()) {
