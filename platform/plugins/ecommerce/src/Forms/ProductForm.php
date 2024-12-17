@@ -877,6 +877,15 @@ class ProductForm extends FormAbstract
                 $productAttributeSets = ProductAttributeSet::getAllWithSelected($productId, []);
 
                 $this
+                ->addMetaBoxes([
+                    'documents' => [
+            'title' => 'Product Documents',
+            'content' => view('plugins/ecommerce::products.partials.documents-form', [
+                'documents' => $this->getModel()->documents ?? [], // Fetch existing documents if editing
+            ]),
+            'priority' => 60,
+        ],
+    ])
                     ->addMetaBoxes([
                         'attribute-sets' => [
                             'content' => '',
