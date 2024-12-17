@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 use Botble\Ecommerce\Models\Order;
 use Botble\Ecommerce\Models\Product;
@@ -12,9 +13,11 @@ use Botble\Ecommerce\Models\Customer;
 use Botble\Ecommerce\Models\OrderHistory;
 use Botble\Ecommerce\Models\OrderAddress;
 use Botble\Ecommerce\Models\OrderProduct;
+use Botble\Payment\Models\Payment;
 
 use Botble\Ecommerce\Enums\OrderStatusEnum;
 use Botble\Ecommerce\Enums\OrderHistoryActionEnum;
+use Botble\Payment\Enums\PaymentStatusEnum;
 
 class OrderApiController extends Controller
 {
@@ -87,6 +90,37 @@ class OrderApiController extends Controller
                 'order_id' => $order->id,
                 'user_id' => $userId,
             ]);
+
+            if ($request->payment_channel) {
+                $payment = new Payment();
+                $payment->currency = cms_currency()->getDefaultCurrency()->title;
+                $payment->user_id = $userId;
+                $payment->charge_id = Str::upper(Str::random(10));
+                $payment->payment_channel = $request->payment_channel;
+                $payment->amount = $request->amount;
+                $payment->order_id = $order->id;
+                $payment->status = $request->payment_status;
+                $payment->payment_type = $request->payment_type;
+                $payment->customer_id = $customer_id ?? null;
+                $payment->created_at = now();
+                $payment->updated_at = now();
+                $payment->customer_type = Customer::class;
+                $payment->save();
+
+                $order->payment_id = $payment->id;
+                $order->save();
+
+                if ($request->payment_status == PaymentStatusEnum::COMPLETED) {
+                    OrderHistory::query()->create([
+                        'action' => OrderHistoryActionEnum::CONFIRM_PAYMENT,
+                        'description' => trans('plugins/ecommerce::order.payment_was_confirmed_by', [
+                            'money' => format_price($order->amount),
+                        ]),
+                        'order_id' => $order->id,
+                        'user_id' => $userId,
+                    ]);
+                }
+            }
 
             if ($customerAddress) {
                 $orderAddress = new OrderAddress();
