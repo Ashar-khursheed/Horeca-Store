@@ -14,7 +14,75 @@ use Illuminate\Support\Facades\Log;
 class CartApiController extends Controller
 {
     
-public function addToCart(Request $request)
+    // public function addToCart(Request $request)
+    // {
+    //     $request->validate([
+    //         'product_id' => 'required|exists:ec_products,id',
+    //         'quantity' => 'required|integer|min:1',
+    //     ]);
+    
+    //     $productId = $request->input('product_id');
+    //     $quantity = $request->input('quantity');
+    
+    //     if (Auth::check()) {
+    //         $userId = Auth::id();
+    
+    //         try {
+    //             \DB::beginTransaction(); // Start DB transaction to ensure atomic operation
+    
+    //             $cartItem = Cart::where('user_id', $userId)
+    //                             ->where('product_id', $productId)
+    //                             ->first();
+    
+    //             if ($cartItem) {
+    //                 // Debug log
+    //                 \Log::info('Updating quantity for existing cart item', ['cartItem' => $cartItem]);
+    
+    //                 $cartItem->quantity += $quantity;
+    //                 $cartItem->save();
+    //             } else {
+    //                 \Log::info('No cart item found, creating a new one');
+    
+    //                 $cartItem = Cart::create([
+    //                     'user_id' => $userId,
+    //                     'product_id' => $productId,
+    //                     'quantity' => $quantity,
+    //                 ]);
+    //             }
+    
+    //             \DB::commit(); // Commit transaction
+    //         } catch (\Exception $e) {
+    //             \DB::rollBack(); // Handle DB failure gracefully
+    //             \Log::error('Error in adding to cart', ['error' => $e->getMessage()]);
+    
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Could not process your request',
+    //             ], 500);
+    //         }
+    
+    //         $cartItem = Cart::with('product.currency')->find($cartItem->id);
+    
+    //         return response()->json([
+    //             'success' => true,
+    //             'data' => [
+    //                 'id' => $cartItem->id,
+    //                 'user_id' => $cartItem->user_id,
+    //                 'product_id' => $cartItem->product_id,
+    //                 'quantity' => $cartItem->quantity,
+    //                 'currency_id' => $cartItem->product->currency->id,
+    //                 'currency_title' => $cartItem->product->currency->title,
+    //             ],
+    //         ]);
+    //     }
+    
+    //     return response()->json([
+    //         'success' => false,
+    //         'message' => 'Unauthorized user',
+    //     ], 401);
+    // }
+    
+    public function addToCart(Request $request)
 {
     $request->validate([
         'product_id' => 'required|exists:ec_products,id',
@@ -25,45 +93,52 @@ public function addToCart(Request $request)
     $quantity = $request->input('quantity');
 
     if (Auth::check()) {
-        // Logged-in user
         $userId = Auth::id();
 
-        // Check if the cart item already exists for the user and product
+        // Check if the user has already added this product
         $cartItem = Cart::where('user_id', $userId)
                         ->where('product_id', $productId)
                         ->first();
 
         if ($cartItem) {
-            // If the item exists, update the quantity
-            $cartItem->quantity += $quantity;
-            $cartItem->save();
+            \Log::info('Cart item already exists', ['cartItem' => $cartItem]);
+
+            // Only update if the current quantity differs
+            if ($cartItem->quantity != $quantity) {
+                \Log::info('Updating cart item with new quantity', ['old_quantity' => $cartItem->quantity, 'new_quantity' => $quantity]);
+                $cartItem->quantity = $quantity;
+                $cartItem->save();
+            } else {
+                \Log::info('Quantity is the same, no update needed');
+            }
         } else {
-            // If the item doesn't exist, create a new cart item
+            \Log::info('No cart item found, creating new');
             $cartItem = Cart::create([
                 'user_id' => $userId,
                 'product_id' => $productId,
                 'quantity' => $quantity,
             ]);
         }
+
+        $cartItem = Cart::with('product.currency')->find($cartItem->id);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $cartItem->id,
+                'user_id' => $cartItem->user_id,
+                'product_id' => $cartItem->product_id,
+                'quantity' => $cartItem->quantity,
+                'currency_id' => $cartItem->product->currency->id,
+                'currency_title' => $cartItem->product->currency->title,
+            ],
+        ]);
     }
 
-    // Fetch the updated cart item with product and currency data
-    $cartItem = Cart::with('product.currency')->find($cartItem->id);
-
     return response()->json([
-        'success' => true,
-        'data' => [
-            'id' => $cartItem->id,
-            'user_id' => $cartItem->user_id,
-            'session_id' => $cartItem->session_id,
-            'product_id' => $cartItem->product_id,
-            'quantity' => $cartItem->quantity,
-            'currency_id' => $cartItem->product->currency->id,
-            'currency_title' => $cartItem->product->currency->title,
-            'created_at' => $cartItem->created_at,
-            'updated_at' => $cartItem->updated_at,
-        ],
-    ]);
+        'success' => false,
+        'message' => 'Unauthorized user',
+    ], 200);
 }
 
  
