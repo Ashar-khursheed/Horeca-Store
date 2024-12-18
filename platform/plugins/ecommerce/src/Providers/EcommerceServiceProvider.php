@@ -714,6 +714,8 @@ class EcommerceServiceProvider extends ServiceProvider
                     'url' => fn () => route('ecommerce/temp-products-status.index'),
                     'permissions' => ['ecommerce::partials.temp-product-status'], // Specify the permissions here
                 ])
+               
+                
 
                 ->registerItem([
                     'id' => 'cms-plugins-ecommerce::partials.temp-product-content',
@@ -856,6 +858,27 @@ class EcommerceServiceProvider extends ServiceProvider
                     'url' => fn () => route('product-types.index'),
                     'permissions' => ['product-types.index'],
                 ])
+
+                ->registerItem([
+                    'id' => 'cms-plugins-category-product-filter',
+                    'priority' => 400,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'Product Category Filter',
+                    'icon' => 'ti ti-tag',
+                    'url' => fn () => route('category-product-filter.index'),
+                    'permissions' => ['category-product-filter.index'],
+                ])
+
+                // ->registerItem([
+                //     'id' => 'cms-plugins-ecommerce::partials.category-product-filter', 
+                //     'priority' => 400,
+                //     'parent_id' => 'cms-plugins-ecommerce',
+                //     'name' => 'Product Category Filter',
+                //     'icon' => 'ti ti-report-analytics',
+                //     'url' => fn () => route('admin/ecommerce/category-product-filter.index'),
+                //     'permissions' => ['ecommerce::partials.category-product-filter'], // Specify the permissions here
+                // ])
+                
                 ->registerItem([
                     'id' => 'cms-plugins-product-attribute',
                     'priority' => 110,

@@ -23,6 +23,11 @@ return [
     'parent_flag' => 'plugins.ecommerce',
    ],
    [
+    'name' => 'Product Cateroy Filter',
+    'flag' => 'ecommerce::partials.category-product-filter',
+    'parent_flag' => 'plugins.ecommerce',
+   ],
+   [
     'name' => 'Product Content Status',
     'flag' => 'ecommerce::partials.temp-product-content',
     'parent_flag' => 'plugins.ecommerce',
