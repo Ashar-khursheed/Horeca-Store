@@ -186,290 +186,268 @@ class ProductForm extends FormAbstract
         elseif ( $productspec)
         {
 
-                        $brands = Brand::query()->pluck('name', 'id')->all();
+            $brands = Brand::query()->pluck('name', 'id')->all();
 
-                        $productCollections = ProductCollection::query()->pluck('name', 'id')->all();
+            $productCollections = ProductCollection::query()->pluck('name', 'id')->all();
 
-                        // $productLabels = ProductLabel::query()->pluck('name', 'id')->all();
+            // $productLabels = ProductLabel::query()->pluck('name', 'id')->all();
 
-                        $productId = null;
-                        $selectedCategories = [];
-                        $tags = null;
-                        $producttypes = null;
-                        $frequently_bought_together= null;
+            $productId = null;
+            $selectedCategories = [];
+            $tags = null;
+            $producttypes = null;
+            $frequently_bought_together= null;
 
-                        $totalProductVariations = 0;
+            $totalProductVariations = 0;
 
-                    if ($this->getModel()) {
-                        $productId = $this->getModel()->id;
+            if ($this->getModel()) {
+                $productId = $this->getModel()->id;
 
-                        $selectedCategories = $this->getModel()->categories()->pluck('category_id')->all();
+                $selectedCategories = $this->getModel()->categories()->pluck('category_id')->all();
 
-                        $totalProductVariations = ProductVariation::query()->where('configurable_product_id', $productId)->count();
+                $totalProductVariations = ProductVariation::query()->where('configurable_product_id', $productId)->count();
 
-                        $tags = $this->getModel()->tags()->pluck('name')->implode(',');
-                        $producttypes = $this->getModel()->types()->pluck('name')->implode(',');
-                    }
+                $tags = $this->getModel()->tags()->pluck('name')->implode(',');
+                $producttypes = $this->getModel()->types()->pluck('name')->implode(',');
+            }
 
-                    $this
-                    ->setupModel(new Product())
-                    ->setValidatorClass(ProductRequest::class)
-                    ->setFormOption('files', true)
-                    ->add('name', TextField::class, NameFieldOption::make()->required()->toArray())
+            $this
+            ->setupModel(new Product())
+            ->setValidatorClass(ProductRequest::class)
+            ->setFormOption('files', true)
+            ->add('name', TextField::class, NameFieldOption::make()->required()->toArray())
 
-                               ->add('sku', 'text', ['label' => 'SKU'])
+                       ->add('sku', 'text', ['label' => 'SKU'])
 
+            ->add(
+                'warranty_information',
+                EditorField::class,
+                EditorFieldOption::make()
+                    ->label(trans('warranty information'))
+                    ->placeholder(trans('core/base::forms.description_placeholder'))->toArray()
+            )
+            ->addMetaBoxes([
+                'shipping_weight' => [
+                    'title' => 'Shipping Weight',
+                    'content' => view('plugins/ecommerce::products.partials.shipping-weight-form', [
+                        'shipping_weight' => $this->getModel()->shipping_weight ?? null, // Fetch existing shipping weight if editing
+                        'shipping_weight_option' => $this->getModel()->shipping_weight_option ?? null, // Fetch existing shipping weight option
+                    ]),
+                    'priority' => 50,
+                ],
+            ])
+
+            ->addMetaBoxes([
+                'comparisons' => [
+                    'title' => 'Comparison Products',
+                    'content' => view('plugins/ecommerce::products.partials.comparison_form', [
+                        'comparisons' => $comparisons,
+                        'products' => Product::pluck('sku', 'id')->toArray(),
+                    ]),
+                    'priority' => 51,
+                ],
+            ])
+
+
+
+            ->addMetaBoxes([
+                'specs' => [
+                    'title' => 'Specifications',
+                    'content' => view('plugins/ecommerce::products.partials.specs-form', [
+                        'specs' => $this->getModel()->specifications ?? [], // Fetch existing specs if editing
+                    ]),
+                    'priority' => 50,
+                ],
+            ])
+
+            ->add('product_type', 'hidden', [
+                'value' => request()->input('product_type') ?: ProductTypeEnum::PHYSICAL,
+            ])
+            ->add('status', SelectField::class, StatusFieldOption::make()->toArray())
+            ->add(
+                'is_featured',
+                OnOffField::class,
+                OnOffFieldOption::make()
+                    ->label(trans('core/base::forms.is_featured'))
+                    ->defaultValue(false)
+                    ->toArray()
+            )
+
+            ->add(
+                'categories[]',
+                TreeCategoryField::class,
+                SelectFieldOption::make()
+                    ->label(trans('plugins/ecommerce::products.form.categories'))
+                    ->choices(ProductCategoryHelper::getActiveTreeCategories())
+                    ->selected(old('categories', $selectedCategories))
+                    ->addAttribute('card-body-class', 'p-0')
+                    ->toArray()
+            )
+            ->when($brands, function () use ($brands) {
+                $this
                     ->add(
-                        'warranty_information',
-                        EditorField::class,
-                        EditorFieldOption::make()
-                            ->label(trans('warranty information'))
-                            ->placeholder(trans('core/base::forms.description_placeholder'))->toArray()
-                    )
-                      ->addMetaBoxes([
-                        'shipping_weight' => [
-                            'title' => 'Shipping Weight',
-                            'content' => view('plugins/ecommerce::products.partials.shipping-weight-form', [
-                                'shipping_weight' => $this->getModel()->shipping_weight ?? null, // Fetch existing shipping weight if editing
-                                'shipping_weight_option' => $this->getModel()->shipping_weight_option ?? null, // Fetch existing shipping weight option
-                            ]),
-                            'priority' => 50,
-                        ],
-                    ])
-                    // ->addMetaBoxes([
-
-                    //     'comparisons' => [
-                    //         'title' => 'Comparison Products',
-                    //         'content' => view('plugins/ecommerce::products.partials.comparison_form', [
-                    //             'comparisons' => $this->getModel()->comparisons ?? [], // Fetch existing comparisons if editing
-                    //             'products' => Product::pluck('sku', 'id')->toArray(), // Fetch SKUs for the dropdown
-                    //         ]),
-                    //         'priority' => 51,
-                    //     ],
-                    // ])
-
-                    ->addMetaBoxes([
-                        'comparisons' => [
-                            'title' => 'Comparison Products',
-                            'content' => view('plugins/ecommerce::products.partials.comparison_form', [
-                                'comparisons' => $comparisons,
-                                'products' => Product::pluck('sku', 'id')->toArray(),
-                            ]),
-                            'priority' => 51,
-                        ],
-                    ])
-
-
-
-                    ->addMetaBoxes([
-                        'specs' => [
-                            'title' => 'Specifications',
-                            'content' => view('plugins/ecommerce::products.partials.specs-form', [
-                                'specs' => $this->getModel()->specifications ?? [], // Fetch existing specs if editing
-                            ]),
-                            'priority' => 50,
-                        ],
-                    ])
-
-
-
-
-                    ->add('product_type', 'hidden', [
-                        'value' => request()->input('product_type') ?: ProductTypeEnum::PHYSICAL,
-                    ])
-                    ->add('status', SelectField::class, StatusFieldOption::make()->toArray())
-                    ->add(
-                        'is_featured',
-                        OnOffField::class,
-                        OnOffFieldOption::make()
-                            ->label(trans('core/base::forms.is_featured'))
-                            ->defaultValue(false)
-                            ->toArray()
-                    )
-
-                    ->add(
-                        'categories[]',
-                        TreeCategoryField::class,
+                        'brand_id',
+                        SelectField::class,
                         SelectFieldOption::make()
-                            ->label(trans('plugins/ecommerce::products.form.categories'))
-                            ->choices(ProductCategoryHelper::getActiveTreeCategories())
-                            ->selected(old('categories', $selectedCategories))
-                            ->addAttribute('card-body-class', 'p-0')
+                            ->label(trans('plugins/ecommerce::products.form.brand'))
+                            ->choices($brands)
+                            ->searchable()
+                            ->emptyValue(trans('plugins/ecommerce::brands.select_brand'))
+                            ->allowClear()
                             ->toArray()
-                    )
-                    ->when($brands, function () use ($brands) {
-                        $this
-                            ->add(
-                                'brand_id',
-                                SelectField::class,
-                                SelectFieldOption::make()
-                                    ->label(trans('plugins/ecommerce::products.form.brand'))
-                                    ->choices($brands)
-                                    ->searchable()
-                                    ->emptyValue(trans('plugins/ecommerce::brands.select_brand'))
-                                    ->allowClear()
-                                    ->toArray()
-                            );
-                    })
+                    );
+            })
 
-                    ->when($productCollections, function () use ($productCollections) {
-                        $selectedProductCollections = [];
+            ->when($productCollections, function () use ($productCollections) {
+                $selectedProductCollections = [];
 
-                        if ($this->getModel() && $this->getModel()->getKey()) {
-                            $selectedProductCollections = $this->getModel()
-                                ->productCollections()
-                                ->pluck('product_collection_id')
-                                ->all();
-                        }
-
-                        $this
-                            ->add('product_collections[]', MultiCheckListField::class, [
-                            'label' => trans('plugins/ecommerce::products.form.collections'),
-                            'choices' => $productCollections,
-                            'value' => old('product_collections', $selectedProductCollections),
-                        ]);
-                    })
-
-                    ->add('tag', TagField::class, [
-                        'label' => trans('plugins/ecommerce::products.form.tags'),
-                        'value' => $tags,
-                        'attr' => [
-                            'placeholder' => trans('plugins/ecommerce::products.form.write_some_tags'),
-                            'data-url' => route('product-tag.all'),
-                        ],
-                    ])
-                    ->add('producttypes', TagField::class, [
-                        'label' => trans('plugins/ecommerce::products.form.producttypes'),
-                        'value' => $producttypes,
-                        'attr' => [
-                            'placeholder' => trans('plugins/ecommerce::products.form.write_some_producttypes'),
-                            'data-url' => route('product-types.all'),
-                        ],
-                    ])
-
-                    ->add('frequently_bought_together', TagField::class, [
-                        'label' => trans('plugins/ecommerce::products.form.frequently_bought_together'),
-                        'attr' => [
-                            'placeholder' => trans('plugins/ecommerce::products.form.search_sku'),
-                            'data-url' => route('products.search-sku'), // ensure this route exists
-                        ],
-                        'value' => $frequently_bought_together, // fetch the value from the request or model
-                    ])
-
-
-
-                ->add('google_shopping_category', 'text', ['label' => 'Google Shopping / Google Product Category'])
-
-
-                ->add('google_shopping_mpn', 'text', ['label' => 'Google Shopping / MPN'])
-
-
-
-                    ->setBreakFieldPoint('status');
-
-                if (EcommerceHelper::isEnabledProductOptions()) {
-                    $this
-                        ->addMetaBoxes([
-                            'product_options_box' => [
-                                'title' => trans('plugins/ecommerce::product-option.name'),
-                                'content' => view('plugins/ecommerce::products.partials.product-option-form', [
-                                    'options' => GlobalOptionEnum::options(),
-                                    'globalOptions' => GlobalOption::query()->pluck('name', 'id')->all(),
-                                    'product' => $this->getModel(),
-                                    'routes' => [
-                                        'ajax_option_info' => route('global-option.ajaxInfo'),
-                                    ],
-                                ]),
-                                'priority' => 4,
-                            ],
-                        ]);
+                if ($this->getModel() && $this->getModel()->getKey()) {
+                    $selectedProductCollections = $this->getModel()
+                        ->productCollections()
+                        ->pluck('product_collection_id')
+                        ->all();
                 }
 
-                $productAttributeSets = ProductAttributeSet::getAllWithSelected($productId, []);
+                $this
+                    ->add('product_collections[]', MultiCheckListField::class, [
+                    'label' => trans('plugins/ecommerce::products.form.collections'),
+                    'choices' => $productCollections,
+                    'value' => old('product_collections', $selectedProductCollections),
+                ]);
+            })
 
+            ->add('tag', TagField::class, [
+                'label' => trans('plugins/ecommerce::products.form.tags'),
+                'value' => $tags,
+                'attr' => [
+                    'placeholder' => trans('plugins/ecommerce::products.form.write_some_tags'),
+                    'data-url' => route('product-tag.all'),
+                ],
+            ])
+            ->add('producttypes', TagField::class, [
+                'label' => trans('plugins/ecommerce::products.form.producttypes'),
+                'value' => $producttypes,
+                'attr' => [
+                    'placeholder' => trans('plugins/ecommerce::products.form.write_some_producttypes'),
+                    'data-url' => route('product-types.all'),
+                ],
+            ])
+
+            ->add('frequently_bought_together', TagField::class, [
+                'label' => trans('plugins/ecommerce::products.form.frequently_bought_together'),
+                'attr' => [
+                    'placeholder' => trans('plugins/ecommerce::products.form.search_sku'),
+                    'data-url' => route('products.search-sku'), // ensure this route exists
+                ],
+                'value' => $frequently_bought_together, // fetch the value from the request or model
+            ])
+
+            ->add('google_shopping_category', 'text', ['label' => 'Google Shopping / Google Product Category'])
+            ->add('google_shopping_mpn', 'text', ['label' => 'Google Shopping / MPN'])
+            ->setBreakFieldPoint('status');
+
+            if (EcommerceHelper::isEnabledProductOptions()) {
                 $this
                     ->addMetaBoxes([
-                        'attribute-sets' => [
-                            'content' => '',
-                            'before_wrapper' => '<div class="d-none product-attribute-sets-url" data-url="' . route('products.product-attribute-sets') . '">',
+                        'product_options_box' => [
+                            'title' => trans('plugins/ecommerce::product-option.name'),
+                            'content' => view('plugins/ecommerce::products.partials.product-option-form', [
+                                'options' => GlobalOptionEnum::options(),
+                                'globalOptions' => GlobalOption::query()->pluck('name', 'id')->all(),
+                                'product' => $this->getModel(),
+                                'routes' => [
+                                    'ajax_option_info' => route('global-option.ajaxInfo'),
+                                ],
+                            ]),
+                            'priority' => 4,
+                        ],
+                    ]);
+            }
+
+            $productAttributeSets = ProductAttributeSet::getAllWithSelected($productId, []);
+
+            $this
+            ->addMetaBoxes([
+                'attribute-sets' => [
+                    'content' => '',
+                    'before_wrapper' => '<div class="d-none product-attribute-sets-url" data-url="' . route('products.product-attribute-sets') . '">',
+                    'after_wrapper' => '</div>',
+                    'priority' => 3,
+                ],
+            ]);
+
+            if (! $totalProductVariations) {
+                $this
+                    ->removeMetaBox('variations')
+                    ->addMetaBoxes([
+                        'general' => [
+                            'title' => trans('plugins/ecommerce::products.overview'),
+                            'content' => view(
+                                'plugins/ecommerce::products.partials.general',
+                                [
+                                    'product' => $productId ? $this->getModel() : null,
+                                    'isVariation' => false,
+                                    'originalProduct' => null,
+                                ]
+                            ),
+                            'before_wrapper' => '<div id="main-manage-product-type">',
+                            'priority' => 2,
+                        ],
+                        'attributes' => [
+                            'title' => trans('plugins/ecommerce::products.attributes'),
+                            'content' => view('plugins/ecommerce::products.partials.add-product-attributes', [
+                                'product' => $this->getModel(),
+                                'productAttributeSets' => $productAttributeSets,
+                                'addAttributeToProductUrl' => $this->getModel()->id
+                                    ? route('products.add-attribute-to-product', $this->getModel()->id)
+                                    : null,
+                            ]),
+                            'header_actions' => $productAttributeSets->isNotEmpty()
+                                ? view('plugins/ecommerce::products.partials.product-attribute-actions')
+                                : null,
                             'after_wrapper' => '</div>',
                             'priority' => 3,
                         ],
                     ]);
+            } elseif ($productId) {
+                $productVariationTable = app(ProductVariationTable::class)
+                    ->setProductId($productId)
+                    ->setProductAttributeSets($productAttributeSets);
 
-                if (! $totalProductVariations) {
-                    $this
-                        ->removeMetaBox('variations')
-                        ->addMetaBoxes([
-                            'general' => [
-                                'title' => trans('plugins/ecommerce::products.overview'),
-                                'content' => view(
-                                    'plugins/ecommerce::products.partials.general',
-                                    [
-                                        'product' => $productId ? $this->getModel() : null,
-                                        'isVariation' => false,
-                                        'originalProduct' => null,
-                                    ]
-                                ),
-                                'before_wrapper' => '<div id="main-manage-product-type">',
-                                'priority' => 2,
-                            ],
-                            'attributes' => [
-                                'title' => trans('plugins/ecommerce::products.attributes'),
-                                'content' => view('plugins/ecommerce::products.partials.add-product-attributes', [
-                                    'product' => $this->getModel(),
-                                    'productAttributeSets' => $productAttributeSets,
-                                    'addAttributeToProductUrl' => $this->getModel()->id
-                                        ? route('products.add-attribute-to-product', $this->getModel()->id)
-                                        : null,
-                                ]),
-                                'header_actions' => $productAttributeSets->isNotEmpty()
-                                    ? view('plugins/ecommerce::products.partials.product-attribute-actions')
-                                    : null,
-                                'after_wrapper' => '</div>',
-                                'priority' => 3,
-                            ],
-                        ]);
-                } elseif ($productId) {
-                    $productVariationTable = app(ProductVariationTable::class)
-                        ->setProductId($productId)
-                        ->setProductAttributeSets($productAttributeSets);
-
-                    if (EcommerceHelper::isEnabledSupportDigitalProducts() && $this->getModel()->isTypeDigital()) {
-                        $productVariationTable->isDigitalProduct();
-                    }
-
-                    $this
-                        ->removeMetaBox('general')
-                        ->addMetaBoxes([
-                            'variations' => [
-                                'title' => trans('plugins/ecommerce::products.product_has_variations'),
-                                'content' => view('plugins/ecommerce::products.partials.configurable', [
-                                    'product' => $this->getModel(),
-                                    'productAttributeSets' => $productAttributeSets,
-                                    'productVariationTable' => $productVariationTable,
-                                ]),
-                                'header_actions' => view(
-                                    'plugins/ecommerce::products.partials.product-variation-actions',
-                                    ['product' => $this->getModel()]
-                                ),
-                                'has_table' => true,
-                                'before_wrapper' => '<div id="main-manage-product-type">',
-                                'after_wrapper' => '</div>',
-                                'priority' => 3,
-                                'render' => false,
-                            ],
-                        ])
-                        ->addAfter('brand_id', 'sku', TextField::class, TextFieldOption::make()->label(trans('plugins/ecommerce::products.sku')));
+                if (EcommerceHelper::isEnabledSupportDigitalProducts() && $this->getModel()->isTypeDigital()) {
+                    $productVariationTable->isDigitalProduct();
                 }
 
-                if ($productId && is_in_admin(true)) {
-                    add_filter('base_action_form_actions_extra', function () {
-                        return view('plugins/ecommerce::forms.duplicate-action', ['product' => $this->getModel()])->render();
-                    });
-                }
+                $this
+                    ->removeMetaBox('general')
+                    ->addMetaBoxes([
+                        'variations' => [
+                            'title' => trans('plugins/ecommerce::products.product_has_variations'),
+                            'content' => view('plugins/ecommerce::products.partials.configurable', [
+                                'product' => $this->getModel(),
+                                'productAttributeSets' => $productAttributeSets,
+                                'productVariationTable' => $productVariationTable,
+                            ]),
+                            'header_actions' => view(
+                                'plugins/ecommerce::products.partials.product-variation-actions',
+                                ['product' => $this->getModel()]
+                            ),
+                            'has_table' => true,
+                            'before_wrapper' => '<div id="main-manage-product-type">',
+                            'after_wrapper' => '</div>',
+                            'priority' => 3,
+                            'render' => false,
+                        ],
+                    ])
+                    ->addAfter('brand_id', 'sku', TextField::class, TextFieldOption::make()->label(trans('plugins/ecommerce::products.sku')));
+            }
+
+            if ($productId && is_in_admin(true)) {
+                add_filter('base_action_form_actions_extra', function () {
+                    return view('plugins/ecommerce::forms.duplicate-action', ['product' => $this->getModel()])->render();
+                });
+            }
         }
-
         else if($user && DB::table('role_users')->where('user_id', $user->id)->where('role_id', 22)->exists() )
         {
             $brands = Brand::query()->pluck('name', 'id')->all();
