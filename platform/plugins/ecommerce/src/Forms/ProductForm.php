@@ -1338,6 +1338,4 @@ class ProductForm extends FormAbstract
             ->addStylesDirectly('vendor/core/plugins/ecommerce/css/ecommerce.css')
             ->addScriptsDirectly('vendor/core/plugins/ecommerce/js/edit-product.js');
     }
-
-
 }
