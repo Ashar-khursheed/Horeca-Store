@@ -163,7 +163,7 @@ class ProductController extends BaseController
             $product->frequently_bought_together = $request->input('frequently_bought_together');
 
 
-          
+
             $product->refund= $request->input('refund');
 
                // Load existing documents
@@ -248,10 +248,10 @@ class ProductController extends BaseController
 
                 // Save updated documents to the database
                 $product->documents = json_encode($documents, JSON_THROW_ON_ERROR);
-            
+
             return redirect()->back()->with('success', 'Documents updated successfully.');
-            
-          
+
+
             $request->validate([
                 'video_url' => 'nullable|url',
                 'video' => 'nullable|mimes:mp4,avi,mov,wmv|max:51200', // Max size of 50 MB
@@ -452,7 +452,7 @@ class ProductController extends BaseController
                     ->setNextUrl(route('products.edit', $product->id))
                     ->withCreatedSuccessMessage();
         }
-            
+
 
         else {
             $this->validate($request, [
@@ -596,10 +596,10 @@ class ProductController extends BaseController
 
                 // Save updated documents to the database
                 $product->documents = json_encode($documents, JSON_THROW_ON_ERROR);
-            
+
             return redirect()->back()->with('success', 'Documents updated successfully.');
-            
-          
+
+
             $request->validate([
                 'video_url' => 'nullable|url',
                 'video' => 'nullable|mimes:mp4,avi,mov,wmv|max:51200', // Max size of 50 MB
@@ -808,7 +808,7 @@ class ProductController extends BaseController
     StoreProductService $service,
     StoreProductTagService $storeProductTagService ,   StoreProductTypesService $storeProductTypesService )
     {
-        // dd($request->discount);
+        // dd($request->producttypes);
         // Get the currently authenticated user
         $userId = Auth::id();
 
@@ -876,36 +876,36 @@ class ProductController extends BaseController
                 foreach ($existingDocuments as $doc) {
                     $documentsByTitle[$doc['title']] = $doc['path'];
                 }
-                
+
                 // Titles for predefined documents
                 $titles = ['Specsheet', 'Manual', 'Warranty', 'Brochure'];
-                
+
                 if ($request->hasFile('documents')) {
                     foreach ($request->file('documents') as $index => $document) {
                         if ($document) {
                             $path = $document->store('products/documents', 'public');
-                
+
                             // Determine the title for the uploaded document
                             $title = $index < count($titles)
                                 ? $titles[$index]
                                 : ($request->titles[$index] ?? 'Untitled');
-                
+
                             // Overwrite existing document or add new one
                             $documentsByTitle[$title] = $path;
                         }
                     }
                 }
-                
+
                 // Rebuild and save the documents array
                 $documents = [];
                 foreach ($documentsByTitle as $title => $path) {
                     $documents[] = ['title' => $title, 'path' => $path];
                 }
-                
+
                 // Save updated documents to the database
                 $product->documents = json_encode($documents, JSON_THROW_ON_ERROR);
-          
-                
+
+
 
 
                 /* Manage Video */
@@ -1101,32 +1101,32 @@ class ProductController extends BaseController
                     foreach ($existingDocuments as $doc) {
                         $documentsByTitle[$doc['title']] = $doc['path'];
                     }
-                    
+
                     // Titles for predefined documents
                     $titles = ['Specsheet', 'Manual', 'Warranty', 'Brochure'];
-                    
+
                     if ($request->hasFile('documents')) {
                         foreach ($request->file('documents') as $index => $document) {
                             if ($document) {
                                 $path = $document->store('products/documents', 'public');
-                    
+
                                 // Determine the title for the uploaded document
                                 $title = $index < count($titles)
                                     ? $titles[$index]
                                     : ($request->titles[$index] ?? 'Untitled');
-                    
+
                                 // Overwrite existing document or add new one
                                 $documentsByTitle[$title] = $path;
                             }
                         }
                     }
-                    
+
                     // Rebuild and save the documents array
                     $documents = [];
                     foreach ($documentsByTitle as $title => $path) {
                         $documents[] = ['title' => $title, 'path' => $path];
                     }
-                    
+
                     // Save updated documents to the database
                     $product->documents = json_encode($documents, JSON_THROW_ON_ERROR);
 
@@ -1482,32 +1482,32 @@ class ProductController extends BaseController
                     foreach ($existingDocuments as $doc) {
                         $documentsByTitle[$doc['title']] = $doc['path'];
                     }
-                    
+
                     // Titles for predefined documents
                     $titles = ['Specsheet', 'Manual', 'Warranty', 'Brochure'];
-                    
+
                     if ($request->hasFile('documents')) {
                         foreach ($request->file('documents') as $index => $document) {
                             if ($document) {
                                 $path = $document->store('products/documents', 'public');
-                    
+
                                 // Determine the title for the uploaded document
                                 $title = $index < count($titles)
                                     ? $titles[$index]
                                     : ($request->titles[$index] ?? 'Untitled');
-                    
+
                                 // Overwrite existing document or add new one
                                 $documentsByTitle[$title] = $path;
                             }
                         }
                     }
-                    
+
                     // Rebuild and save the documents array
                     $documents = [];
                     foreach ($documentsByTitle as $title => $path) {
                         $documents[] = ['title' => $title, 'path' => $path];
                     }
-                    
+
                     // Save updated documents to the database
                     $product->documents = json_encode($documents, JSON_THROW_ON_ERROR);
 

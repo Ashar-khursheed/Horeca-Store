@@ -40,6 +40,8 @@ use Botble\Ecommerce\Models\ProductCollection;
 use Botble\Ecommerce\Models\ProductLabel;
 use Botble\Ecommerce\Models\ProductVariation;
 use Botble\Ecommerce\Models\Tax;
+use Botble\Ecommerce\Models\ProductTypes;
+
 use Botble\Ecommerce\Tables\ProductVariationTable;
 use Illuminate\Support\HtmlString;
 use Botble\Ecommerce\Models\Review; // Correct import for the Review model
@@ -90,7 +92,6 @@ class ProductForm extends FormAbstract
               $productId = null;
               $selectedCategories = [];
               $tags = null;
-              $producttypes = null;
               $frequently_bought_together= null;
               $totalProductVariations = 0;
 
@@ -102,7 +103,6 @@ class ProductForm extends FormAbstract
               $totalProductVariations = ProductVariation::query()->where('configurable_product_id', $productId)->count();
 
               $tags = $this->getModel()->tags()->pluck('name')->implode(',');
-              $producttypes = $this->getModel()->types()->pluck('name')->implode(',');
           }
 
               $this
@@ -189,6 +189,7 @@ class ProductForm extends FormAbstract
             $brands = Brand::query()->pluck('name', 'id')->all();
 
             $productCollections = ProductCollection::query()->pluck('name', 'id')->all();
+            $productTypeOptions = ProductTypes::pluck('name', 'id')->all();
 
             // $productLabels = ProductLabel::query()->pluck('name', 'id')->all();
 
@@ -324,14 +325,24 @@ class ProductForm extends FormAbstract
                     'data-url' => route('product-tag.all'),
                 ],
             ])
-            ->add('producttypes', TagField::class, [
-                'label' => trans('plugins/ecommerce::products.form.producttypes'),
-                'value' => $producttypes,
-                'attr' => [
-                    'placeholder' => trans('plugins/ecommerce::products.form.write_some_producttypes'),
-                    'data-url' => route('product-types.all'),
-                ],
-            ])
+            // ->add('producttypes', TagField::class, [
+            //     'label' => trans('plugins/ecommerce::products.form.producttypes'),
+            //     'value' => $producttypes,
+            //     'attr' => [
+            //         'placeholder' => trans('plugins/ecommerce::products.form.write_some_producttypes'),
+            //         'data-url' => route('product-types.all'),
+            //     ],
+            // ])
+            ->add(
+                'producttypes',
+                SelectField::class,
+                SelectFieldOption::make()
+                    ->label(trans('plugins/ecommerce::products.form.producttypes'))
+                    ->choices($productTypeOptions)
+                    ->searchable(true)
+                    ->multiple(true)
+                    ->toArray()
+            )
 
             ->add('frequently_bought_together', TagField::class, [
                 'label' => trans('plugins/ecommerce::products.form.frequently_bought_together'),
@@ -459,7 +470,6 @@ class ProductForm extends FormAbstract
             $productId = null;
             $selectedCategories = [];
             $tags = null;
-            $producttypes = null;
             $frequently_bought_together= null;
 
             $totalProductVariations = 0;
@@ -472,7 +482,6 @@ class ProductForm extends FormAbstract
                 $totalProductVariations = ProductVariation::query()->where('configurable_product_id', $productId)->count();
 
                 $tags = $this->getModel()->tags()->pluck('name')->implode(',');
-                $producttypes = $this->getModel()->producttypes()->pluck('name')->implode(',');
             }
 
             $this
@@ -643,6 +652,7 @@ class ProductForm extends FormAbstract
             $brands = Brand::query()->pluck('name', 'id')->all();
 
             $productCollections = ProductCollection::query()->pluck('name', 'id')->all();
+            $productTypeOptions = ProductTypes::pluck('name', 'id')->all();
 
             // $productLabels = ProductLabel::query()->pluck('name', 'id')->all();
 
@@ -793,25 +803,35 @@ class ProductForm extends FormAbstract
                 ],
             ])
 
-            ->add('producttypes', TagField::class, [
-                'label' => trans('plugins/ecommerce::products.form.producttypes'),
-                'value' => $producttypes,
+            // ->add('producttypes', TagField::class, [
+            //     'label' => trans('plugins/ecommerce::products.form.producttypes'),
+            //     'value' => $producttypes,
+            //     'attr' => [
+            //         'placeholder' => trans('plugins/ecommerce::products.form.write_some_producttypes'),
+            //         'data-url' => route('product-types.all'),
+            //     ],
+            // ])
+            ->add(
+                'producttypes',
+                SelectField::class,
+                SelectFieldOption::make()
+                    ->label(trans('plugins/ecommerce::products.form.producttypes'))
+                    ->choices($productTypeOptions)
+                    ->searchable(true)
+                    ->multiple(true)
+                    ->toArray()
+            )
+
+
+            ->add('frequently_bought_together', TagField::class, [
+                'label' => trans('plugins/ecommerce::products.form.frequently_bought_together'),
                 'attr' => [
-                    'placeholder' => trans('plugins/ecommerce::products.form.write_some_producttypes'),
-                    'data-url' => route('product-types.all'),
+                    'placeholder' => trans('plugins/ecommerce::products.form.search_sku'),
+                    'class' => 'form-control',
+                    'data-url' => route('products.search-sku'), // AJAX URL for SKU search
                 ],
+                'value' => $frequently_bought_together, // Pass existing values to the field
             ])
-
-
-                    ->add('frequently_bought_together', TagField::class, [
-                        'label' => trans('plugins/ecommerce::products.form.frequently_bought_together'),
-                        'attr' => [
-                            'placeholder' => trans('plugins/ecommerce::products.form.search_sku'),
-                            'class' => 'form-control',
-                            'data-url' => route('products.search-sku'), // AJAX URL for SKU search
-                        ],
-                        'value' => $frequently_bought_together, // Pass existing values to the field
-                    ])
 
 
             ->add('google_shopping_category', 'text', ['label' => 'Google Shopping / Google Product Category'])
@@ -926,6 +946,8 @@ class ProductForm extends FormAbstract
             $brands = Brand::query()->pluck('name', 'id')->all();
 
             $productCollections = ProductCollection::query()->pluck('name', 'id')->all();
+            $productTypeOptions = ProductTypes::pluck('name', 'id')->all();
+            // dd($productTypeOptions);
 
 
             $productId = null;
@@ -1018,7 +1040,7 @@ class ProductForm extends FormAbstract
             ])
 
             ->addMetaBoxes([
-                            'documents' => [
+                'documents' => [
                     'title' => 'Product Documents',
                     'content' => view('plugins/ecommerce::products.partials.documents-form', [
                         'documents' => $this->getModel()->documents ?? [], // Fetch existing documents if editing
@@ -1114,14 +1136,24 @@ class ProductForm extends FormAbstract
                     'data-url' => route('product-tag.all'),
                 ],
             ])
-            ->add('producttypes', TagField::class, [
-                'label' => trans('plugins/ecommerce::products.form.producttypes'),
-                'value' => $producttypes,
-                'attr' => [
-                    'placeholder' => trans('plugins/ecommerce::products.form.write_some_producttypes'),
-                    'data-url' => route('product-types.all'),
-                ],
-            ])
+            ->add(
+                'producttypes',
+                SelectField::class,
+                SelectFieldOption::make()
+                    ->label(trans('plugins/ecommerce::products.form.producttypes'))
+                    ->choices($productTypeOptions)
+                    ->searchable(true)
+                    ->multiple(true)
+                    ->toArray()
+            )
+            // ->add('producttypes', TagField::class, [
+            //     'label' => trans('plugins/ecommerce::products.form.producttypes'),
+            //     'value' => $producttypes,
+            //     'attr' => [
+            //         'placeholder' => trans('plugins/ecommerce::products.form.write_some_producttypes'),
+            //         'data-url' => route('product-types.all'),
+            //     ],
+            // ])
 
             ->add('frequently_bought_together', TagField::class, [
                 'label' => trans('plugins/ecommerce::products.form.frequently_bought_together'),
