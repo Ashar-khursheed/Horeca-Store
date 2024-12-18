@@ -865,7 +865,7 @@ class EcommerceServiceProvider extends ServiceProvider
                     'parent_id' => 'cms-plugins-ecommerce',
                     'name' => 'Product Category Filter',
                     'icon' => 'ti ti-tag',
-                    'url' => fn () => route('category-product-filter.index'),
+                    'url' => fn () => route('admin/ecommerce/category-product-filter.index'),
                     'permissions' => ['category-product-filter.index'],
                 ])
 
