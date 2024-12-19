@@ -137,6 +137,8 @@ class ProductController extends BaseController
             $this->validate($request, [
                 'documents.*' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
                 'titles.*' => 'nullable|string|max:255',
+                'producttypes' => 'required|array|min:1',
+                'producttypes.*' => 'required|integer',
             ]);
 
              $validatedData = $request->validate([
@@ -458,6 +460,8 @@ class ProductController extends BaseController
             $this->validate($request, [
                 'documents.*' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
                 'titles.*' => 'nullable|string|max:255',
+                'producttypes' => 'required|array|min:1',
+                'producttypes.*' => 'required|integer',
             ]);
 
              $validatedData = $request->validate([
@@ -1046,6 +1050,8 @@ class ProductController extends BaseController
                 'titles.*' => 'nullable|string|max:255',
                 'compare_type' => 'nullable|string',
                 'compare_products' => 'nullable|string',
+                'producttypes' => 'required|array|min:1',
+                'producttypes.*' => 'required|integer',
             ], [
                 // Messages for Group 0
                 'discount.0.product_quantity.required_with' => 'The product quantity for the first discount is required when the second discount product quantity is provided.',
@@ -1427,6 +1433,8 @@ class ProductController extends BaseController
                 'titles.*' => 'nullable|string|max:255',
                 'compare_type' => 'nullable|string',
                 'compare_products' => 'nullable|string',
+                'producttypes' => 'required|array|min:1',
+                'producttypes.*' => 'required|integer',
             ], [
                 // Messages for Group 0
                 'discount.0.product_quantity.required_with' => 'The product quantity for the first discount is required when the second discount product quantity is provided.',
