@@ -56,11 +56,11 @@ class MakePluginModel extends Command
 		// Create Migration
 		if ($createMigration) {
 			$this->call('make:migration', [
-				'name' => 'create_' . strtolower(Str::plural($modelName)) . '_table',
+				'name' => 'create_' . strtolower(Str::pluralStudly($modelName)) . '_table',
 			]);
 
 			// Move the migration to the plugin directory
-			$migrationFiles = File::glob(database_path('migrations/*create_' . strtolower(Str::plural($modelName)) . '_table.php'));
+			$migrationFiles = File::glob(database_path('migrations/*create_' . strtolower(Str::pluralStudly($modelName)) . '_table.php'));
 			if ($migrationFiles) {
 				$migrationFile = end($migrationFiles);
 				$targetPath = "{$pluginPath}/database/migrations/" . basename($migrationFile);
