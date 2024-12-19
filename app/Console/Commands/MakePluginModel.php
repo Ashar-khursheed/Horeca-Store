@@ -34,11 +34,23 @@ class MakePluginModel extends Command
 		}
 
 		// Create Model
+		$modelNamespace = "Platform\\Plugins\\{$plugin}\\Models";
 		$modelPath = "{$pluginPath}/src/Models/{$modelName}.php";
-		$this->call('make:model', [
-			'name' => "Platform/Plugins/{$plugin}/Models/{$modelName}",
-		]);
 
+		// Generate model file manually
+		File::ensureDirectoryExists("{$pluginPath}/src/Models");
+		$modelContent = "<?php
+
+		namespace {$modelNamespace};
+
+		use Illuminate\Database\Eloquent\Model;
+
+		class {$modelName} extends Model
+		{
+			// Model configuration can go here
+		}";
+
+		File::put($modelPath, $modelContent);
 		$this->info("Model created at: {$modelPath}");
 
 		// Create Migration
@@ -57,27 +69,27 @@ class MakePluginModel extends Command
 			}
 		}
 
-		// Create Model
-		if ($createModel) {
-			$modelNamespace = "Platform\\Plugins\\{$plugin}\\Models";
-			$modelPath = "{$pluginPath}/src/Models/{$modelName}.php";
+		// // Create Model
+		// if ($createModel) {
+		// 	$modelNamespace = "Platform\\Plugins\\{$plugin}\\Models";
+		// 	$modelPath = "{$pluginPath}/src/Models/{$modelName}.php";
 
-			// Generate model file manually
-			File::ensureDirectoryExists("{$pluginPath}/src/Models");
-			$modelContent = "<?php
+		// 	// Generate model file manually
+		// 	File::ensureDirectoryExists("{$pluginPath}/src/Models");
+		// 	$modelContent = "<?php
 
-			namespace {$modelNamespace};
+		// 	namespace {$modelNamespace};
 
-			use Illuminate\Database\Eloquent\Model;
+		// 	use Illuminate\Database\Eloquent\Model;
 
-			class {$modelName} extends Model
-			{
-				// Model configuration can go here
-			}";
+		// 	class {$modelName} extends Model
+		// 	{
+		// 		// Model configuration can go here
+		// 	}";
 
-			File::put($modelPath, $modelContent);
-			$this->info("Model created at: {$modelPath}");
-		}
+		// 	File::put($modelPath, $modelContent);
+		// 	$this->info("Model created at: {$modelPath}");
+		// }
 
 
 		// Create Resource Controller
@@ -102,7 +114,7 @@ class MakePluginModel extends Command
 				 * Display a listing of the resource.
 				 */
 				public function index()
-				{
+				// {
 					// Code for listing resources
 				}
 
