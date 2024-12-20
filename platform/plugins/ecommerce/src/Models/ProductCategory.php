@@ -152,7 +152,14 @@ class ProductCategory extends BaseModel implements HasTreeCategoryContract
             return null;
         });
     }
-    
-    // In ProductCategory model
 
+    public function productTypes()
+    {
+        return $this->belongsToMany(ProductTypes::class, 'category_product_types', 'category_id', 'product_type_id');
+    }
+
+    public function specifications()
+    {
+        return $this->hasMany(CategorySpecification::class, 'category_id');
+    }
 }
