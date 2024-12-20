@@ -41,14 +41,14 @@ class MakePluginModel extends Command
 		File::ensureDirectoryExists("{$pluginPath}/src/Models");
 		$modelContent = "<?php
 
-		namespace {$modelNamespace};
+namespace {$modelNamespace};
 
-		use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Model;
 
-		class {$modelName} extends Model
-		{
-			// Model configuration can go here
-		}";
+class {$modelName} extends Model
+{
+	// Model configuration can go here
+}";
 
 		File::put($modelPath, $modelContent);
 		$this->info("Model created at: {$modelPath}");
@@ -69,32 +69,9 @@ class MakePluginModel extends Command
 			}
 		}
 
-		// // Create Model
-		// if ($createModel) {
-		// 	$modelNamespace = "Platform\\Plugins\\{$plugin}\\Models";
-		// 	$modelPath = "{$pluginPath}/src/Models/{$modelName}.php";
-
-		// 	// Generate model file manually
-		// 	File::ensureDirectoryExists("{$pluginPath}/src/Models");
-		// 	$modelContent = "<?php
-
-		// 	namespace {$modelNamespace};
-
-		// 	use Illuminate\Database\Eloquent\Model;
-
-		// 	class {$modelName} extends Model
-		// 	{
-		// 		// Model configuration can go here
-		// 	}";
-
-		// 	File::put($modelPath, $modelContent);
-		// 	$this->info("Model created at: {$modelPath}");
-		// }
-
-
 		// Create Resource Controller
 		if ($createController) {
-			$controllerNamespace = "Platform\\Plugins\\{$plugin}\\Http\\Controllers";
+			$controllerNamespace = "Botble\\Ecommerce\\Http\\Controllers;";
 			$controllerPath = "{$pluginPath}/src/Http/Controllers/{$modelName}Controller.php";
 
 			// Ensure directory exists
@@ -103,69 +80,69 @@ class MakePluginModel extends Command
 			// Resource controller content
 			$controllerContent = "<?php
 
-			namespace {$controllerNamespace};
+namespace {$controllerNamespace};
 
-			use App\Http\Controllers\Controller;
-			use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 
-			class {$modelName}Controller extends Controller
-			{
-				/**
-				 * Display a listing of the resource.
-				 */
-				public function index()
-				// {
-					// Code for listing resources
-				}
+class {$modelName}Controller extends BaseController
+{
+	/**
+	 * Display a listing of the resource.
+	 */
+	public function index()
+	{
+		// Code for listing resources
+	}
 
-				/**
-				 * Show the form for creating a new resource.
-				 */
-				public function create()
-				{
-					// Code for showing create form
-				}
+	/**
+	 * Show the form for creating a new resource.
+	 */
+	public function create()
+	{
+		// Code for showing create form
+	}
 
-				/**
-				 * Store a newly created resource in storage.
-				 */
-				public function store(Request \$request)
-				{
-					// Code for storing a resource
-				}
+	/**
+	 * Store a newly created resource in storage.
+	 */
+	public function store(Request \$request)
+	{
+		// Code for storing a resource
+	}
 
-				/**
-				 * Display the specified resource.
-				 */
-				public function show(\$id)
-				{
-					// Code for showing a single resource
-				}
+	/**
+	 * Display the specified resource.
+	 */
+	public function show(\$id)
+	{
+		// Code for showing a single resource
+	}
 
-				/**
-				 * Show the form for editing the specified resource.
-				 */
-				public function edit(\$id)
-				{
-					// Code for showing edit form
-				}
+	/**
+	 * Show the form for editing the specified resource.
+	 */
+	public function edit(\$id)
+	{
+		// Code for showing edit form
+	}
 
-				/**
-				 * Update the specified resource in storage.
-				 */
-				public function update(Request \$request, \$id)
-				{
-					// Code for updating a resource
-				}
+	/**
+	 * Update the specified resource in storage.
+	 */
+	public function update(Request \$request, \$id)
+	{
+		// Code for updating a resource
+	}
 
-				/**
-				 * Remove the specified resource from storage.
-				 */
-				public function destroy(\$id)
-				{
-					// Code for deleting a resource
-				}
-			}";
+	/**
+	 * Remove the specified resource from storage.
+	 */
+	public function destroy(\$id)
+	{
+		// Code for deleting a resource
+	}
+}";
 
 			// Write the controller content to the file
 			File::put($controllerPath, $controllerContent);

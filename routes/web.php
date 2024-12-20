@@ -12,7 +12,7 @@
 */
 use Botble\Ecommerce\Http\Controllers\TempProductController;
 use Botble\Ecommerce\Http\Controllers\TempProductStatusController;
-use Botble\Ecommerce\Http\Controllers\CategoryFilterController;
+use Botble\Ecommerce\Http\Controllers\CategoryProductTypeController;
 use Botble\Ecommerce\Http\Controllers\TempContentController;
 use Botble\Ecommerce\Http\Controllers\ProductController;
 use Botble\Ecommerce\Http\Controllers\DocumentController;
@@ -48,11 +48,10 @@ Route::post('ecommerce/temp-products-content/approve', [TempContentController::c
 
 
 
-Route::get('admin/ecommerce/category-product-filter', [CategoryFilterController::class, 'index'])->name('admin/ecommerce/category-product-filter.index');
-Route::post('admin/ecommerce/category-product-filter/pricing-approve', [CategoryFilterController::class, 'approvePricingChanges'])->name('category-product-filter.pricing_approve');
-Route::post('admin/ecommerce/category-product-filter/approve', [CategoryFilterController::class, 'approveChanges'])->name('category-product-filter.approve');
-Route::post('/delete-document', [CategoryFilterController::class, 'deleteDocument'])
-     ->name('document.delete');
+Route::get('admin/ecommerce/category-product-filter', [CategoryProductTypeController::class, 'index'])->name('categoryFilter.index');
+Route::get('admin/ecommerce/category-product-filter/{id}/edit', [CategoryProductTypeController::class, 'edit'])->name('categoryFilter.edit');
+Route::put('admin/ecommerce/category-product-filter/{id}', [CategoryProductTypeController::class, 'update'])->name('categoryFilter.update');
+
 
      AdminHelper::registerRoutes(function () {
          Route::group(['namespace' => 'Botble\ProductImages\Http\Controllers', 'prefix' => 'ecommerce'], function () {
