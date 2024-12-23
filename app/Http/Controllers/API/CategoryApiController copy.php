@@ -240,24 +240,14 @@ public function getAllFeaturedProductsByCategory(Request $request)
                 $leftStock = $quantity - $unitsSold;
 
                 // Add currency symbol
-                $currencyTitle = $productDetails->currency ? $productDetails->currency->title : $productDetails->price; // Fallback if no currency found
+                if ($productDetails->currency) {
+                    $currencyTitle = $productDetails->currency->title;
+                } else {
+                    $currencyTitle = $productDetails->price; // Fallback if no currency found
+                }
 
                 // Check if the product is in the wishlist
                 $isInWishlist = in_array($productDetails->id, $wishlistProductIds);
-
-                // Get the images URLs by prepending the correct base URL
-                $imageUrls = collect($productDetails->images)->map(function ($image) {
-                    if (strpos($image, 'storage/products/') === 0) {
-                        // Image is inside storage/products folder
-                        return asset('storage/products/' . $image);
-                    } elseif (strpos($image, 'storage/') === 0) {
-                        // Image is inside storage folder but not in the 'products' subfolder
-                        return asset('storage/' . $image);
-                    } else {
-                        // Image is not inside storage, assume it's in public
-                        return asset('storage/' . $image);  // this should be your fallback logic if images are in public
-                    }
-                });
 
                 // Append the values to the product
                 return array_merge($productDetails->toArray(), [
@@ -266,7 +256,6 @@ public function getAllFeaturedProductsByCategory(Request $request)
                     'leftStock' => $leftStock,
                     'currency' => $currencyTitle,
                     'in_wishlist' => $isInWishlist, // Add wishlist status
-                    'images' => $imageUrls, // Add the full image URLs here
                 ]);
             }),
         ];
@@ -278,7 +267,6 @@ public function getAllFeaturedProductsByCategory(Request $request)
         'data' => $categories,
     ]);
 }
-
 
 public function getAllGuestFeaturedProductsByCategory(Request $request)
 {
@@ -323,29 +311,26 @@ public function getAllGuestFeaturedProductsByCategory(Request $request)
                 $leftStock = $quantity - $unitsSold;
 
                 // Add currency symbol
-                $currencyTitle = $productDetails->currency ? $productDetails->currency->title : $productDetails->price; // Fallback if no currency found
+                if ($productDetails->currency) {
+                    $currencyTitle = $productDetails->currency->title;
+                } else {
+                    $currencyTitle = $productDetails->price; // Fallback if no currency found
+                }
 
-                // Get the images URLs by prepending the correct base URL
-                $imageUrls = collect($productDetails->images)->map(function ($image) {
-                    if (strpos($image, 'storage/products/') === 0) {
-                        // Image is inside storage/products folder
-                        return asset('storage/products/' . $image);
-                    } elseif (strpos($image, 'storage/') === 0) {
-                        // Image is inside storage folder but not in the 'products' subfolder
-                        return asset('storage/' . $image);
-                    } else {
-                        // Image is not inside storage, assume it's in public
-                        return asset('storage/' . $image);  // This assumes fallback logic if images are in public
-                    }
-                });
-
-                // Return product data with additional info
+                // Append the values to the product
+                // return [
+                //     'product' => $productDetails,
+                //     'total_reviews' => $totalReviews,
+                //     'avg_rating' => $avgRating,
+                //     'leftStock' => $leftStock,
+                //     'currency' => $currencyTitle,
+                // ];
+                 // Return product data with additional info
                 return array_merge($productDetails->toArray(), [
                     'total_reviews' => $totalReviews,
                     'avg_rating' => $avgRating,
                     'leftStock' => $leftStock,
                     'currency' => $currencyTitle,
-                    'images' => $imageUrls, // Add the full image URLs here
                 ]);
             }),
         ];
@@ -356,7 +341,6 @@ public function getAllGuestFeaturedProductsByCategory(Request $request)
         'data' => $categories,
     ]);
 }
-
 
 
 }
