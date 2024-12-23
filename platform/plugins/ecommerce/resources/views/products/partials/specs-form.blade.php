@@ -1,11 +1,22 @@
+{{-- {{dd($specs, $specificationNamePresent)}} --}}
 <div id="specs-wrapper">
-    @foreach($specs as $spec)
-        <div class="spec-item">
-            <input type="text" name="specs[{{ $loop->index }}][name]" value="{{ old("specs.$loop->index.name", $spec->spec_name) }}" placeholder="Spec Name" />
-            <input type="text" name="specs[{{ $loop->index }}][value]" value="{{ old("specs.$loop->index.value", $spec->spec_value) }}" placeholder="Spec Value" />
-            <button type="button" class="remove-spec">Remove</button>
-        </div>
-    @endforeach
+    @if($specificationNamePresent == true)
+        @foreach($specs as $spec)
+            <div class="spec-item">
+                <input type="text" name="specs[{{ $loop->index }}][name]" value="{{ $spec }}" readonly />
+                <input type="text" name="specs[{{ $loop->index }}][value]" placeholder="Spec Value" />
+                <button type="button" class="remove-spec">Remove</button>
+            </div>
+        @endforeach
+    @else
+        @foreach($specs as $spec)
+            <div class="spec-item">
+                <input type="text" name="specs[{{ $loop->index }}][name]" value="{{ old("specs.$loop->index.name", $spec->spec_name) }}" placeholder="Spec Name" />
+                <input type="text" name="specs[{{ $loop->index }}][value]" value="{{ old("specs.$loop->index.value", $spec->spec_value) }}" placeholder="Spec Value" />
+                <button type="button" class="remove-spec">Remove</button>
+            </div>
+        @endforeach
+    @endif
 </div>
 <button type="button" id="add-spec">Add Spec</button>
 <script>
@@ -13,7 +24,7 @@
         document.getElementById('add-spec').addEventListener('click', function() {
             const wrapper = document.getElementById('specs-wrapper');
             const index = wrapper.children.length; // Get the current index
-            
+
             // Create a new spec element
             const newSpec = document.createElement('div');
             newSpec.className = 'spec-item';

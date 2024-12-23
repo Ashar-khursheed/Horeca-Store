@@ -211,6 +211,26 @@ class Product extends BaseModel
         );
     }
 
+    public function latestCategorySpecifications()
+    {
+        return $this->hasManyThrough(
+            CategorySpecification::class,
+            ProductCategoryPivot::class,
+            'product_id',    // Foreign key on ec_product_category_product table
+            'category_id',   // Foreign key on category_specifications table
+            'id',            // Local key on ec_products table
+            'category_id'    // Local key on ec_product_category_product table
+        )
+        ->where('ec_product_category_product.category_id', function ($query) {
+            $query->select('category_id')
+                ->from('ec_product_category_product')
+                ->where('product_id', $this->id)
+                ->orderBy('created_at', 'desc')
+                ->orderBy('category_id', 'desc')
+                ->limit(1);  // Limit to the most recent category
+        });
+    }
+
 
     public function productAttributeSets(): BelongsToMany
     {

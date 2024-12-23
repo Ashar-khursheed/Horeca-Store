@@ -256,6 +256,7 @@ class ProductForm extends FormAbstract
                     'title' => 'Specifications',
                     'content' => view('plugins/ecommerce::products.partials.specs-form', [
                         'specs' => $this->getModel()->specifications ?? [], // Fetch existing specs if editing
+                        'cats' => $this->getModel()->categories ?? []
                     ]),
                     'priority' => 50,
                 ],
@@ -960,6 +961,7 @@ class ProductForm extends FormAbstract
 
             if ($this->getModel()) {
                 $productId = $this->getModel()->id;
+                $specificationNames = $this->getModel()->latestCategorySpecifications->pluck('specification_name')->toArray();
 
                 $selectedCategories = $this->getModel()->categories()->pluck('category_id')->all();
 
@@ -1033,7 +1035,8 @@ class ProductForm extends FormAbstract
                 'specs' => [
                     'title' => 'Specifications',
                     'content' => view('plugins/ecommerce::products.partials.specs-form', [
-                        'specs' => $this->getModel()->specifications ?? [], // Fetch existing specs if editing
+                        'specs' => $this->getModel()->specifications->count() > 0 ? $this->getModel()->specifications : $specificationNames, // Fetch existing specs if editing
+                        'specificationNamePresent' => $this->getModel()->specifications->count() > 0 ? false : true
                     ]),
                     'priority' => 50,
                 ],
