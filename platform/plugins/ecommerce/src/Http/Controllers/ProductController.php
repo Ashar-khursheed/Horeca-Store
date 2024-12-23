@@ -85,6 +85,7 @@ class ProductController extends BaseController
     StoreProductService $service,
     StoreProductTagService $storeProductTagService ,  StoreProductTypesService $storeProductTypesService  )
     {
+
         // Get the currently authenticated user
         $user = Auth::user();
 
@@ -467,9 +468,9 @@ class ProductController extends BaseController
              $validatedData = $request->validate([
                 'compare_type' => 'nullable|string',
                 'compare_products' => 'nullable|string',
+                'video_url' => 'nullable|url',
+                'video' => 'nullable|mimes:mp4,avi,mov,wmv|max:51200', // Max size of 50 MB
             ]);
-
-
 
             // For users not in role 18, save directly to ec_products
             $product = new Product();
@@ -483,8 +484,8 @@ class ProductController extends BaseController
             $product->google_shopping_category = $request->input('google_shopping_category');
             $product->unit_of_measurement_id = $request->input('unit_of_measurement_id');
             // Update compare_type and compare_products
-          $product->compare_type = json_encode(explode(',', $validatedData['compare_type']));
-          $product->compare_products = json_encode(explode(',', $validatedData['compare_products']));
+            $product->compare_type = json_encode(explode(',', $validatedData['compare_type']));
+            $product->compare_products = json_encode(explode(',', $validatedData['compare_products']));
             $product->frequently_bought_together = $request->input('frequently_bought_together');
 
 
@@ -507,15 +508,15 @@ class ProductController extends BaseController
 
             $product->shipping_weight= $request->input('shipping_weight');
             $allowedOptions = ['Kg', 'g', 'pounds', 'oz'];
-                    $shippingWeightOption = $request->input('shipping_weight_option');
+            $shippingWeightOption = $request->input('shipping_weight_option');
 
-                    // Check if the provided option is valid
-                    if (in_array($shippingWeightOption, $allowedOptions)) {
-                        $product->shipping_weight_option = $shippingWeightOption;
-                    } else {
-                        // Handle the case where the input is invalid
-                        return response()->json(['error' => 'Invalid shipping weight option.'], 400);
-                    }
+            // Check if the provided option is valid
+            if (in_array($shippingWeightOption, $allowedOptions)) {
+                $product->shipping_weight_option = $shippingWeightOption;
+            } else {
+                // Handle the case where the input is invalid
+                return response()->json(['error' => 'Invalid shipping weight option.'], 400);
+            }
             $product->refund= $request->input('refund');
 
                // Load existing documents
@@ -601,13 +602,9 @@ class ProductController extends BaseController
                 // Save updated documents to the database
                 $product->documents = json_encode($documents, JSON_THROW_ON_ERROR);
 
-            return redirect()->back()->with('success', 'Documents updated successfully.');
+            // return redirect()->back()->with('success', 'Documents updated successfully.');
 
 
-            $request->validate([
-                'video_url' => 'nullable|url',
-                'video' => 'nullable|mimes:mp4,avi,mov,wmv|max:51200', // Max size of 50 MB
-            ]);
 
                 // $product->variant_grams = $request->input('variant_grams');
                 // $product->variant_inventory_tracker = $request->input('variant_inventory_tracker');

@@ -200,7 +200,7 @@
     </legend>
 
     <div id="discount-group">
-        @if($product->discounts && $product->discounts->count())
+        @if($product && $product->discounts && $product->discounts->count())
             @foreach ($product->discounts as $index => $discount)
                 <div class="discount-item">
                     <div class="row g-3 mb-3">
@@ -561,73 +561,8 @@
     <legend>
         <h3>Buy more Save more</h3>
     </legend>
-
     <div id="discount-group">
-        @if(isset($product) && $product->discounts && $product->discounts->count())
-        @foreach ($product->discounts as $index => $discount)
-            <div class="discount-item">
-                <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                        <input type="hidden" name="discount[{{ $index }}][discount_id]" value="{{ $discount->id }}">
-                        <label for="product_quantity_{{ $index }}" class="form-label quantity-label">Buying Quantity</label>
-                        <input type="number" class="form-control product-quantity"
-                               name="discount[{{ $index }}][product_quantity]"
-                               value="{{ old('discount.' . $index . '.product_quantity', $discount->product_quantity ?? 0) }}"
-                               onchange="calculateDiscount(this)">
-                    </div>
-
-                    <div class="col-md-6">
-                        <label for="discount_{{ $index }}" class="form-label">Discount</label>
-                        <input type="number" class="form-control discount-percentage"
-                               name="discount[{{ $index }}][discount]"
-                               value="{{ old('discount.' . $index . '.discount', $discount->value ?? 0) }}"
-                               onchange="calculateDiscount(this)">
-                    </div>
-
-                    <div class="col-md-6">
-                        <label for="price_after_discount_{{ $index }}" class="form-label">Price after Discount</label>
-                        <input type="number" class="form-control price-after-discount"
-                               name="discount[{{ $index }}][price_after_discount]"
-                               value="{{ old('discount.' . $index . '.price_after_discount', 0) }}" readonly>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label for="margin_{{ $index }}" class="form-label">Margin</label>
-                        <input type="number" class="form-control margin"
-                               name="discount[{{ $index }}][margin]"
-                               value="{{ old('discount.' . $index . '.margin', 0) }}" readonly>
-                    </div>
-                </div>
-
-                <div class="row g-3 mb-3">
-                    <div class="col-md-4">
-                        <label for="fromDate_{{ $index }}" class="form-label">From Date</label>
-                        <input type="datetime-local" class="form-control"
-                               name="discount[{{ $index }}][discount_from_date]"
-                               value="{{ old('discount.' . $index . '.discount_from_date', $discount->start_date ? \Carbon\Carbon::parse($discount->start_date) : '') }}">
-                    </div>
-
-                    <div class="col-md-4">
-                        <label for="toDate_{{ $index }}" class="form-label">To Date</label>
-                        <input type="datetime-local" class="form-control to-date"
-                               name="discount[{{ $index }}][discount_to_date]"
-                               value="{{ old('discount.' . $index . '.discount_to_date', $discount->end_date ? \Carbon\Carbon::parse($discount->end_date) : '') }}">
-                    </div>
-
-                    <div class="col-md-4 d-flex align-items-center">
-                        <div class="form-check">
-                            <input class="form-check-input me-2 never-expired-checkbox"
-                                   type="checkbox"
-                                   name="discount[{{ $index }}][never_expired]"
-                                   value="1"
-                                   {{ old('discount.' . $index . '.never_expired', $discount->end_date ? '' : 'checked') }}
-                                   onchange="toggleToDateField(this)">
-                            <label class="form-check-label" for="never_expired_{{ $index }}">Never Expired</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @endforeach
+        @if($product && $product->discounts && $product->discounts->count())
             @foreach ($product->discounts as $index => $discount)
                 <div class="discount-item">
                     <div class="row g-3 mb-3">
