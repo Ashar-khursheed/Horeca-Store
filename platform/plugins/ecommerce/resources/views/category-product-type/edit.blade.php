@@ -76,7 +76,7 @@
 
 		addBtn.addEventListener('click', () => {
 			const specs = container.querySelectorAll('input[name="specifications[]"]');
-			if (specs.length >= 6) return;
+			if (specs.length >= 60) return;
 
 			const div = document.createElement('div');
 			div.classList.add('d-flex', 'mb-2');
