@@ -57,7 +57,7 @@
 											placeholder=""
 										/>
 									</div>
-									@if($index2 == 4)
+									@if($index2 == 4 && count($specVals) < 6)
 										<div class="col-md-2">
 											<button
 												type="button"
@@ -69,18 +69,7 @@
 									@endif
 								@endforeach
 
-								@for ($j = count($specVals); $j <= 5; $j++)
-									@if($j == 5)
-										<div class="col-md-2">
-											<button
-												type="button"
-												class="btn btn-success add-specification-value"
-												data-index="{{$index}}">
-												<i class="fas fa-plus"></i>
-											</button>
-										</div>
-										@continue
-									@endif
+								@for ($j = count($specVals); $j < 5; $j++)
 									<div class="col-md-2 mb-2">
 										<input
 											type="text"
@@ -91,6 +80,17 @@
 										/>
 									</div>
 								@endfor
+
+								@if (count($specVals) < 5)
+									<div class="col-md-2">
+										<button
+											type="button"
+											class="btn btn-success add-specification-value"
+											data-index="{{$index}}">
+											<i class="fas fa-plus"></i>
+										</button>
+									</div>
+								@endif
 							</div>
 						</div>
 					</div>
