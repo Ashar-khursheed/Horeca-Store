@@ -49,7 +49,6 @@ class CategoryProductTypeController extends BaseController
 	 */
 	public function update(Request $request, $id)
 	{
-		// dd($request->all());
 		$category = ProductCategory::findOrFail($id);
 
 		// Update product types
@@ -57,9 +56,13 @@ class CategoryProductTypeController extends BaseController
 
 		// Update specifications
 		$category->specifications()->delete();
-		foreach ($request->input('specifications', []) as $specificationName) {
-			if (!empty($specificationName)) {
-				$category->specifications()->create(['specification_name' => $specificationName]);
+		foreach ($request->input('specifications', []) as $specification) {
+			if (!empty($specification['name'])) {
+				$category->specifications()->create([
+					'specification_name' => $specification['name'],
+					'specification_values' => implode('|', array_filter($specification['vals'], fn($val) => !is_null($val))),
+
+				]);
 			}
 		}
 

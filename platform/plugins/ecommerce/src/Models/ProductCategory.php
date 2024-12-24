@@ -160,6 +160,6 @@ class ProductCategory extends BaseModel implements HasTreeCategoryContract
 
     public function specifications()
     {
-        return $this->hasMany(CategorySpecification::class, 'category_id');
+        return $this->hasMany(CategorySpecification::class, 'category_id')->orderBy('id');
     }
 }

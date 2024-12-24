@@ -30,30 +30,127 @@
 		</div>
 
 		<!-- Specifications -->
-		<div class="form-group">
-			<label for="specifications">Specifications</label>
-			<div id="specification-container">
-				@foreach ($category->specifications as $index => $specification)
-					<div class="d-flex mb-2">
-						<input type="text" name="specifications[]" value="{{ $specification->specification_name }}" class="form-control" placeholder="Specification {{ $index + 1 }}" />
-						@if ($index >= 3)
-							<button type="button" class="btn btn-danger ml-2 remove-specification">Remove</button>
-						@endif
-					</div>
-				@endforeach
+		<label for="specifications">Specifications</label>
+		<div id="specification-container">
+			@foreach ($category->specifications as $index => $specification)
+				<div class="specification-group mt-3">
+					<div class="row">
+						<div class="col-md-3">
+							<input
+								type="text"
+								name="specifications[{{$index}}][name]"
+								value="{{ $specification->specification_name }}"
+								class="form-control"
+								placeholder="Specification {{ $index + 1 }}"
+							/>
+						</div>
+						<div class="col-md-9">
+							<div class="row specification-values" id="specification_value_{{$index}}">
+								@php($specVals = $specification->specification_values ? explode("|", $specification->specification_values) : [])
+								@foreach ($specVals as $index2 => $specVal)
+									<div class="col-md-2 mb-2">
+										<input
+											type="text"
+											name="specifications[{{$index}}][vals][]"
+											class="form-control"
+											value="{{ $specVal ?? '' }}"
+											placeholder=""
+										/>
+									</div>
+									@if($index2 == 4)
+										<div class="col-md-2">
+											<button
+												type="button"
+												class="btn btn-success add-specification-value"
+												data-index="{{$index}}">
+												<i class="fas fa-plus"></i>
+											</button>
+										</div>
+									@endif
+								@endforeach
 
-				<!-- Add minimum 3 empty text boxes if specifications are less -->
-				@for ($i = $category->specifications->count(); $i < 3; $i++)
-					<div class="d-flex mb-2">
-						<input type="text" name="specifications[]" class="form-control" placeholder="Specification {{ $i + 1 }}" />
+								@for ($j = count($specVals); $j <= 5; $j++)
+									@if($j == 5)
+										<div class="col-md-2">
+											<button
+												type="button"
+												class="btn btn-success add-specification-value"
+												data-index="{{$index}}">
+												<i class="fas fa-plus"></i>
+											</button>
+										</div>
+										@continue
+									@endif
+									<div class="col-md-2 mb-2">
+										<input
+											type="text"
+											name="specifications[{{$index}}][vals][]"
+											class="form-control"
+											value="{{ $specVals[$j] ?? '' }}"
+											placeholder="Value {{ $j + 1 }}"
+										/>
+									</div>
+								@endfor
+							</div>
+						</div>
 					</div>
-				@endfor
-			</div>
+					@if ($index >= 3)
+						<div class="row mt-1">
+							<div class="col-md-12 text-end">
+								<button
+									type="button"
+									class="btn btn-danger remove-specification"
+									data-index="{{ $index }}">
+									Remove
+								</button>
+							</div>
+						</div>
+					@endif
+				</div>
+			@endforeach
+
+			<!-- Add minimum 3 empty specifications if less than 3 exist -->
+			@for ($i = $category->specifications->count(); $i < 3; $i++)
+				<div class="specification-group mt-3">
+					<div class="row">
+						<div class="col-md-3">
+							<input
+								type="text"
+								name="specifications[{{$i}}][name]"
+								class="form-control"
+								placeholder="Specification {{ $i + 1 }}"
+							/>
+						</div>
+						<div class="col-md-9">
+							<div class="row specification-values" id="specification_value_{{$i}}">
+								@for ($j = 0; $j < 5; $j++)
+									<div class="col-md-2 mb-2">
+										<input
+											type="text"
+											name="specifications[{{$i}}][vals][]"
+											class="form-control"
+											placeholder="Value {{ $j + 1 }}"
+										/>
+									</div>
+								@endfor
+								<div class="col-md-2">
+									<button
+										type="button"
+										class="btn btn-success add-specification-value"
+										data-index="{{$i}}">
+										<i class="fas fa-plus"></i>
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			@endfor
 		</div>
 
 		<div class="row g-3 mb-3">
 			<div class="col-md-12 text-end">
-				<button type="button" class="btn btn-success" id="add-specification"><i class="fas fa-plus"></i> Add</button>
+				<button type="button" id="add-specification" class="btn btn-primary mt-3">Add Specification</button>
 			</div>
 		</div>
 
@@ -70,32 +167,104 @@
 			allowClear: true
 		});
 
-		// Dynamic Specifications Logic
-		const container = document.getElementById('specification-container');
-		const addBtn = document.getElementById('add-specification');
+		const specificationContainer = document.getElementById('specification-container');
+		const addSpecificationButton = document.getElementById('add-specification');
 
-		addBtn.addEventListener('click', () => {
-			const specs = container.querySelectorAll('input[name="specifications[]"]');
-			if (specs.length >= 6) return;
+		// Add new specification
+		addSpecificationButton.addEventListener('click', () => {
+			const index = specificationContainer.querySelectorAll('.specification-group').length;
 
-			const div = document.createElement('div');
-			div.classList.add('d-flex', 'mb-2');
-			div.innerHTML = `
-				<input type="text" name="specifications[]" class="form-control" placeholder="Specification ${specs.length + 1}" />
-				<button type="button" class="btn btn-danger ml-2 remove-specification">Remove</button>
+			// if (index >= 6) return;
+
+			const newSpecification = document.createElement('div');
+			newSpecification.classList.add('specification-group', 'mt-3');
+			newSpecification.innerHTML = `
+				<div class="row">
+					<div class="col-md-3">
+						<input
+							type="text"
+							name="specifications[${index}][name]"
+							class="form-control"
+							placeholder="Specification ${index + 1}"
+						/>
+					</div>
+					<div class="col-md-9">
+						<div class="row specification-values" id="specification_value_${index}">
+							${Array.from({ length: 5 })
+								.map((_, j) => `
+									<div class="col-md-2 mb-2">
+										<input
+											type="text"
+											name="specifications[${index}][vals][]"
+											class="form-control"
+											placeholder="Value ${j + 1}"
+										/>
+									</div>
+								`).join('')}
+							<div class="col-md-2">
+								<button
+									type="button"
+									class="btn btn-success add-specification-value"
+									data-index="${index}">
+									<i class="fas fa-plus"></i>
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row mt-1">
+					<div class="col-md-12 text-end">
+						<button
+							type="button"
+							class="btn btn-danger remove-specification"
+							data-index="${index}">
+							Remove
+						</button>
+					</div>
+				</div>
 			`;
-			container.appendChild(div);
 
-			div.querySelector('.remove-specification').addEventListener('click', () => {
-				div.remove();
+			specificationContainer.appendChild(newSpecification);
+
+			// Attach event listeners to new buttons
+			attachSpecificationEvents(newSpecification);
+		});
+
+		// Attach events to dynamically added specifications
+		function attachSpecificationEvents(group) {
+			group.querySelector('.remove-specification')?.addEventListener('click', () => {
+				group.remove();
 			});
-		});
 
-		container.addEventListener('click', function (event) {
-			if (event.target.classList.contains('remove-specification')) {
-				event.target.closest('.d-flex').remove();
-			}
-		});
+			group.querySelector('.add-specification-value')?.addEventListener('click', (e) => {
+				// Ensure we are working with the button element
+				const button = e.target.closest('button');
+				if (!button) return;
+
+				const index = button.getAttribute('data-index');
+				const valuesContainer = document.getElementById(`specification_value_${index}`);
+				if (!valuesContainer) {
+					console.error(`Container with id specification_value_${index} not found.`);
+					return;
+				}
+
+				const newValue = document.createElement('div');
+				newValue.classList.add('col-md-2', 'mb-2');
+				newValue.innerHTML = `
+					<input
+						type="text"
+						name="specifications[${index}][vals][]"
+						class="form-control"
+						placeholder="Value ${valuesContainer.children.length}"
+					/>
+				`;
+				valuesContainer.appendChild(newValue);
+			});
+		}
+
+		// Attach initial events
+		specificationContainer.querySelectorAll('.specification-group').forEach(attachSpecificationEvents);
 	});
 </script>
+
 @endsection
