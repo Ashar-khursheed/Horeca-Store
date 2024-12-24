@@ -96,7 +96,25 @@ class StoreProductService
             event(new UpdatedContentEvent(PRODUCT_MODULE_SCREEN_NAME, $request, $product));
         }
 
-        $product->categories()->sync($request->input('categories', []));
+        // Step 1: Fetch selected category IDs from the request
+        $selectedCategories = $request->input('categories', []);
+
+        // Step 2: Fetch existing pivot data for the product
+        $existingCategories = $product->categories()->pluck('category_id')->toArray();
+
+        // Step 3: Prepare categories for syncing
+        $categoriesWithTimestamps = collect($selectedCategories)->mapWithKeys(function ($categoryId) use ($existingCategories) {
+            if (in_array($categoryId, $existingCategories)) {
+                // Existing category, do not modify created_at
+                return [$categoryId => []];
+            } else {
+                // New category, set created_at
+                return [$categoryId => ['created_at' => now()]];
+            }
+        })->toArray();
+
+        // Step 4: Sync categories
+        $product->categories()->sync($categoriesWithTimestamps);
 
         $product->productCollections()->sync($request->input('product_collections', []));
 
