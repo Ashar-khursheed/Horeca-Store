@@ -193,7 +193,7 @@
     </x-core::form.fieldset>
 </div>
 
-
+@if($product)
 <x-core::form.fieldset>
     <legend>
         <h3>Buy more Save more</h3>
@@ -347,7 +347,7 @@
         @endif
     </div>
 </x-core::form.fieldset>
-
+@endif
 
 <div class="row g-3 mb-3">
     <div class="col-md-4 d-flex align-items-center">
@@ -555,13 +555,15 @@
     @endforeach
 </x-core::form.fieldset>
 
-
+@if($product)
 
 <x-core::form.fieldset>
+
     <legend>
         <h3>Buy more Save more</h3>
     </legend>
     <div id="discount-group">
+
         @if($product && $product->discounts && $product->discounts->count())
             @foreach ($product->discounts as $index => $discount)
                 <div class="discount-item">
@@ -709,7 +711,7 @@
         @endif
     </div>
 </x-core::form.fieldset>
-
+@endif
 @endif
 
 @if (

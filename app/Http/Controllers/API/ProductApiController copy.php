@@ -34,7 +34,20 @@ class ProductApiController extends Controller
     
          public function getAllProducts(Request $request)
             {
-                
+                // Log the request to ensure you're receiving the correct parameters
+                // \Log::info($request->all());
+                //   $userId = Auth::id();
+                // $isUserLoggedIn = $userId !== null;
+                // // Fetch the wishlist items for the logged-in user if they are authenticated
+                // $wishlistProductIds = [];
+                // if ($isUserLoggedIn) {
+                //     $wishlistProductIds = \DB::table('ec_wish_lists')
+                //         ->where('customer_id', $userId)
+                //         ->pluck('product_id')
+                //         ->toArray();
+                // }
+
+              
                 // Get the logged-in user's ID
                 $userId = Auth::id();
                 $isUserLoggedIn = $userId !== null; // Check if the user is logged in
@@ -44,7 +57,22 @@ class ProductApiController extends Controller
                 
                 // Initialize an empty array to store product IDs in the wishlist
                 $wishlistProductIds = [];
-
+                // if ($isUserLoggedIn) {
+                //     // Log before querying the wishlist
+                //     Log::info('Fetching wishlist for user', ['user_id' => $userId]);
+                
+                //     // Fetch the product IDs in the user's wishlist
+                //     $wishlistProductIds = DB::table('ec_wish_lists')
+                //         ->where('customer_id', $userId)
+                //         ->pluck('product_id')
+                //         ->map(function($id) {
+                //             return (int) $id; // Ensure all IDs are integers
+                //         })
+                //         ->toArray(); // Get all product IDs in the user's wishlist
+                
+                //     // Log the wishlist product IDs fetched
+                //     Log::info('Wishlist product IDs:', ['wishlist_product_ids' => $wishlistProductIds]);
+                // }
                 
                                     // Check if user is logged in
                     if ($isUserLoggedIn) {
@@ -68,7 +96,8 @@ class ProductApiController extends Controller
                 // Apply filters
                 $this->applyFilters($query, $request);
             
-    
+                // Order by newest products first if no sorting is specified
+               // Default sorting by 'created_at' if 'sort_by' is not present
 
                 
                                 // Log the final SQL query for debugging
@@ -130,7 +159,9 @@ class ProductApiController extends Controller
                 ->paginate($request->input('per_page', 15)); // Pagination
             
                 // Collect unique categories from products
-               
+                // $categories = $products->flatMap(function ($product) {
+                //     return $product->categories; // This will give you a collection of categories
+                // })->unique('id'); // Get unique categories by id
             
                 $categories = ProductCategory::select('id', 'name')->get();
            
@@ -142,22 +173,6 @@ class ProductApiController extends Controller
             
                 // Transform the result to include additional data
                 $products->getCollection()->transform(function ($product) use ($wishlistProductIds){
-                    
-                         // Check if images are an array, if yes, convert it to a collection
-                $product->images = collect($product->images)->map(function ($image) {
-                    // Check if the image is already a full URL, if yes, return it as is
-                    if (filter_var($image, FILTER_VALIDATE_URL)) {
-                        return $image; // Return the full URL if it's already a valid one
-                    }
-            
-                    // Check if the image starts with 'storage/products/', if so, prepend the base URL for products
-                    $baseUrl = (strpos($image, 'storage/products/') === 0) ? url('storage/products/') : url('storage/');
-            
-                    // Ensure the URL is correct by concatenating with the base URL
-                    return $baseUrl . '/' . ltrim($image, '/');
-                });
-
-
                     // Add review and stock details
                     $totalReviews = $product->reviews->count();
                     $avgRating = $totalReviews > 0 ? $product->reviews->avg('star') : null;
@@ -195,39 +210,24 @@ class ProductApiController extends Controller
                     
                      // Check if the product is in the user's wishlist
              
-                                     // Handle frequently bought together products
+                        
+                    // Handle frequently bought together products
                     if ($product->frequently_bought_together) {
                         $frequentlyBoughtData = json_decode($product->frequently_bought_together, true);
                         $frequentlyBoughtSkus = array_column($frequentlyBoughtData, 'value');
-                    
+            
                         $frequentlyBoughtProducts = Product::whereIn('sku', $frequentlyBoughtSkus)
                             ->with('reviews', 'currency') // Include reviews and currency in query
                             ->get();
-                    
-                        // Enhance frequently bought products with reviews, currency, and image URL
+            
+                        // Enhance frequently bought products with reviews and currency
                         $frequentlyBoughtProducts->transform(function ($fbProduct) {
-                            // Handle image URLs
-                            $fbProduct->images = collect($fbProduct->images)->map(function ($image) {
-                                // Check if the image is already a full URL (starts with http or https)
-                                if (filter_var($image, FILTER_VALIDATE_URL)) {
-                                    return $image; // Return the full URL if it's already a valid one
-                                }
-                    
-                                // Check if the image is in storage/products or storage/
-                                $baseUrl = (strpos($image, 'storage/products/') === 0) ? url('storage/products/') : url('storage/');
-                    
-                                // Concatenate the base URL with the image path
-                                return $baseUrl . '/' . ltrim($image, '/'); // Remove any leading slashes in the image path to prevent double slashes
-                            });
-                    
-                            // Reviews and ratings
                             $totalReviews = $fbProduct->reviews->count();
                             $avgRating = $totalReviews > 0 ? $fbProduct->reviews->avg('star') : null;
-                    
+            
                             $fbProduct->total_reviews = $totalReviews;
                             $fbProduct->avg_rating = $avgRating;
-                    
-                            // Currency title handling
+            
                             if ($fbProduct->currency) {
                                 $fbProduct->currency_title = $fbProduct->currency->is_prefix_symbol
                                     ? $fbProduct->currency->title
@@ -235,16 +235,45 @@ class ProductApiController extends Controller
                             } else {
                                 $fbProduct->currency_title = $fbProduct->price;
                             }
-                    
+            
                             return $fbProduct;
                         });
-                    
+            
                         $product->frequently_bought_together = $frequentlyBoughtProducts;
                     }
+             
+             
+                             // Same SKU Different BRANDS
 
-             
-             
-    
+                //     $sameSkuProducts = Product::where('sku', $product->sku)
+                //     ->where('id', '!=', $product->id) // Exclude the current product
+                //     ->select('id', 'images') // Select the necessary fields
+                //     ->get(); // Retrieve the results as a collection
+                
+                
+                // // Same SKU BUT DIFFERENT BRANDS
+                // $product->same_sku_product_ids = $sameSkuProducts->map(function ($item) {
+                //     return [
+                //         'id' => $item->id,
+                //         'images' => $item->images, // Include images directly
+                //     ];
+                // });
+                // $sameBrandSkuProducts = Product::where('sku', $product->sku)
+                //                         ->where('id', '!=', $product->id) // Exclude current product
+                //                         ->where('brand_id', $product->brand_id) // Filter by the same vendor
+                //                         ->select('id', 'name','price','delivery_days','images') // Select only the id and images columns
+                //                         ->get();
+                
+                // // Prepare the results
+                // $product->sameBrandSkuProducts = $sameBrandSkuProducts->map(function ($item) {
+                //     return [
+                //         'id' => $item->id,
+                //         'name' => $item->name,
+                //         'price' => $item->price,
+                //         'delivery_days' => $item->delivery_days,
+                //         'images' => $item->images // Directly include images
+                //     ];
+                // });
                 
                 // Retrieve products with the same SKU, same brand, excluding the current product
                 
@@ -255,25 +284,25 @@ class ProductApiController extends Controller
                 ->with('currency') // Eager load the currency relationship
                 ->get(); // Retrieve the results as a collection
             
-            // Prepare the results with additional details including currency information
-            $product->same_sku_product_ids = $sameSkuProducts->map(function ($item) {
-                // Prepare currency title
-                $currencyTitle = $item->currency 
-                    ? ($item->currency->is_prefix_symbol 
-                        ? $item->currency->title 
-                        : $item->price . ' ' . $item->currency->title)
-                    : $item->price;
-            
-                return [
-                    'id' => $item->id,
-                    'name' => $item->name,
-                    'price' => $item->price,
-                    'delivery_days'=>$item->delivery_days,
-                    'images' => $item->images,
-                    'currency_title' => $currencyTitle, // Include formatted currency title
-                ];
-            });
-                 
+                // Prepare the results with additional details including currency information
+                $product->same_sku_product_ids = $sameSkuProducts->map(function ($item) {
+                    // Prepare currency title
+                    $currencyTitle = $item->currency 
+                        ? ($item->currency->is_prefix_symbol 
+                            ? $item->currency->title 
+                            : $item->price . ' ' . $item->currency->title)
+                        : $item->price;
+                
+                    return [
+                        'id' => $item->id,
+                        'name' => $item->name,
+                        'price' => $item->price,
+                        'delivery_days'=>$item->delivery_days,
+                        'images' => $item->images,
+                        'currency_title' => $currencyTitle, // Include formatted currency title
+                    ];
+                });
+                    
                  
                    $sameBrandSkuProducts = Product::where('sku', $product->sku)
                                         ->where('id', '!=', $product->id) // Exclude current product
@@ -292,37 +321,22 @@ class ProductApiController extends Controller
 
                         
                     // Handle compare products
-                   if ($product->compare_products) {
+                    if ($product->compare_products) {
                         $compareIds = json_decode($product->compare_products, true);
-                    
+            
                         $compareProducts = Product::whereIn('id', $compareIds)
-                            ->with('reviews', 'currency', 'specifications') // Include reviews, currency, and specs in query
+                            ->with('reviews', 'currency', 'specifications') // Include reviews and currency in query
                             ->get();
-                    
-                        // Enhance compare products with reviews, currency, specifications, and image URL
+            
+                        // Enhance compare products with reviews, currency, and specifications
                         $compareProducts->transform(function ($compareProduct) {
-                            // Handle image URLs
-                            $compareProduct->images = collect($compareProduct->images)->map(function ($image) {
-                                // Check if the image is already a full URL (starts with http or https)
-                                if (filter_var($image, FILTER_VALIDATE_URL)) {
-                                    return $image; // Return the full URL if it's already a valid one
-                                }
-                    
-                                // Check if the image is in storage/products or storage/
-                                $baseUrl = (strpos($image, 'storage/products/') === 0) ? url('storage/products/') : url('storage/');
-                    
-                                // Concatenate the base URL with the image path
-                                return $baseUrl . '/' . ltrim($image, '/'); // Remove any leading slashes in the image path to prevent double slashes
-                            });
-                    
-                            // Reviews and ratings
                             $totalReviews = $compareProduct->reviews->count();
                             $avgRating = $totalReviews > 0 ? $compareProduct->reviews->avg('star') : null;
-                    
+            
                             $compareProduct->total_reviews = $totalReviews;
                             $compareProduct->avg_rating = $avgRating;
-                    
-                            // Currency title handling
+            
+                            // Add currency details
                             if ($compareProduct->currency) {
                                 $compareProduct->currency_title = $compareProduct->currency->is_prefix_symbol
                                     ? $compareProduct->currency->title
@@ -330,11 +344,11 @@ class ProductApiController extends Controller
                             } else {
                                 $compareProduct->currency_title = $compareProduct->price;
                             }
-                    
-                            // Specifications
+            
+                            // Add specifications
                             if ($compareProduct->specs_sheet) {
                                 $specifications = json_decode($compareProduct->specs_sheet, true);
-                                $filteredSpecs = array_map(function ($spec) {
+                                $filteredSpecs = array_map(function($spec) {
                                     return [
                                         'spec_name' => $spec['spec_name'] ?? null,
                                         'spec_value' => $spec['spec_value'] ?? null,
@@ -342,13 +356,12 @@ class ProductApiController extends Controller
                                 }, $specifications);
                                 $compareProduct->specifications = $filteredSpecs;
                             }
-                    
+            
                             return $compareProduct;
                         });
-                    
+            
                         $product->compare_products = $compareProducts;
                     }
-
                     
 
 
@@ -356,8 +369,7 @@ class ProductApiController extends Controller
                     // Add tags and types
                     $product->tags = $product->tags; // Assuming tags is a relationship in the Product model
                     $product->producttypes = $product->producttypes; // Assuming producttypes is a relationship in the Product model
-              
-              
+            
                     return $product;
                 });
             
@@ -377,9 +389,10 @@ class ProductApiController extends Controller
                     'delivery_min' =>  $DeliveryMin ,
                     'delivery_max' => $DeliveryMax ,
                 ]);
-            }
+         }
             
-        public function getAllPublicProducts(Request $request)
+     
+    public function getAllPublicProducts(Request $request)
             {
                
 
@@ -469,20 +482,6 @@ class ProductApiController extends Controller
             
                 // Transform the result to include additional data
                 $products->getCollection()->transform(function ($product){
-                    
-                               // Check if images are an array, if yes, convert it to a collection
-                $product->images = collect($product->images)->map(function ($image) {
-                    // Check if the image is already a full URL, if yes, return it as is
-                    if (filter_var($image, FILTER_VALIDATE_URL)) {
-                        return $image; // Return the full URL if it's already a valid one
-                    }
-            
-                    // Check if the image starts with 'storage/products/', if so, prepend the base URL for products
-                    $baseUrl = (strpos($image, 'storage/products/') === 0) ? url('storage/products/') : url('storage/');
-            
-                    // Ensure the URL is correct by concatenating with the base URL
-                    return $baseUrl . '/' . ltrim($image, '/');
-                });
                     // Add review and stock details
                     $totalReviews = $product->reviews->count();
                     $avgRating = $totalReviews > 0 ? $product->reviews->avg('star') : null;
@@ -516,10 +515,8 @@ class ProductApiController extends Controller
                             ];
                         }, $specifications);
                         $product->specifications = $filteredSpecs;
-                        
                     }
-     
-                     
+                    
                      // Check if the product is in the user's wishlist
              
                         
@@ -532,21 +529,8 @@ class ProductApiController extends Controller
                             ->with('reviews', 'currency') // Include reviews and currency in query
                             ->get();
             
-               // Enhance frequently bought products with reviews, currency, and image URL
+                        // Enhance frequently bought products with reviews and currency
                         $frequentlyBoughtProducts->transform(function ($fbProduct) {
-                            // Handle image URLs
-                            $fbProduct->images = collect($fbProduct->images)->map(function ($image) {
-                                // Check if the image is already a full URL (starts with http or https)
-                                if (filter_var($image, FILTER_VALIDATE_URL)) {
-                                    return $image; // Return the full URL if it's already a valid one
-                                }
-                    
-                                // Check if the image is in storage/products or storage/
-                                $baseUrl = (strpos($image, 'storage/products/') === 0) ? url('storage/products/') : url('storage/');
-                    
-                                // Concatenate the base URL with the image path
-                                return $baseUrl . '/' . ltrim($image, '/'); // Remove any leading slashes in the image path to prevent double slashes
-                            });
                             $totalReviews = $fbProduct->reviews->count();
                             $avgRating = $totalReviews > 0 ? $fbProduct->reviews->avg('star') : null;
             
@@ -646,37 +630,22 @@ class ProductApiController extends Controller
 
                         
                     // Handle compare products
-                     if ($product->compare_products) {
+                    if ($product->compare_products) {
                         $compareIds = json_decode($product->compare_products, true);
-                    
+            
                         $compareProducts = Product::whereIn('id', $compareIds)
-                            ->with('reviews', 'currency', 'specifications') // Include reviews, currency, and specs in query
+                            ->with('reviews', 'currency', 'specifications') // Include reviews and currency in query
                             ->get();
-                    
-                        // Enhance compare products with reviews, currency, specifications, and image URL
+            
+                        // Enhance compare products with reviews, currency, and specifications
                         $compareProducts->transform(function ($compareProduct) {
-                            // Handle image URLs
-                            $compareProduct->images = collect($compareProduct->images)->map(function ($image) {
-                                // Check if the image is already a full URL (starts with http or https)
-                                if (filter_var($image, FILTER_VALIDATE_URL)) {
-                                    return $image; // Return the full URL if it's already a valid one
-                                }
-                    
-                                // Check if the image is in storage/products or storage/
-                                $baseUrl = (strpos($image, 'storage/products/') === 0) ? url('storage/products/') : url('storage/');
-                    
-                                // Concatenate the base URL with the image path
-                                return $baseUrl . '/' . ltrim($image, '/'); // Remove any leading slashes in the image path to prevent double slashes
-                            });
-                    
-                            // Reviews and ratings
                             $totalReviews = $compareProduct->reviews->count();
                             $avgRating = $totalReviews > 0 ? $compareProduct->reviews->avg('star') : null;
-                    
+            
                             $compareProduct->total_reviews = $totalReviews;
                             $compareProduct->avg_rating = $avgRating;
-                    
-                            // Currency title handling
+            
+                            // Add currency details
                             if ($compareProduct->currency) {
                                 $compareProduct->currency_title = $compareProduct->currency->is_prefix_symbol
                                     ? $compareProduct->currency->title
@@ -684,11 +653,11 @@ class ProductApiController extends Controller
                             } else {
                                 $compareProduct->currency_title = $compareProduct->price;
                             }
-                    
-                            // Specifications
+            
+                            // Add specifications
                             if ($compareProduct->specs_sheet) {
                                 $specifications = json_decode($compareProduct->specs_sheet, true);
-                                $filteredSpecs = array_map(function ($spec) {
+                                $filteredSpecs = array_map(function($spec) {
                                     return [
                                         'spec_name' => $spec['spec_name'] ?? null,
                                         'spec_value' => $spec['spec_value'] ?? null,
@@ -696,98 +665,14 @@ class ProductApiController extends Controller
                                 }, $specifications);
                                 $compareProduct->specifications = $filteredSpecs;
                             }
-                    
+            
                             return $compareProduct;
                         });
-                    
+            
                         $product->compare_products = $compareProducts;
                     }
                     
-//                     if ($product->compare_products) {
-//     $compareIds = json_decode($product->compare_products, true);
 
-//     $compareProducts = Product::whereIn('id', $compareIds)
-//         ->with('reviews', 'currency') // Include reviews and currency in query
-//         ->get();
-
-//     // Step 1: Define the fixed order of specification names
-//     $fixedSpecOrder = [
-//         'Manufacturer',
-//         'Model Number',
-//         'Shipping Weight',
-//         'Width',
-//         'Depth',
-//         'Height',
-//         'Amps',
-//         'Hertz',
-//         'Phase',
-//         'Voltage',
-//         'Capacity',
-//         'Casters',
-//         'Compressor Location',
-//         'Door style',
-//         'Door Type'
-//     ];
-
-//     // Step 2: Prepare to collect specifications
-//     $specData = [];
-//     $uniqueSpecNames = [];
-
-//     // Step 3: Collect specifications from each compare product
-//     foreach ($compareProducts as $compareProduct) {
-//         if ($compareProduct->specs_sheet) {
-//             $specifications = json_decode($compareProduct->specs_sheet, true);
-//             foreach ($specifications as $spec) {
-//                 $specName = $spec['spec_name'] ?? null;
-//                 $specValue = $spec['spec_value'] ?? 'N/A';
-
-//                 if ($specName) {
-//                     // Store unique spec names
-//                     if (!in_array($specName, $uniqueSpecNames)) {
-//                         $uniqueSpecNames[] = $specName;
-//                     }
-//                     // Map specifications to their values
-//                     $specData[$compareProduct->id][$specName] = $specValue;
-//                 }
-//             }
-//         }
-//     }
-
-//     // Step 4: Prepare structured specification arrays in fixed order
-//     foreach ($compareProducts as $compareProduct) {
-//         $totalReviews = $compareProduct->reviews->count();
-//         $avgRating = $totalReviews > 0 ? $compareProduct->reviews->avg('star') : null;
-
-//         $compareProduct->total_reviews = $totalReviews;
-//         $compareProduct->avg_rating = $avgRating;
-
-//         // Add currency details
-//         if ($compareProduct->currency) {
-//             $compareProduct->currency_title = $compareProduct->currency->is_prefix_symbol
-//                 ? $compareProduct->currency->title
-//                 : $compareProduct->price . ' ' . $compareProduct->currency->title;
-//         } else {
-//             $compareProduct->currency_title = $compareProduct->price;
-//         }
-
-//         // Step 5: Create specifications in the fixed order
-//         $specifications = []; // Temporary array to hold specifications
-//         foreach ($fixedSpecOrder as $specName) {
-//             $specifications[] = [
-//                 'spec_name' => $specName,
-//                 'spec_value' => $specData[$compareProduct->id][$specName] ?? 'N/A', // Get value or default to 'N/A'
-//             ];
-//         }
-
-//         // Assign the structured specifications back to the compare product
-//         $compareProduct->setAttribute('specifications', $specifications);
-//     }
-
-//     // Step 6: Assign the enhanced compare products back to the original product
-//     $product->compare_products = $compareProducts;
-// }
-
-            
                     // Add tags and types
                     $product->tags = $product->tags; // Assuming tags is a relationship in the Product model
                     $product->producttypes = $product->producttypes; // Assuming producttypes is a relationship in the Product model
