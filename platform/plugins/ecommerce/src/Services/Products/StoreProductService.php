@@ -102,6 +102,14 @@ class StoreProductService
         // Step 2: Fetch existing pivot data for the product
         $existingCategories = $product->categories()->pluck('category_id')->toArray();
 
+        $product->changeSpecs = true;
+        if (array_diff($selectedCategories, $existingCategories)) {
+            // Clear existing specs
+            $product->specifications()->delete();
+
+            $product->changeSpecs = false;
+        }
+
         // Step 3: Prepare categories for syncing
         $categoriesWithTimestamps = collect($selectedCategories)->mapWithKeys(function ($categoryId) use ($existingCategories) {
             if (in_array($categoryId, $existingCategories)) {
