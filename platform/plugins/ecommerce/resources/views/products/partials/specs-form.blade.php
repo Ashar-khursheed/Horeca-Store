@@ -1,11 +1,16 @@
 {{-- {{dd($specs, $specificationNamePresent)}} --}}
 <div id="specs-wrapper">
     @if($specificationNamePresent == true)
-        @foreach($specs as $spec)
-            <div class="spec-item">
-                <input type="text" name="specs[{{ $loop->index }}][name]" value="{{ $spec }}" readonly />
-                <input type="text" name="specs[{{ $loop->index }}][value]" placeholder="Spec Value" />
-                <button type="button" class="remove-spec">Remove</button>
+        @foreach($specs as $spec_name => $spec_values)
+            @php($specVals = $spec_values ? explode("|", $spec_values) : [])
+            <div class="spec-item d-flex m-2">
+                <input type="text" class="form-control" name="specs[{{ $loop->index }}][name]" value="{{ $spec_name }}" readonly />
+                <select class="form-control ms-2" name="specs[{{ $loop->index }}][value]">
+                    <option value="">--Select Specification Value--</option>
+                    @foreach ($specVals as $val)
+                        <option value="{{$val}}">{{$val}}</option>
+                    @endforeach
+                </select>
             </div>
         @endforeach
     @else
@@ -18,7 +23,9 @@
         @endforeach
     @endif
 </div>
-<button type="button" id="add-spec">Add Spec</button>
+@if($specificationNamePresent != true)
+    <button type="button" id="add-spec">Add Spec</button>
+@endif
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('add-spec').addEventListener('click', function() {
