@@ -228,7 +228,7 @@ class Product extends BaseModel
                 ->orderBy('created_at', 'desc')
                 ->orderBy('category_id', 'desc')
                 ->limit(1);  // Limit to the most recent category
-        });
+        })->orderBy('id', 'asc');
     }
 
 

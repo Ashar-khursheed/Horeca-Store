@@ -57,7 +57,7 @@
 											placeholder=""
 										/>
 									</div>
-									@if($index2 == 4 && count($specVals) < 6)
+									@if($index2 == 4)
 										<div class="col-md-2">
 											<button
 												type="button"
@@ -153,6 +153,9 @@
 				<button type="button" id="add-specification" class="btn btn-primary mt-3">Add Specification</button>
 			</div>
 		</div>
+
+		<input type="hidden" name="search" value="{{ request('search') }}">
+		<input type="hidden" name="page" value="{{ request('page') }}">
 
 		<!-- Submit Button -->
 		<button type="submit" class="btn btn-success">Save Changes</button>

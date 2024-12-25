@@ -13,20 +13,32 @@ class CategoryProductTypeController extends BaseController
 	/**
 	 * Display a listing of the resource.
 	 */
-	public function index()
+	public function index(Request $request)
 	{
-		// Fetch all product types
-		$categories = ProductCategory::with(['productTypes', 'specifications'])->paginate(20)->through(function ($category) {
+		// Get the search query from the request
+		$search = $request->input('search');
+
+		// Fetch filtered categories or all categories if no search query
+		$categories = ProductCategory::with(['productTypes', 'specifications'])
+		->whereDoesntHave('children')
+		->when($search, function ($query, $search) {
+			$query->where(function ($q) use ($search) {
+				$q->where('id', $search)
+				->orWhere('name', 'like', '%' . $search . '%');
+			});
+		})
+		->paginate(20)
+		->through(function ($category) {
 			return [
 				'id' => $category->id,
 				'name' => $category->name,
 				'product_types' => $category->productTypes ? $category->productTypes->pluck('name')->implode(', ') : '',
-				'specifications' => $category->specifications ? $category->specifications->pluck('specification_name')->implode(', '):'',
+				'specifications' => $category->specifications ? $category->specifications->pluck('specification_name')->implode(', ') : '',
 			];
 		});
 
-		// dd($categories->toArray());
-		return view('plugins/ecommerce::category-product-type.index', compact('categories'));
+		// Pass search query back to the view
+		return view('plugins/ecommerce::category-product-type.index', compact('categories', 'search'));
 	}
 
 	/**
@@ -66,6 +78,12 @@ class CategoryProductTypeController extends BaseController
 			}
 		}
 
-		return redirect()->route('categoryFilter.index')->with('success', 'Category updated successfully.');
+		// Get `search` and `page` query parameters
+		$search = $request->input('search');
+		$page = $request->input('page');
+
+		// Redirect back to the index with the search and page parameters
+		return redirect()->route('categoryFilter.index', ['search' => $search, 'page' => $page])
+			->with('success', 'Category updated successfully.');
 	}
 }
