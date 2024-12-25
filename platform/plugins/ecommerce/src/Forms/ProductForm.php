@@ -247,22 +247,22 @@ class ProductForm extends FormAbstract
                     ]),
                     'priority' => 51,
                 ],
-            ])
+            ]);
 
+            if ($productId) {
+                $this->addMetaBoxes([
+                    'specs' => [
+                        'title' => 'Specifications',
+                        'content' => view('plugins/ecommerce::products.partials.specs-form', [
+                            'selectedSpecs' => $this->getModel()->specifications->toArray() ?? [],
+                            'categorySpecs' => $this->getModel()->latestCategorySpecifications->pluck('specification_values', 'specification_name')->toArray() ?? [],
+                        ]),
+                        'priority' => 50,
+                    ],
+                ]);
+            }
 
-
-            ->addMetaBoxes([
-                'specs' => [
-                    'title' => 'Specifications',
-                    'content' => view('plugins/ecommerce::products.partials.specs-form', [
-                        'specs' => $this->getModel()->specifications ?? [], // Fetch existing specs if editing
-                        'cats' => $this->getModel()->categories ?? []
-                    ]),
-                    'priority' => 50,
-                ],
-            ])
-
-            ->add('product_type', 'hidden', [
+            $this->add('product_type', 'hidden', [
                 'value' => request()->input('product_type') ?: ProductTypeEnum::PHYSICAL,
             ])
             ->add('status', SelectField::class, StatusFieldOption::make()->toArray())
@@ -273,19 +273,22 @@ class ProductForm extends FormAbstract
                     ->label(trans('core/base::forms.is_featured'))
                     ->defaultValue(false)
                     ->toArray()
-            )
+            );
 
-            ->add(
-                'categories[]',
-                TreeCategoryField::class,
-                SelectFieldOption::make()
-                    ->label(trans('plugins/ecommerce::products.form.categories'))
-                    ->choices(ProductCategoryHelper::getActiveTreeCategories())
-                    ->selected(old('categories', $selectedCategories))
-                    ->addAttribute('card-body-class', 'p-0')
-                    ->toArray()
-            )
-            ->when($brands, function () use ($brands) {
+            if (!$selectedCategories) {
+                $this->add(
+                    'categories[]',
+                    TreeCategoryField::class,
+                    SelectFieldOption::make()
+                        ->label(trans('plugins/ecommerce::products.form.categories'))
+                        ->choices(ProductCategoryHelper::getActiveTreeCategories())
+                        ->selected(old('categories', $selectedCategories))
+                        ->addAttribute('card-body-class', 'p-0')
+                        ->toArray()
+                );
+            }
+
+            $this->when($brands, function () use ($brands) {
                 $this
                     ->add(
                         'brand_id',
@@ -680,20 +683,22 @@ class ProductForm extends FormAbstract
             ->setValidatorClass(ProductRequest::class)
             ->setFormOption('files', true)
             ->add('name', TextField::class, NameFieldOption::make()->required()->toArray())
-            ->add('sku', TextField::class, TextFieldOption::make()->label(trans('plugins/ecommerce::products.sku')))
+            ->add('sku', TextField::class, TextFieldOption::make()->label(trans('plugins/ecommerce::products.sku')));
 
+            if ($productId) {
+                $this->addMetaBoxes([
+                    'specs' => [
+                        'title' => 'Specifications',
+                        'content' => view('plugins/ecommerce::products.partials.specs-form', [
+                            'selectedSpecs' => $this->getModel()->specifications->toArray() ?? [],
+                            'categorySpecs' => $this->getModel()->latestCategorySpecifications->pluck('specification_values', 'specification_name')->toArray() ?? [],
+                        ]),
+                        'priority' => 50,
+                    ],
+                ]);
+            }
 
-            ->addMetaBoxes([
-                'specs' => [
-                    'title' => 'Specifications',
-                    'content' => view('plugins/ecommerce::products.partials.specs-form', [
-                        'specs' => $this->getModel()->specifications ?? [], // Fetch existing specs if editing
-                    ]),
-                    'priority' => 50,
-                ],
-            ])
-
-            ->add('product_type', 'hidden', [
+            $this->add('product_type', 'hidden', [
                 'value' => request()->input('product_type') ?: ProductTypeEnum::PHYSICAL,
             ])
              ->add('status', SelectField::class, StatusFieldOption::make()->toArray())
@@ -705,19 +710,22 @@ class ProductForm extends FormAbstract
                     ->label(trans('core/base::forms.is_featured'))
                     ->defaultValue(false)
                     ->toArray()
-            )
+            );
 
-            ->add(
-                'categories[]',
-                TreeCategoryField::class,
-                SelectFieldOption::make()
-                    ->label(trans('plugins/ecommerce::products.form.categories'))
-                    ->choices(ProductCategoryHelper::getActiveTreeCategories())
-                    ->selected(old('categories', $selectedCategories))
-                    ->addAttribute('card-body-class', 'p-0')
-                    ->toArray()
-            )
-            ->when($brands, function () use ($brands) {
+            if (!$selectedCategories) {
+                $this->add(
+                    'categories[]',
+                    TreeCategoryField::class,
+                    SelectFieldOption::make()
+                        ->label(trans('plugins/ecommerce::products.form.categories'))
+                        ->choices(ProductCategoryHelper::getActiveTreeCategories())
+                        ->selected(old('categories', $selectedCategories))
+                        ->addAttribute('card-body-class', 'p-0')
+                        ->toArray()
+                );
+            }
+
+            $this->when($brands, function () use ($brands) {
                 $this
                     ->add(
                         'brand_id',
@@ -961,7 +969,6 @@ class ProductForm extends FormAbstract
 
             if ($this->getModel()) {
                 $productId = $this->getModel()->id;
-                $specificationNameVals = $this->getModel()->latestCategorySpecifications->pluck('specification_values', 'specification_name')->toArray();
 
                 $selectedCategories = $this->getModel()->categories()->pluck('category_id')->all();
 
@@ -1030,19 +1037,22 @@ class ProductForm extends FormAbstract
                     ]),
                     'priority' => 150,
                 ],
-            ])
-            ->addMetaBoxes([
-                'specs' => [
-                    'title' => 'Specifications',
-                    'content' => view('plugins/ecommerce::products.partials.specs-form', [
-                        'specs' => $this->getModel()->specifications->count() > 0 ? $this->getModel()->specifications : $specificationNameVals, // Fetch existing specs if editing
-                        'specificationNamePresent' => $this->getModel()->specifications->count() > 0 ? false : true
-                    ]),
-                    'priority' => 50,
-                ],
-            ])
+            ]);
 
-            ->addMetaBoxes([
+            if ($productId) {
+                $this->addMetaBoxes([
+                    'specs' => [
+                        'title' => 'Specifications',
+                        'content' => view('plugins/ecommerce::products.partials.specs-form', [
+                            'selectedSpecs' => $this->getModel()->specifications->toArray() ?? [],
+                            'categorySpecs' => $this->getModel()->latestCategorySpecifications->pluck('specification_values', 'specification_name')->toArray() ?? [],
+                        ]),
+                        'priority' => 50,
+                    ],
+                ]);
+            }
+
+            $this->addMetaBoxes([
                 'documents' => [
                     'title' => 'Product Documents',
                     'content' => view('plugins/ecommerce::products.partials.documents-form', [
@@ -1064,7 +1074,6 @@ class ProductForm extends FormAbstract
                     ->defaultValue(false)
                     ->toArray()
             )
-
             ->add(
                 'categories[]',
                 TreeCategoryField::class,
