@@ -4,6 +4,7 @@ namespace Botble\Ecommerce\Http\Controllers;
 use Kris\LaravelFormBuilder\Facades\FormBuilder; // Import the FormBuilder facade
 
 use Botble\Ecommerce\Models\EliteShipment;
+use Botble\Ecommerce\Models\Shipment;
 use Botble\Ecommerce\Forms\EliteShipmentForm;
 use Botble\Base\Http\Controllers\BaseController;
 use Illuminate\Http\Request;
@@ -13,22 +14,27 @@ use Carbon\Carbon;
 
 class EliteShipmentController extends BaseController
 {
-    
+
     public function setup(): void
     {
         $this
             ->setupModel(new EliteShipment()) // Update this to use EliteShipment
             ->contentOnly();
     }
-    public function create()
+
+    public function create(Request $request)
     {
+        $id = $request->id ?? null;
+        $shipment = $id ? Shipment::find($id) : new EliteShipment();
         $form = FormBuilder::create(EliteShipmentForm::class, [
             'method' => 'POST',
             'url' => route('eliteshipment.store'),
+            'model' => $shipment, // Pass the model to the form
         ]);
 
         return view('eliteshipment.create', compact('form'));
     }
+
 
     // public function store(Request $request)
     // {
@@ -106,8 +112,8 @@ class EliteShipmentController extends BaseController
     //     // Redirect with success message
     //     return redirect()->route('eliteshipment.create')->with('success', 'Shipment created successfully!');
     // }
-    
-    
+
+
     // public function store(Request $request)
     // {
     //     $validator = Validator::make($request->all(), [
@@ -180,9 +186,9 @@ class EliteShipmentController extends BaseController
 
     //     // Save the shipment record
     //     $shipment->save();
-        
-       
-    
+
+
+
     //     // Define the shipment details
     //     $orderData = [
     //         "order_id" => "ORD123456",
@@ -208,7 +214,7 @@ class EliteShipmentController extends BaseController
     //         "created_at" => "2024-11-14 08:45:00",
     //         "updated_at" => "2024-11-14 09:30:00"
     //     ];
-        
+
 
     //     // Retrieve authentication details from .env
     //     $authDetails = [
@@ -221,10 +227,10 @@ class EliteShipmentController extends BaseController
 
     //     // Send the POST request using Laravel's Http facade
     //     $response = Http::asForm()->post('https://www.elite-co.com/api/GlobalAWB.php', $postFields);
-    //     // $shipmentUpdate = EliteShipment::find($shipment->id); 
+    //     // $shipmentUpdate = EliteShipment::find($shipment->id);
     //     // $shipmentUpdate->AWB = $responseAWB;
- 
-    //     // $shipmentUpdate->update(); 
+
+    //     // $shipmentUpdate->update();
     //     // Handle the response
     //   // Handle the response
     //     if ($response->successful()) {
@@ -233,8 +239,8 @@ class EliteShipmentController extends BaseController
     //         return response()->json(['error' => 'Failed to send shipment', 'details' => $response->body()], $response->status());
     //     }
     // }
-    
-    
+
+
 //   public function store(Request $request)
 // {
 //     // Validate the incoming request data
@@ -349,12 +355,12 @@ class EliteShipmentController extends BaseController
 //         'Special' => 'Del',
 //         'Order_Type' => 'D',
 //         'ship_region' => 'AE',
-        
-        
+
+
 
 //     ];
-    
-    
+
+
 
 //     \Log::info('Prepared order data for API request.');
 
@@ -504,8 +510,8 @@ public function store(Request $request)
     $shipment->ship_region = $request->ship_region;
 
     \Log::info('Shipment record created.');
-    
-    
+
+
 
     // Define authentication details and order data for the API request
     $authDetails = [

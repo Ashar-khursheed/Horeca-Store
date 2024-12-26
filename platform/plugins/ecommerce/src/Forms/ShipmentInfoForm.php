@@ -184,7 +184,7 @@ class ShipmentInfoForm extends FormAbstract
         $this
             ->setupModel(new EliteShipment())
             ->contentOnly();
-        
+
         // Add the buttons directly below the form content
         $this->addButtonsBelowContent();
     }
@@ -194,14 +194,19 @@ class ShipmentInfoForm extends FormAbstract
      */
     protected function addButtonsBelowContent(): void
     {
+        $createShipmentRoute = "/admin/ecommerce/create-shipment?id=" . $this->getModel()->id;
+
         $this->add('button_section', 'html', [
-            'html' => '
+            'html' => sprintf(
+                '
                 <div class="form-buttons" style="margin-top: 20px;">
-                    <a href="/admin/ecommerce/create-shipment" class="btn btn-primary" ">Create Shipment</a>
+                    <a href="%s" class="btn btn-primary">Create Shipment</a>
                     <a href="/admin/ecommerce/track-shipment" class="btn btn-secondary" target="_blank">Track Shipment</a>
                     <a href="/admin/ecommerce/cancel-shipment" class="btn btn-info" target="_blank">Cancel Shipment</a>
                 </div>
-            ',
+                ',
+                $createShipmentRoute
+            ),
         ]);
     }
 }
@@ -222,7 +227,7 @@ class ShipmentInfoForm extends FormAbstract
 //         $this
 //             ->setupModel(new EliteShipment()) // Update this to use EliteShipment
 //             ->contentOnly();
-            
+
         //   ->add('shipper_name', 'text', [
         //         'label' => 'Shipper Name:',
         //         'attr' => [
@@ -402,8 +407,8 @@ class ShipmentInfoForm extends FormAbstract
         //         ],
         //         'default_value' => 'AE',
         //     ]);
-                     
-            
+
+
             // ->addSubmitButton(trans('core/base::forms.save_and_continue'), 'ti ti-circle-check');
     // }
 // }
