@@ -16,14 +16,7 @@ class EliteShipmentForm extends FormAbstract
 		$this
 		->setupModel($this->getModel() ?? new EliteShipment())
 		->contentOnly()
-		->add('Username', 'hidden', [
-	
-			'value' => '1112190'
-		])
-		->add('Password', 'hidden', [
-	
-			'value' => 'W%i1aI4gz)b0Wh'
-		])
+
 		->add('shipper_name', 'text', [
 			'label' => 'Shipper Name:',
 			'attr' => [
