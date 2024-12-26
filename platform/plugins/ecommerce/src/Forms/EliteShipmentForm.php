@@ -16,6 +16,20 @@ class EliteShipmentForm extends FormAbstract
 		$this
 		->setupModel($this->getModel() ?? new EliteShipment())
 		->contentOnly()
+		->add('Username', 'hidden', [
+			'label' => 'Name:',
+			'attr' => [
+				'placeholder' => 'Enter shipper name',
+			],
+			'value' => '1112190'
+		])
+		->add('Password', 'hidden', [
+			'label' => 'Shipper Password:',
+			'attr' => [
+				'placeholder' => 'Enter shipper Password',
+			],
+			'value' => 'W%i1aI4gz)b0Wh'
+		])
 		->add('shipper_name', 'text', [
 			'label' => 'Shipper Name:',
 			'attr' => [
@@ -179,7 +193,7 @@ class EliteShipmentForm extends FormAbstract
 				'placeholder' => 'Enter service date (YYYY-MM-DD)',
 			],
 		])
-		->add('service_time', 'time', [
+		->add('service_time', 'text', [
 			'label' => 'Service Time:',
 			'attr' => [
 				'placeholder' => 'Enter service time (e.g., 10:00-18:00)',
@@ -202,7 +216,7 @@ class EliteShipmentForm extends FormAbstract
 			'label' => 'Order Type:',
 			'attr' => [
 				'placeholder' => 'Enter order type',
-				'readonly' => true
+				// 'readonly' => true
 			],
 			'value' => 'D'
 		])
