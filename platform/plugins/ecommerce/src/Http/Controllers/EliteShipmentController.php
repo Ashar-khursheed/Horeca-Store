@@ -4,6 +4,7 @@ namespace Botble\Ecommerce\Http\Controllers;
 use Kris\LaravelFormBuilder\Facades\FormBuilder; // Import the FormBuilder facade
 
 use Botble\Ecommerce\Models\EliteShipment;
+use Botble\Ecommerce\Models\Shipment;
 use Botble\Ecommerce\Forms\EliteShipmentForm;
 use Botble\Base\Http\Controllers\BaseController;
 use Illuminate\Http\Request;
@@ -24,8 +25,7 @@ class EliteShipmentController extends BaseController
     public function create(Request $request)
     {
         $id = $request->id ?? null;
-        $shipment = $id ? EliteShipment::find($id) : new EliteShipment();
-
+        $shipment = $id ? Shipment::find($id) : new EliteShipment();
         $form = FormBuilder::create(EliteShipmentForm::class, [
             'method' => 'POST',
             'url' => route('eliteshipment.store'),

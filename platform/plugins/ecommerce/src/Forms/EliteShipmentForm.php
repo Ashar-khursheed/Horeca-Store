@@ -51,12 +51,14 @@ class EliteShipmentForm extends FormAbstract
 			'attr' => [
 				'placeholder' => 'Enter receiver name',
 			],
+			'value' => $this->getModel()->order->shippingAddress->name,
 		])
 		->add('receiver_address', 'text', [
 			'label' => 'Receiver Address:',
 			'attr' => [
 				'placeholder' => 'Enter receiver address',
 			],
+			'value' => $this->getModel()->order->shippingAddress->address,
 		])
 		->add('receiver_address2', 'text', [
 			'label' => 'Receiver Address 2:',
@@ -70,48 +72,58 @@ class EliteShipmentForm extends FormAbstract
 			'attr' => [
 				'placeholder' => 'Enter receiver area',
 			],
+			'value' => $this->getModel()->order->shippingAddress->state,
 		])
 		->add('receiver_city', 'text', [
 			'label' => 'Receiver City:',
 			'attr' => [
 				'placeholder' => 'Enter receiver city',
 			],
+			'value' => strtoupper($this->getModel()->order->shippingAddress->city),
 		])
 		->add('receiver_telephone', 'text', [
 			'label' => 'Receiver Telephone:',
 			'attr' => [
 				'placeholder' => 'Enter receiver telephone',
 			],
+			'value' => $this->getModel()->order->shippingAddress->phone,
 		])
 		->add('receiver_mobile', 'text', [
 			'label' => 'Receiver Mobile:',
 			'attr' => [
 				'placeholder' => 'Enter receiver mobile',
 			],
+			'value' => $this->getModel()->order->shippingAddress->phone,
 		])
 		->add('receiver_email', 'email', [
 			'label' => 'Receiver Email:',
 			'attr' => [
 				'placeholder' => 'Enter receiver email',
 			],
+			'value' => $this->getModel()->order->shippingAddress->email,
 		])
 		->add('shipping_reference', 'text', [
 			'label' => 'Shipping Reference:',
 			'attr' => [
 				'placeholder' => 'Enter shipping reference',
 			],
+			'value' => str_pad(mt_rand(1,99999999),8,'0',STR_PAD_LEFT),
 		])
 		->add('orders', 'text', [
 			'label' => 'Orders:',
 			'attr' => [
 				'placeholder' => 'Enter order details',
+				'readonly' => true
 			],
+			'value' => $this->getModel()->order->code,
 		])
 		->add('item_type', 'text', [
 			'label' => 'Item Type:',
 			'attr' => [
 				'placeholder' => 'Enter item type',
+				'readonly' => true
 			],
+			'value' => 'X',
 		])
 		->add('item_description', 'text', [
 			'label' => 'Item Description:',
@@ -124,38 +136,42 @@ class EliteShipmentForm extends FormAbstract
 			'attr' => [
 				'placeholder' => 'Enter item value',
 			],
+			'value' => $this->getModel()->order->amount,
 		])
 		->add('dangerousGoodsType', 'text', [
 			'label' => 'Dangerous Goods Type:',
 			'attr' => [
 				'placeholder' => 'Enter dangerous goods type',
 			],
-			'default_value' => '',
 		])
 		->add('weight_kg', 'number', [
 			'label' => 'Weight (kg):',
 			'attr' => [
 				'placeholder' => 'Enter weight in kg',
 			],
+			'value' => $this->getModel()->order->products->sum('qty'),
 		])
 		->add('no_of_pieces', 'number', [
 			'label' => 'No of Pieces:',
 			'attr' => [
 				'placeholder' => 'Enter number of pieces',
 			],
+			'value' => $this->getModel()->order->products->sum('qty'),
 		])
 		->add('service_type', 'text', [
 			'label' => 'Service Type:',
 			'attr' => [
 				'placeholder' => 'Enter service type',
+				'readonly' => true
 			],
+			'value' => 'N',
 		])
 		->add('cod_value', 'number', [
 			'label' => 'COD Value:',
 			'attr' => [
 				'placeholder' => 'Enter COD value',
 			],
-			'default_value' => '',
+			'value' => $this->getModel()->order->shipping_amount,
 		])
 		->add('service_date', 'date', [
 			'label' => 'Service Date:',
@@ -186,14 +202,17 @@ class EliteShipmentForm extends FormAbstract
 			'label' => 'Order Type:',
 			'attr' => [
 				'placeholder' => 'Enter order type',
+				'readonly' => true
 			],
+			'value' => 'D'
 		])
 		->add('ship_region', 'text', [
 			'label' => 'Ship Region:',
 			'attr' => [
 				'placeholder' => 'Enter ship region (e.g., AE)',
+				'readonly' => true
 			],
-			'default_value' => 'AE',
+			'value' => 'AE',
 		]);
 	}
 }
