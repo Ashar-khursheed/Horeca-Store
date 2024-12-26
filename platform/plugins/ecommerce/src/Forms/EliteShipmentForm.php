@@ -116,7 +116,7 @@ class EliteShipmentForm extends FormAbstract
 				'placeholder' => 'Enter order details',
 				// 'readonly' => true
 			],
-			'value' => $this->getModel()->order->code,
+			'value' => $this->getModel()->order->id,
 		])
 		->add('item_type', 'text', [
 			'label' => 'Item Type:',
@@ -130,7 +130,9 @@ class EliteShipmentForm extends FormAbstract
 			'label' => 'Item Description:',
 			'attr' => [
 				'placeholder' => 'Enter item description',
+				'readonly' => true
 			],
+			'value' => 'HD',
 		])
 		->add('item_value', 'number', [
 			'label' => 'Item Value:',
