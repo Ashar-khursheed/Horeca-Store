@@ -13,7 +13,6 @@ class EliteShipmentForm extends FormAbstract
 
 	public function setup(): void
 	{
-		// use that id here
 		$this
 		->setupModel($this->getModel() ?? new EliteShipment())
 		->contentOnly()
