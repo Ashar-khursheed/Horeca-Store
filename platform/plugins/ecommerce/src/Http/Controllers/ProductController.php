@@ -443,8 +443,10 @@ class ProductController extends BaseController
                         );
                     }
 
-                    $this->saveSpecifications($product, $request->specs);
-
+                    if ($product->changeSpecs) {
+                        $this->saveSpecifications($product, $request->specs);
+                        unset($product->changeSpecs);
+                    }
 
                         $product->save();
 
@@ -789,7 +791,10 @@ class ProductController extends BaseController
                         );
                     }
 
-                    $this->saveSpecifications($product, $request->specs);
+                    if ($product->changeSpecs) {
+                        $this->saveSpecifications($product, $request->specs);
+                        unset($product->changeSpecs);
+                    }
 
 
                         $product->save();
@@ -1400,7 +1405,10 @@ class ProductController extends BaseController
                 );
             }
 
-            $this->saveSpecifications($product, $request->specs);
+            if ($product->changeSpecs) {
+                $this->saveSpecifications($product, $request->specs);
+                unset($product->changeSpecs);
+            }
 
             // Return success response
             return $this->httpResponse()
@@ -1741,8 +1749,6 @@ class ProductController extends BaseController
 
                 $storeProductTypesService->execute($request, $product);
 
-
-
                 // Handle product variations and attributes
                 $addedAttributes = $request->input('added_attributes', []);
                 if ($request->input('is_added_attributes') == 1 && $addedAttributes) {
@@ -1791,7 +1797,10 @@ class ProductController extends BaseController
                 );
             }
 
-            $this->saveSpecifications($product, $request->specs);
+            if ($product->changeSpecs) {
+                $this->saveSpecifications($product, $request->specs);
+                unset($product->changeSpecs);
+            }
 
             // Return success response
             return $this->httpResponse()
