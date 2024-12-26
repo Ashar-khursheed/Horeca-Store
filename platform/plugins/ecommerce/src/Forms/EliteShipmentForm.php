@@ -16,14 +16,14 @@ class EliteShipmentForm extends FormAbstract
 		$this
 		->setupModel($this->getModel() ?? new EliteShipment())
 		->contentOnly()
-		->add('Username', 'hidden', [
+		->add('Username', 'text', [
 			'label' => 'Name:',
 			'attr' => [
 				'placeholder' => 'Enter shipper name',
 			],
 			'value' => '1112190'
 		])
-		->add('Password', 'hidden', [
+		->add('Password', 'text', [
 			'label' => 'Shipper Password:',
 			'attr' => [
 				'placeholder' => 'Enter shipper Password',
@@ -127,7 +127,7 @@ class EliteShipmentForm extends FormAbstract
 			'label' => 'Orders:',
 			'attr' => [
 				'placeholder' => 'Enter order details',
-				'readonly' => true
+				// 'readonly' => true
 			],
 			'value' => $this->getModel()->order->code,
 		])
