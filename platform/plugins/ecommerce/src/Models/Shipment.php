@@ -68,4 +68,9 @@ class Shipment extends BaseModel
     {
         return Attribute::get(fn () => $this->status == ShippingStatusEnum::CANCELED);
     }
+
+    protected function eliteShipment()
+    {
+        return $this->hasOne(EliteShipment::class, 'shipment_id');
+    }
 }
