@@ -24,7 +24,7 @@
 			<tr>
 				<th class="fw-bold fs-4">ID</th>
 				<th class="fw-bold fs-4">Child Category Name</th>
-				<th class="fw-bold fs-4">Product Types</th>
+				{{-- <th class="fw-bold fs-4">Product Types</th> --}}
 				<th class="fw-bold fs-4">Specifications</th>
 				<th class="fw-bold fs-4">Actions</th>
 			</tr>
@@ -34,7 +34,7 @@
 			<tr>
 				<td>{{ $category['id'] }}</td>
 				<td>{{ $category['name'] }}</td>
-				<td>{{ $category['product_types'] }}</td>
+				{{-- <td>{{ $category['product_types'] }}</td> --}}
 				<td>{{ $category['specifications'] }}</td>
 				<td>
 					<a href="{{ route('categoryFilter.edit', ['id' => $category['id'], 'search' => request('search'), 'page' => request('page')]) }}"

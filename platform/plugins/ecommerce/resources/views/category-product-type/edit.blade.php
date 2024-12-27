@@ -16,7 +16,7 @@
 			</div>
 		</div>
 
-		<div class="row">
+		{{-- <div class="row">
 			<div class="mb-3 col-md-12">
 				<label for="product_types" class="form-label">Product Types</label>
 				<select id="product_types" name="product_types[]" class="form-control select2" multiple>
@@ -27,14 +27,34 @@
 					@endforeach
 				</select>
 			</div>
-		</div>
+		</div> --}}
 
 		<!-- Specifications -->
-		<label for="specifications">Specifications</label>
 		<div id="specification-container">
+			<div class="row">
+				<div class="col-md-1">
+					<label for="specifications">Checked</label>
+				</div>
+				<div class="col-md-3">
+					<label for="specifications">Specification Name</label>
+				</div>
+				<div class="col-md-8">
+					<label for="specifications">Specification Values</label>
+				</div>
+			</div>
 			@foreach ($category->specifications as $index => $specification)
 				<div class="specification-group mt-3">
 					<div class="row">
+						<div class="col-md-1 justify-content-end text-end">
+							<input
+								class="mt-2"
+								type="checkbox"
+								name="specifications[{{$index}}][is_checked]"
+								value="1"
+								{{ $specification->is_checked ? 'checked' : '' }}
+							/>
+						</div>
+
 						<div class="col-md-3">
 							<input
 								type="text"
@@ -44,7 +64,7 @@
 								placeholder="Specification {{ $index + 1 }}"
 							/>
 						</div>
-						<div class="col-md-9">
+						<div class="col-md-8">
 							<div class="row specification-values" id="specification_value_{{$index}}">
 								@php($specVals = $specification->specification_values ? explode("|", $specification->specification_values) : [])
 								@foreach ($specVals as $index2 => $specVal)
@@ -113,6 +133,14 @@
 			@for ($i = $category->specifications->count(); $i < 3; $i++)
 				<div class="specification-group mt-3">
 					<div class="row">
+						<div class="col-md-1 justify-content-end text-end">
+							<input
+								class="mt-2"
+								type="checkbox"
+								name="specifications[{{$i}}][is_checked]"
+								value="1"
+							/>
+						</div>
 						<div class="col-md-3">
 							<input
 								type="text"
@@ -121,7 +149,7 @@
 								placeholder="Specification {{ $i + 1 }}"
 							/>
 						</div>
-						<div class="col-md-9">
+						<div class="col-md-8">
 							<div class="row specification-values" id="specification_value_{{$i}}">
 								@for ($j = 0; $j < 5; $j++)
 									<div class="col-md-2 mb-2">
@@ -183,6 +211,14 @@
 			newSpecification.classList.add('specification-group', 'mt-3');
 			newSpecification.innerHTML = `
 				<div class="row">
+					<div class="col-md-1 justify-content-end text-end">
+						<input
+							class="mt-2"
+							type="checkbox"
+							name="specifications[${index}][is_checked]"
+							value="1"
+						/>
+					</div>
 					<div class="col-md-3">
 						<input
 							type="text"
@@ -191,7 +227,7 @@
 							placeholder="Specification ${index + 1}"
 						/>
 					</div>
-					<div class="col-md-9">
+					<div class="col-md-8">
 						<div class="row specification-values" id="specification_value_${index}">
 							${Array.from({ length: 5 })
 								.map((_, j) => `
