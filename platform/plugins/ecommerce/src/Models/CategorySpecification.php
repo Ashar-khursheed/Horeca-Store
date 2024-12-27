@@ -10,6 +10,7 @@ class CategorySpecification extends Model
 		'category_id',
 		'specification_name',
 		'specification_values',
+		'is_checked',
 		'created_by',
 		'updated_by'
 	];
