@@ -13,6 +13,7 @@
 use Botble\Ecommerce\Http\Controllers\TempProductController;
 use Botble\Ecommerce\Http\Controllers\TempProductStatusController;
 use Botble\Ecommerce\Http\Controllers\CategoryProductTypeController;
+
 use Botble\Ecommerce\Http\Controllers\TempContentController;
 use Botble\Ecommerce\Http\Controllers\ProductController;
 use Botble\Ecommerce\Http\Controllers\DocumentController;
@@ -22,7 +23,7 @@ use Illuminate\Support\Facades\Route;
 use Botble\Ecommerce\Http\Controllers\SpecificationController;
 use Botble\Ecommerce\Http\Controllers\ImportProductDescriptionController;
 use Botble\Ecommerce\Http\Controllers\EliteShipmentController;
-
+use Botble\Ecommerce\Http\Controllers\ProductDocumentController;
 
 
 
@@ -52,6 +53,20 @@ Route::get('admin/ecommerce/category-product-filter', [CategoryProductTypeContro
 Route::get('admin/ecommerce/category-product-filter/{id}/edit', [CategoryProductTypeController::class, 'edit'])->name('categoryFilter.edit');
 Route::put('admin/ecommerce/category-product-filter/{id}', [CategoryProductTypeController::class, 'update'])->name('categoryFilter.update');
 
+
+
+
+
+// Define route for showing the upload form
+Route::get('admin/ecommerce/upload-documents', [ProductDocumentController::class, 'showUploadForm'])->name('product-documents.form');
+
+// Define route for handling the form submission
+Route::post('admin/ecommerce/upload-documents', [ProductDocumentController::class, 'uploadDocuments'])->name('product-documents.upload');
+
+
+Route::get('/upload-form', function () {
+    return view('upload-documents');
+});
 
      AdminHelper::registerRoutes(function () {
          Route::group(['namespace' => 'Botble\ProductImages\Http\Controllers', 'prefix' => 'ecommerce'], function () {
