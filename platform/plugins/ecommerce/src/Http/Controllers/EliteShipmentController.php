@@ -437,7 +437,7 @@ class EliteShipmentController extends BaseController
 
 public function store(Request $request)
 {
-    // Validate the incoming request data
+    // Validate the incoming request data shipment_id
     \Log::info('Validation started.');
     $validator = Validator::make($request->all(), [
         'shipper_name' => 'required|string',
@@ -457,7 +457,7 @@ public function store(Request $request)
         'item_type' => 'required|string',
         'item_description' => 'required|string',
         'item_value' => 'required|numeric',
-        'dangerousGoodsType' => 'nullable|string',
+        'dangerousGoodsType' => 'required|string',
         'weight_kg' => 'required|numeric',
         'no_of_pieces' => 'required|numeric',
         'service_type' => 'required|string',
@@ -607,11 +607,18 @@ $serviceTime = isset($request->service_time) && !empty($request->service_time)
             $shipment->awb = $awb;
             $shipment->tracking_url = $trackingUrl;
             $shipment->awb_label_url = $awbLabelUrl;
+            $shipment->shipment_id = $request->shipment_id;
             $shipment->save(); // Save the shipment with the AWB
 
             \Log::info('AWB saved in the shipment record: ' . $awb);
 
             // Return a success message with the AWB and other details
+            if ($request->shipment_id) {
+                session()->put('success', 'Shipment sent successfully.');
+                return redirect()
+                ->to('admin/ecommerce/shipments/edit/' . $request->shipment_id);
+
+            }
             return response()->json([
                 'message' => 'Shipment sent successfully',
                 'data' => [

@@ -12,7 +12,7 @@ class EliteShipment extends BaseModel
     protected $table = 'eliteshipment';
 
     protected $fillable = [
-        'shipper_name', 'shipper_address', 'shipper_area', 'shipper_city', 'shipper_telephone',
+        'shipment_id', 'shipper_name', 'shipper_address', 'shipper_area', 'shipper_city', 'shipper_telephone',
         'receiver_name', 'receiver_address', 'receiver_address2', 'receiver_area', 'receiver_city',
         'receiver_telephone', 'receiver_mobile', 'receiver_email', 'shipping_reference', 'orders',
         'item_type', 'item_description', 'item_value', 'dangerousGoodsType', 'weight_kg',

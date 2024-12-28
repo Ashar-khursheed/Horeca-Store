@@ -194,20 +194,37 @@ class ShipmentInfoForm extends FormAbstract
      */
     protected function addButtonsBelowContent(): void
     {
-        $createShipmentRoute = "/admin/ecommerce/create-shipment?id=" . $this->getModel()->id;
+        if ($this->getModel()->eliteShipment) {
+            $trackShipmentRoute = $this->getModel()->eliteShipment->tracking_url;
+            $generateAwbRoute = $this->getModel()->eliteShipment->awb_label_url;
+            $cancelShipmentRoute = "/admin/ecommerce/cancel-shipment";
 
-        $this->add('button_section', 'html', [
-            'html' => sprintf(
-                '
-                <div class="form-buttons" style="margin-top: 20px;">
-                    <a href="%s" class="btn btn-primary">Create Shipment</a>
-                    <a href="/admin/ecommerce/track-shipment" class="btn btn-secondary" target="_blank">Track Shipment</a>
-                    <a href="/admin/ecommerce/cancel-shipment" class="btn btn-info" target="_blank">Cancel Shipment</a>
-                </div>
-                ',
-                $createShipmentRoute
-            ),
-        ]);
+            $this->add('button_section', 'html', [
+                'html' => sprintf(
+                    '
+                    <div class="form-buttons mt-4">
+                        <a href="%s" class="btn btn-secondary" target="_blank">Track Shipment</a>
+                        <a href="%s" class="btn btn-info" target="_blank">Generate AWB</a>
+                        <a href="%s" class="btn btn-info">Cancel Shipment</a>
+                    </div>
+                    ',
+                    $trackShipmentRoute, $generateAwbRoute, $cancelShipmentRoute
+                ),
+            ]);
+        } else {
+            $createShipmentRoute = "/admin/ecommerce/create-shipment?id=" . $this->getModel()->id;
+
+            $this->add('button_section', 'html', [
+                'html' => sprintf(
+                    '
+                    <div class="form-buttons mt-4">
+                        <a href="%s" class="btn btn-primary">Create Shipment</a>
+                    </div>
+                    ',
+                    $createShipmentRoute
+                ),
+            ]);
+        }
     }
 }
 
