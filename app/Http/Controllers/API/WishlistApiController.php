@@ -87,18 +87,61 @@ class WishlistApiController extends Controller
 
 
     // Method to get all products in the wishlist
+// public function getWishlist(Request $request)
+// {
+//     if (Auth::check()) {
+//         // Authenticated user - get from database and order by descending creation date
+//         $userId = Auth::id();
+//         $wishlistItems = Wishlist::with('product')
+//             ->where('customer_id', $userId)
+//             ->orderBy('created_at', 'desc') // Order by descending
+//             ->get();
+
+//         $wishlistItems->transform(function ($item) {
+//             $item->in_wishlist = 1; // Mark as in wishlist
+//             return $item;
+//         });
+
+//         return response()->json(['wishlist' => $wishlistItems]);
+//     } else {
+//         // Guest user - get from session and reverse the order
+//         $wishlist = session()->get('guest_wishlist', []);
+//         $wishlist = array_reverse($wishlist); // Reverse the order for descending
+
+//         return response()->json([
+//             'wishlist' => array_map(function($productId) {
+//                 return [
+//                     'product_id' => $productId,
+//                     'in_wishlist' => 1
+//                 ];
+//             }, $wishlist)
+//         ]);
+//     }
+// }
+
+// Method to get all products in the wishlist
 public function getWishlist(Request $request)
 {
     if (Auth::check()) {
         // Authenticated user - get from database and order by descending creation date
         $userId = Auth::id();
-        $wishlistItems = Wishlist::with('product')
-            ->where('customer_id', $userId)
-            ->orderBy('created_at', 'desc') // Order by descending
+        $wishlistItems = Wishlist::with('product')->where('customer_id', $userId)
+            ->orderBy('created_at', 'desc')
             ->get();
 
         $wishlistItems->transform(function ($item) {
             $item->in_wishlist = 1; // Mark as in wishlist
+
+            // Process product images
+            if (isset($item->product->images) && is_array($item->product->images)) {
+                $item->product->images = array_map(function ($image) {
+                    if (str_starts_with($image, '/storage/')) {
+                        return asset($image);
+                    }
+                    return asset('storage/products/' . $image);
+                }, $item->product->images);
+            }
+
             return $item;
         });
 
