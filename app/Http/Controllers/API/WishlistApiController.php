@@ -57,33 +57,129 @@ class WishlistApiController extends Controller
     }
 
     // Method to get all products in the wishlist
-    public function getWishlist(Request $request)
-    {
-        if (Auth::check()) {
-            // Authenticated user - get from database
-            $userId = Auth::id();
-            $wishlistItems = Wishlist::with('product')->where('customer_id', $userId)->get();
+    // public function getWishlist(Request $request)
+    // {
+    //     if (Auth::check()) {
+    //         // Authenticated user - get from database
+    //         $userId = Auth::id();
+    //         $wishlistItems = Wishlist::with('product')->where('customer_id', $userId)->get();
 
-            $wishlistItems->transform(function ($item) {
-                $item->in_wishlist = 1; // Mark as in wishlist
-                return $item;
-            });
+    //         $wishlistItems->transform(function ($item) {
+    //             $item->in_wishlist = 1; // Mark as in wishlist
+    //             return $item;
+    //         });
 
-            return response()->json(['wishlist' => $wishlistItems]);
-        } else {
-            // Guest user - get from session
-            $wishlist = session()->get('guest_wishlist', []);
+    //         return response()->json(['wishlist' => $wishlistItems]);
+    //     } else {
+    //         // Guest user - get from session
+    //         $wishlist = session()->get('guest_wishlist', []);
             
-            return response()->json([
-                'wishlist' => array_map(function($productId) {
-                    return [
-                        'product_id' => $productId,
-                        'in_wishlist' => 1
-                    ];
-                }, $wishlist)
-            ]);
-        }
+    //         return response()->json([
+    //             'wishlist' => array_map(function($productId) {
+    //                 return [
+    //                     'product_id' => $productId,
+    //                     'in_wishlist' => 1
+    //                 ];
+    //             }, $wishlist)
+    //         ]);
+    //     }
+    // }
+
+
+    // Method to get all products in the wishlist
+// public function getWishlist(Request $request)
+// {
+//     if (Auth::check()) {
+//         // Authenticated user - get from database and order by descending creation date
+//         $userId = Auth::id();
+//         $wishlistItems = Wishlist::with('product')
+//             ->where('customer_id', $userId)
+//             ->orderBy('created_at', 'desc') // Order by descending
+//             ->get();
+
+//         $wishlistItems->transform(function ($item) {
+//             $item->in_wishlist = 1; // Mark as in wishlist
+//             return $item;
+//         });
+
+//         return response()->json(['wishlist' => $wishlistItems]);
+//     } else {
+//         // Guest user - get from session and reverse the order
+//         $wishlist = session()->get('guest_wishlist', []);
+//         $wishlist = array_reverse($wishlist); // Reverse the order for descending
+
+//         return response()->json([
+//             'wishlist' => array_map(function($productId) {
+//                 return [
+//                     'product_id' => $productId,
+//                     'in_wishlist' => 1
+//                 ];
+//             }, $wishlist)
+//         ]);
+//     }
+// }
+
+// Method to get all products in the wishlist
+public function getWishlist(Request $request)
+{
+    if (Auth::check()) {
+        // Authenticated user - get wishlist from the database
+        $userId = Auth::id();
+        $wishlistItems = Wishlist::with('product')->
+        where('customer_id', $userId) ->orderBy('created_at', 'desc')->get();
+
+        $wishlistItems->transform(function ($item) {
+            $product = $item->product;
+
+            if ($product) {
+                // Ensure `images` is properly formatted
+                $product->images = collect($product->images)->map(function ($image) {
+                    if (strpos($image, '/storage/products/') !== false) {
+                        return asset($image); // Add base URL for images already in storage/products
+                    } else {
+                        return asset('storage/' . $image); // Add base URL for images in storage
+                    }
+                });
+
+                $product->in_wishlist = 1; // Mark as in wishlist
+            }
+
+            return $item;
+        });
+
+        return response()->json(['wishlist' => $wishlistItems]);
+    } else {
+        // Guest user - get wishlist from the session
+        $wishlist = session()->get('guest_wishlist', []);
+
+        $formattedWishlist = array_map(function ($productId) {
+            $product = Product::find($productId);
+
+            if ($product) {
+                // Ensure `images` is properly formatted
+                $product->images = collect($product->images)->map(function ($image) {
+                    if (strpos($image, '/storage/products/') !== false) {
+                        return asset($image); // Add base URL for images already in storage/products
+                    } else {
+                        return asset('storage/' . $image); // Add base URL for images in storage
+                    }
+                });
+
+                return [
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'images' => $product->images,
+                    'in_wishlist' => 1,
+                ];
+            }
+
+            return null;
+        }, $wishlist);
+
+        return response()->json(['wishlist' => array_filter($formattedWishlist)]);
     }
+}
+
 
     // Method to remove a product from the wishlist
     public function removeFromWishlist(Request $request)

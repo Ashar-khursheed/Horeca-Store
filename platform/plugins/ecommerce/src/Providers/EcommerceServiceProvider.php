@@ -869,6 +869,18 @@ class EcommerceServiceProvider extends ServiceProvider
                     'permissions' => ['category-product-filter.index'],
                 ])
 
+                ->registerItem([
+                    'id' => 'cms-plugins-upload-documents',
+                    'priority' => 500,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'Upload Product Documents',
+                    'icon' => 'ti ti-upload',
+                    'url' => fn () => route('product-documents.form'),
+                    'permissions' => ['product-documents.form'],
+                ])
+                
+                
+
                 // ->registerItem([
                 //     'id' => 'cms-plugins-ecommerce::partials.category-product-filter',
                 //     'priority' => 400,
