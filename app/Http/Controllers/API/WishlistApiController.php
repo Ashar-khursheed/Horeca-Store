@@ -125,7 +125,8 @@ public function getWishlist(Request $request)
     if (Auth::check()) {
         // Authenticated user - get wishlist from the database
         $userId = Auth::id();
-        $wishlistItems = Wishlist::with('product')->where('customer_id', $userId)->get();
+        $wishlistItems = Wishlist::with('product')->
+        where('customer_id', $userId) ->orderBy('created_at', 'desc')->get();
 
         $wishlistItems->transform(function ($item) {
             $product = $item->product;
