@@ -601,178 +601,9 @@ private function getCategoryImageUrl($image)
 // }
 
 
-// public function getSpecificationFilters(Request $request)
-// {
-//     // Get the category_id and other query parameters
-//     $categoryId = $request->get('category_id');
-//     $filters = $request->get('dynamicParams'); // Get dynamicParams from the request
-//     $perPage = $request->get('per_page', 10); // Default pagination
-
-//     // Remove dynamicParams from the request
-//     $request->query->remove('dynamicParams');
-
-//     if (!$categoryId) {
-//         return response()->json([
-//             'success' => false,
-//             'message' => 'Category ID is required'
-//         ], 200);
-//     }
-
-//     // If dynamicParams is set, process it
-//     if ($filters) {
-//         parse_str($filters, $parsedFilters); // Decode the dynamicParams
-//         $filters = $parsedFilters['filters'] ?? []; // Extract filters if they exist
-//     }
-
-//     // Step 1: Fetch product IDs for the given category
-//     $productIds = DB::table('ec_product_category_product')
-//         ->where('category_id', $categoryId)
-//         ->pluck('product_id');
-
-//     if ($productIds->isEmpty()) {
-//         return response()->json([
-//             'success' => false,
-//             'message' => 'No products found for this category'
-//         ], 200);
-//     }
-
-//     // Step 2: Fetch category-specific filters (spec_names)
-//     $categoryFilters = DB::table('category_specifications')
-//         ->where('category_id', $categoryId)
-//         ->where('is_checked', 1)
-//         ->pluck('specification_name');
-
-//     if ($categoryFilters->isEmpty()) {
-//         return response()->json([
-//             'success' => false,
-//             'message' => 'No filters found for this category'
-//         ], 200);
-//     }
-
-//     // Step 3: Fetch specifications for these products and filters
-//     $specifications = DB::table('specifications')
-//         ->whereIn('product_id', $productIds)
-//         ->whereIn('spec_name', $categoryFilters)
-//         ->get();
-
-//     if ($specifications->isEmpty()) {
-//         return response()->json([
-//             'success' => false,
-//             'message' => 'No specifications found for this category'
-//         ], 200);
-//     }
-
-//     // Step 4: Apply filters (handling both ranges and specific values)
-//     if (!empty($filters)) {
-//         foreach ($filters as $filter) {
-//             $specifications = $specifications->filter(function ($spec) use ($filter) {
-//                 $specNameMatch = $spec->spec_name === $filter['spec_name'];
-
-//                 // Handle range filters (min and max values)
-//                 $rangeMatch = isset($filter['min'], $filter['max'])
-//                     ? $spec->spec_value >= $filter['min'] && $spec->spec_value <= $filter['max']
-//                     : true;
-
-//                 // Handle specific value filters (exact match)
-//                 $valueMatch = isset($filter['spec_value'])
-//                     ? $spec->spec_value == $filter['spec_value']
-//                     : true;
-
-//                 return $specNameMatch && ($rangeMatch || $valueMatch);
-//             });
-//         }
-
-//         $productIds = $specifications->pluck('product_id')->unique();
-
-//         if ($productIds->isEmpty()) {
-//             return response()->json([
-//                 'success' => false,
-//                 'message' => 'No products match the selected filters'
-//             ], 200);
-//         }
-//     }
-
-//     // Step 5: Fetch filtered products
-//     $products = DB::table('ec_products')
-//         ->select([
-//             'id', 'name', 'images', 'sku', 'price', 'sale_price', 'refund',
-//             'delivery_days', 'currency_id',
-//         ])
-//         ->whereIn('id', $productIds)
-//         ->paginate($perPage);
-
-//     // Step 6: Add specifications and ratings to products
-//     $products->transform(function ($product) use ($specifications) {
-//         $currency = DB::table('ec_currencies')->where('id', $product->currency_id)->first();
-//         $product->currency_title = $currency
-//             ? ($currency->is_prefix_symbol
-//                 ? $currency->title . ' ' . $product->price
-//                 : $product->price . ' ' . $currency->title)
-//             : $product->price;
-
-//         $totalReviews = DB::table('ec_reviews')->where('product_id', $product->id)->count();
-//         $product->avg_rating = $totalReviews > 0
-//             ? DB::table('ec_reviews')->where('product_id', $product->id)->avg('star')
-//             : null;
-
-//         $product->specifications = $specifications->where('product_id', $product->id)->map(function ($spec) {
-//             return [
-//                 'spec_name' => $spec->spec_name,
-//                 'spec_value' => $spec->spec_value,
-//             ];
-//         });
-
-//         // Fix for image path duplication
-//         $imagePaths = $product->images ? json_decode($product->images, true) : [];
-//         $product->images = array_map(function($imagePath) {
-//             // Check if the path already contains the full URL
-//             if (filter_var($imagePath, FILTER_VALIDATE_URL)) {
-//                 return $imagePath; // If it's a full URL, return it as is
-//             }
-//             return asset('storage/' . $imagePath); // Otherwise, prepend 'storage/'
-//         }, $imagePaths);
-
-//         return $product;
-//     });
-
-//     // Step 7: Create available filters (handling ranges and specific values)
-//     $availableFilters = $specifications->groupBy('spec_name')->map(function ($specs, $specName) {
-//         $numericValues = $specs->pluck('spec_value')->filter(fn($value) => is_numeric($value))->unique()->sort()->values();
-//         $nonNumericValues = $specs->pluck('spec_value')->filter(fn($value) => !is_numeric($value))->unique();
-
-//         $ranges = [];
-//         if ($numericValues->count() > 1) {
-//             $minValue = $numericValues->first();
-//             $maxValue = $numericValues->last();
-
-//             $interval = ceil(($maxValue - $minValue) / 4);
-
-//             for ($i = 0; $i < 4; $i++) {
-//                 $start = $minValue + $i * $interval;
-//                 $end = min($minValue + ($i + 1) * $interval, $maxValue);
-
-//                 $ranges[] = [
-//                     'min' => (int) $start,
-//                     'max' => (int) $end,
-//                 ];
-//             }
-//         }
-
-//         return [
-//             'ranges' => $ranges,
-//             'non_numeric_values' => $nonNumericValues,
-//         ];
-//     });
-
-//     return response()->json([
-//         'success' => true,
-//         'filters' => $availableFilters,
-//         'products' => $products,
-//     ], 200);
-// }
-
 public function getSpecificationFilters(Request $request)
 {
+    // Get the category_id and other query parameters
     $categoryId = $request->get('category_id');
     $filters = $request->get('dynamicParams'); // Get dynamicParams from the request
     $perPage = $request->get('per_page', 10); // Default pagination
@@ -839,10 +670,10 @@ public function getSpecificationFilters(Request $request)
 
                 // Handle range filters (min and max values)
                 $rangeMatch = isset($filter['min'], $filter['max'])
-                    ? $this->isWithinRange($spec->spec_value, $filter['min'], $filter['max'])
+                    ? $spec->spec_value >= $filter['min'] && $spec->spec_value <= $filter['max']
                     : true;
 
-                // Handle specific value filters (exact match for non-numeric values)
+                // Handle specific value filters (exact match)
                 $valueMatch = isset($filter['spec_value'])
                     ? $spec->spec_value == $filter['spec_value']
                     : true;
@@ -851,19 +682,14 @@ public function getSpecificationFilters(Request $request)
             });
         }
 
-        // After applying filters, we now have a list of filtered specifications
-        // We need to get the product_ids for these filtered specifications
-        $filteredProductIds = $specifications->pluck('product_id')->unique();
+        $productIds = $specifications->pluck('product_id')->unique();
 
-        if ($filteredProductIds->isEmpty()) {
+        if ($productIds->isEmpty()) {
             return response()->json([
                 'success' => false,
                 'message' => 'No products match the selected filters'
             ], 200);
         }
-
-        // Now apply this filtered list to the products
-        $productIds = $filteredProductIds;
     }
 
     // Step 5: Fetch filtered products
@@ -878,21 +704,17 @@ public function getSpecificationFilters(Request $request)
     // Step 6: Add specifications and ratings to products
     $products->transform(function ($product) use ($specifications) {
         $currency = DB::table('ec_currencies')->where('id', $product->currency_id)->first();
-        
-        // Only show currency symbol or code, not the price
-        $product->currency_title = $currency ? $currency->title : 'USD'; 
+        $product->currency_title = $currency
+            ? ($currency->is_prefix_symbol
+                ? $currency->title . ' ' . $product->price
+                : $product->price . ' ' . $currency->title)
+            : $product->price;
 
-        // Convert price and sale_price to numbers (floats)
-        $product->price = floatval($product->price);
-        $product->sale_price = floatval($product->sale_price);
-
-        // Fetch product reviews and calculate the average rating
         $totalReviews = DB::table('ec_reviews')->where('product_id', $product->id)->count();
         $product->avg_rating = $totalReviews > 0
             ? DB::table('ec_reviews')->where('product_id', $product->id)->avg('star')
             : null;
 
-        // Fetch and assign product specifications
         $product->specifications = $specifications->where('product_id', $product->id)->map(function ($spec) {
             return [
                 'spec_name' => $spec->spec_name,
@@ -908,7 +730,7 @@ public function getSpecificationFilters(Request $request)
                 return $imagePath; // If it's a full URL, return it as is
             }
             return asset('storage/' . $imagePath); // Otherwise, prepend 'storage/'
-        });
+        }, $imagePaths);
 
         return $product;
     });
@@ -949,14 +771,192 @@ public function getSpecificationFilters(Request $request)
     ], 200);
 }
 
-// Helper function for range filtering
-private function isWithinRange($value, $min, $max)
-{
-    if (is_numeric($value)) {
-        return $value >= $min && $value <= $max;
-    }
-    return false; // Non-numeric values won't match range filters
-}
+// public function getSpecificationFilters(Request $request)
+// {
+//     $categoryId = $request->get('category_id');
+//     $filters = $request->get('dynamicParams'); // Get dynamicParams from the request
+//     $perPage = $request->get('per_page', 10); // Default pagination
+
+//     // Remove dynamicParams from the request
+//     $request->query->remove('dynamicParams');
+
+//     if (!$categoryId) {
+//         return response()->json([
+//             'success' => false,
+//             'message' => 'Category ID is required'
+//         ], 200);
+//     }
+
+//     // If dynamicParams is set, process it
+//     if ($filters) {
+//         parse_str($filters, $parsedFilters); // Decode the dynamicParams
+//         $filters = $parsedFilters['filters'] ?? []; // Extract filters if they exist
+//     }
+
+//     // Step 1: Fetch product IDs for the given category
+//     $productIds = DB::table('ec_product_category_product')
+//         ->where('category_id', $categoryId)
+//         ->pluck('product_id');
+
+//     if ($productIds->isEmpty()) {
+//         return response()->json([
+//             'success' => false,
+//             'message' => 'No products found for this category'
+//         ], 200);
+//     }
+
+//     // Step 2: Fetch category-specific filters (spec_names)
+//     $categoryFilters = DB::table('category_specifications')
+//         ->where('category_id', $categoryId)
+//         ->where('is_checked', 1)
+//         ->pluck('specification_name');
+
+//     if ($categoryFilters->isEmpty()) {
+//         return response()->json([
+//             'success' => false,
+//             'message' => 'No filters found for this category'
+//         ], 200);
+//     }
+
+//     // Step 3: Fetch specifications for these products and filters
+//     $specifications = DB::table('specifications')
+//         ->whereIn('product_id', $productIds)
+//         ->whereIn('spec_name', $categoryFilters)
+//         ->get();
+
+//     if ($specifications->isEmpty()) {
+//         return response()->json([
+//             'success' => false,
+//             'message' => 'No specifications found for this category'
+//         ], 200);
+//     }
+
+//     // Step 4: Apply filters (handling both ranges and specific values)
+//     if (!empty($filters)) {
+//         foreach ($filters as $filter) {
+//             $specifications = $specifications->filter(function ($spec) use ($filter) {
+//                 $specNameMatch = $spec->spec_name === $filter['spec_name'];
+
+//                 // Handle range filters (min and max values)
+//                 $rangeMatch = isset($filter['min'], $filter['max'])
+//                     ? $this->isWithinRange($spec->spec_value, $filter['min'], $filter['max'])
+//                     : true;
+
+//                 // Handle specific value filters (exact match for non-numeric values)
+//                 $valueMatch = isset($filter['spec_value'])
+//                     ? $spec->spec_value == $filter['spec_value']
+//                     : true;
+
+//                 return $specNameMatch && ($rangeMatch || $valueMatch);
+//             });
+//         }
+
+//         // After applying filters, we now have a list of filtered specifications
+//         // We need to get the product_ids for these filtered specifications
+//         $filteredProductIds = $specifications->pluck('product_id')->unique();
+
+//         if ($filteredProductIds->isEmpty()) {
+//             return response()->json([
+//                 'success' => false,
+//                 'message' => 'No products match the selected filters'
+//             ], 200);
+//         }
+
+//         // Now apply this filtered list to the products
+//         $productIds = $filteredProductIds;
+//     }
+
+//     // Step 5: Fetch filtered products
+//     $products = DB::table('ec_products')
+//         ->select([
+//             'id', 'name', 'images', 'sku', 'price', 'sale_price', 'refund',
+//             'delivery_days', 'currency_id',
+//         ])
+//         ->whereIn('id', $productIds)
+//         ->paginate($perPage);
+
+//     // Step 6: Add specifications and ratings to products
+//     $products->transform(function ($product) use ($specifications) {
+//         $currency = DB::table('ec_currencies')->where('id', $product->currency_id)->first();
+        
+//         // Only show currency symbol or code, not the price
+//         $product->currency_title = $currency ? $currency->title : 'USD'; 
+
+//         // Convert price and sale_price to numbers (floats)
+//         $product->price = floatval($product->price);
+//         $product->sale_price = floatval($product->sale_price);
+
+//         // Fetch product reviews and calculate the average rating
+//         $totalReviews = DB::table('ec_reviews')->where('product_id', $product->id)->count();
+//         $product->avg_rating = $totalReviews > 0
+//             ? DB::table('ec_reviews')->where('product_id', $product->id)->avg('star')
+//             : null;
+
+//         // Fetch and assign product specifications
+//         $product->specifications = $specifications->where('product_id', $product->id)->map(function ($spec) {
+//             return [
+//                 'spec_name' => $spec->spec_name,
+//                 'spec_value' => $spec->spec_value,
+//             ];
+//         });
+
+//         // Fix for image path duplication
+//         $imagePaths = $product->images ? json_decode($product->images, true) : [];
+//         $product->images = array_map(function($imagePath) {
+//             // Check if the path already contains the full URL
+//             if (filter_var($imagePath, FILTER_VALIDATE_URL)) {
+//                 return $imagePath; // If it's a full URL, return it as is
+//             }
+//             return asset('storage/' . $imagePath); // Otherwise, prepend 'storage/'
+//         });
+
+//         return $product;
+//     });
+
+//     // Step 7: Create available filters (handling ranges and specific values)
+//     $availableFilters = $specifications->groupBy('spec_name')->map(function ($specs, $specName) {
+//         $numericValues = $specs->pluck('spec_value')->filter(fn($value) => is_numeric($value))->unique()->sort()->values();
+//         $nonNumericValues = $specs->pluck('spec_value')->filter(fn($value) => !is_numeric($value))->unique();
+
+//         $ranges = [];
+//         if ($numericValues->count() > 1) {
+//             $minValue = $numericValues->first();
+//             $maxValue = $numericValues->last();
+
+//             $interval = ceil(($maxValue - $minValue) / 4);
+
+//             for ($i = 0; $i < 4; $i++) {
+//                 $start = $minValue + $i * $interval;
+//                 $end = min($minValue + ($i + 1) * $interval, $maxValue);
+
+//                 $ranges[] = [
+//                     'min' => (int) $start,
+//                     'max' => (int) $end,
+//                 ];
+//             }
+//         }
+
+//         return [
+//             'ranges' => $ranges,
+//             'non_numeric_values' => $nonNumericValues,
+//         ];
+//     });
+
+//     return response()->json([
+//         'success' => true,
+//         'filters' => $availableFilters,
+//         'products' => $products,
+//     ], 200);
+// }
+
+// // Helper function for range filtering
+// private function isWithinRange($value, $min, $max)
+// {
+//     if (is_numeric($value)) {
+//         return $value >= $min && $value <= $max;
+//     }
+//     return false; // Non-numeric values won't match range filters
+// }
 
 
 
