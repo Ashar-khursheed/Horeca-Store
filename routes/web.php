@@ -31,10 +31,15 @@ use Botble\Ecommerce\Http\Controllers\ProductDocumentController;
 
 
 
-Route::get('temp-products', [TempProductController::class, 'index'])->name('temp-products.index');
-Route::post('temp-products/pricing-approve', [TempProductController::class, 'approvePricingChanges'])->name('temp-products.admin_pricing_approve');
-Route::post('temp-products/graphics-approve', [TempProductController::class, 'approveGraphicsChanges'])->name('temp-products.admin_graphics_approve');
-Route::post('temp-products/content-approve', [TempProductController::class, 'approveContentChanges'])->name('temp-products.admin_content_approve');
+Route::get('admin/ecommerce/temp-products', [TempProductController::class, 'index'])->name('temp-products.index');
+Route::post('admin/ecommerce/temp-products/pricing-approve', [TempProductController::class, 'approvePricingChanges'])->name('temp-products.admin_pricing_approve');
+Route::post('admin/ecommerce/temp-products/graphics-approve', [TempProductController::class, 'approveGraphicsChanges'])->name('temp-products.admin_graphics_approve');
+Route::get('admin/ecommerce/temp-products/{id}/edit-content-approval', [TempProductController::class, 'editContentApproval'])->name('temp-products.edit_content_approval');
+Route::post('admin/ecommerce/temp-products/{id}/comments', [TempProductController::class, 'storeComment']);
+
+
+Route::put('admin/ecommerce/temp-products/{id}', [TempProductController::class, 'approveContentChanges'])->name('temp-products.admin_content_approve');
+
 
 Route::get('ecommerce/temp-products-status', [TempProductStatusController::class, 'index'])->name('ecommerce/temp-products-status.index');
 Route::post('ecommerce/temp-products-status/update-pricing-changes', [TempProductStatusController::class, 'updatePricingChanges'])->name('temp-products.pricing_update');
@@ -112,4 +117,10 @@ Route::get('/products/search-sku', [ProductController::class, 'searchBySku'])
 
     // Define the route to handle form submission
     Route::post('admin/ecommerce/store-shipment', [EliteShipmentController::class, 'store'])->name('eliteshipment.store');
+
+use App\Http\Controllers\TextController;
+
+Route::get('/text', [TextController::class, 'index'])->name('text.index');
+Route::post('/texts', [TextController::class, 'store'])->name('text.store');
+Route::post('/texts/{id}/comments', [TextController::class, 'storeComment']);
 

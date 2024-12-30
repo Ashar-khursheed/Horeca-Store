@@ -21,18 +21,18 @@
 <body>
 	<ul class="nav nav-tabs" id="myTab" role="tablist">
 		<li class="nav-item" role="presentation">
-			<button class="nav-link active" id="pricing-tab" data-bs-toggle="tab" data-bs-target="#pricing" type="button" role="tab" aria-controls="pricing" aria-selected="true">Pricing</button>
+			<button class="nav-link active" id="pricing_tab" data-bs-toggle="tab" data-bs-target="#pricing" type="button" role="tab" aria-controls="pricing" aria-selected="true">Pricing</button>
 		</li>
 		<li class="nav-item" role="presentation">
-			<button class="nav-link" id="content_writer-tab" data-bs-toggle="tab" data-bs-target="#content_writer" type="button" role="tab" aria-controls="content_writer" aria-selected="false">Content Writer</button>
+			<button class="nav-link" id="content_tab" data-bs-toggle="tab" data-bs-target="#content_writer" type="button" role="tab" aria-controls="content_writer" aria-selected="false">Content Writer</button>
 		</li>
 		<li class="nav-item" role="presentation">
-			<button class="nav-link" id="graphics-tab" data-bs-toggle="tab" data-bs-target="#graphics" type="button" role="tab" aria-controls="graphics" aria-selected="false">Graphics</button>
+			<button class="nav-link" id="graphics_tab" data-bs-toggle="tab" data-bs-target="#graphics" type="button" role="tab" aria-controls="graphics" aria-selected="false">Graphics</button>
 		</li>
 	</ul>
 	<div class="tab-content" id="myTabContent">
 
-		<div class="tab-pane fade show active" id="pricing" role="tabpanel" aria-labelledby="pricing-tab">
+		<div class="tab-pane fade show active" id="pricing" role="tabpanel" aria-labelledby="pricing_tab">
 			<div class="container mt-2">
 				<div class="row">
 					<div class="col-md-3 mb-3">
@@ -48,56 +48,53 @@
 						<label class="form-label bg-danger text-white text-center py-3 h6">Rejected for Corrections<br/><span class="h2">{{ $tempPricingProducts->sum('rejection_count') }}</span></label>
 					</div>
 				</div>
-				<form action="{{ route('temp-products.approve') }}" method="POST">
-					@csrf
-					<div class="table-responsive">
-						<table class="table table-striped">
-							<thead>
-								<tr>
-									<th>Product ID</th>
-									<th>Product Name</th>
-									<th>SKU</th>
-									<th>Price</th>
-									<th>Sale Price</th>
-									{{-- <th>Current Status</th> --}}
-									<th>Approval Status</th>
-									<th>Edit</th>
-								</tr>
-							</thead>
-							<tbody>
-								@foreach ($tempPricingProducts as $tempPricingProduct)
-									@if($tempPricingProduct->approval_status == 'pending')
-										<tr id="product-row-{{ $tempPricingProduct->id }}">
-											<td>{{ $tempPricingProduct->product_id }}</td>
-											<td class="product-name">{{ $tempPricingProduct->name }}</td>
-											<td class="product-description">{{ $tempPricingProduct->sku }}</td>
-											<td class="product-description">{{ $tempPricingProduct->price }}</td>
-											<td class="product-description">{{ $tempPricingProduct->sale_price }}</td>
-											<td class="product-description">{{ $approvalStatuses[$tempPricingProduct->approval_status] ?? '' }}</td>
-											{{-- <td class="product-status">{{ $tempPricingProduct->status }}</td> --}}
-											{{-- <td>
-												<select name="approval_status[{{ $tempPricingProduct->id }}]" class="form-control approval-status-dropdown">
-													<option value="pending" {{ $tempPricingProduct->approval_status == 'pending' ? 'selected' : '' }}>Pending</option>
-													<option value="approved" {{ $tempPricingProduct->approval_status == 'approved' ? 'selected' : '' }}>Approved</option>
-													<option value="rejected" {{ $tempPricingProduct->approval_status == 'rejected' ? 'selected' : '' }}>Rejected</option>
-												</select>
-											</td> --}}
-											<td>
-												<button type="button" id="edit_pricing_modal" data-toggle="modal" data-target="#editPricingModal" data-product="{{ htmlspecialchars(json_encode($tempPricingProduct->toArray(), JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8') }}">
-													<i class="fas fa-pencil-alt"></i>
-												</button>
-											</td>
-										</tr>
-									@endif
-								@endforeach
-							</tbody>
-						</table>
-					</div>
-				</form>
+				<div class="table-responsive">
+					<table class="table table-striped">
+						<thead>
+							<tr>
+								<th>Product ID</th>
+								<th>Product Name</th>
+								<th>SKU</th>
+								<th>Price</th>
+								<th>Sale Price</th>
+								{{-- <th>Current Status</th> --}}
+								<th>Approval Status</th>
+								<th>Edit</th>
+							</tr>
+						</thead>
+						<tbody>
+							@foreach ($tempPricingProducts as $tempPricingProduct)
+								@if($tempPricingProduct->approval_status == 'pending')
+									<tr id="product-row-{{ $tempPricingProduct->id }}">
+										<td>{{ $tempPricingProduct->product_id }}</td>
+										<td class="product-name">{{ $tempPricingProduct->name }}</td>
+										<td class="product-description">{{ $tempPricingProduct->sku }}</td>
+										<td class="product-description">{{ $tempPricingProduct->price }}</td>
+										<td class="product-description">{{ $tempPricingProduct->sale_price }}</td>
+										<td class="product-description">{{ $approvalStatuses[$tempPricingProduct->approval_status] ?? '' }}</td>
+										{{-- <td class="product-status">{{ $tempPricingProduct->status }}</td> --}}
+										{{-- <td>
+											<select name="approval_status[{{ $tempPricingProduct->id }}]" class="form-control approval-status-dropdown">
+												<option value="pending" {{ $tempPricingProduct->approval_status == 'pending' ? 'selected' : '' }}>Pending</option>
+												<option value="approved" {{ $tempPricingProduct->approval_status == 'approved' ? 'selected' : '' }}>Approved</option>
+												<option value="rejected" {{ $tempPricingProduct->approval_status == 'rejected' ? 'selected' : '' }}>Rejected</option>
+											</select>
+										</td> --}}
+										<td>
+											<button type="button" id="edit_pricing_modal" data-toggle="modal" data-target="#editPricingModal" data-product="{{ htmlspecialchars(json_encode($tempPricingProduct->toArray(), JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8') }}">
+												<i class="fas fa-pencil-alt"></i>
+											</button>
+										</td>
+									</tr>
+								@endif
+							@endforeach
+						</tbody>
+					</table>
+				</div>
 			</div>
 		</div>
 
-		<div class="tab-pane fade" id="content_writer" role="tabpanel" aria-labelledby="content_writer-tab">
+		<div class="tab-pane fade" id="content_writer" role="tabpanel" aria-labelledby="content_tab">
 			<div class="container mt-2">
 				<div class="row">
 					<div class="col-md-3 mb-3">
@@ -113,48 +110,50 @@
 						<label class="form-label bg-danger text-white text-center py-3 h6">Rejected for Corrections<br/><span class="h2">{{ $tempContentProducts->sum('rejection_count') }}</span></label>
 					</div>
 				</div>
-				<form action="{{ route('temp-products.approve') }}" method="POST">
-					@csrf
-					<div class="table-responsive">
-						<table class="table table-striped">
-							<thead>
-								<tr>
-									<th>Product ID</th>
-									<th>Product Name</th>
-									<th>Changed Description</th>
-									<th>Approval Status</th>
-									<th>Edit</th>
-								</tr>
-							</thead>
-							<tbody>
-								@foreach ($tempContentProducts as $tempContentProduct)
-									@if($tempContentProduct->approval_status == 'pending')
-										<tr id="product-row-{{ $tempContentProduct->id }}">
-											<td>{{ $tempContentProduct->product_id }}</td>
-											<td class="product-name">{{ $tempContentProduct->name }}</td>
-											<td class="product-description">{{ $tempContentProduct->description }}</td>
-											<td class="product-description">{{ $approvalStatuses[$tempContentProduct->approval_status] ?? '' }}</td>
-											<td>
-												<button type="button" id="edit_content_modal" data-toggle="modal" data-target="#editContentModal"
-												data-id="{{ $tempContentProduct->id }}"
-												data-name="{{ $tempContentProduct->name }}"
-												data-description="{{ $tempContentProduct->description }}"
-												data-content="{{ $tempContentProduct->content }}"
-												data-approval_status="{{ $tempContentProduct->approval_status }}"
-												data-remarks="{{ $tempContentProduct->remarks }}"
-												data-product_id="{{ $tempContentProduct->product_id }}"><i class="fas fa-pencil-alt"></i></button>
-											</td>
-										</tr>
-									@endif
-								@endforeach
-							</tbody>
-						</table>
-					</div>
-				</form>
+				<div class="table-responsive">
+					<table class="table table-striped">
+						<thead>
+							<tr>
+								<th>Product ID</th>
+								<th>Product Name</th>
+								<th>Changed Description</th>
+								<th>Approval Status</th>
+								<th>Edit</th>
+							</tr>
+						</thead>
+						<tbody>
+							@foreach ($tempContentProducts as $tempContentProduct)
+								@if($tempContentProduct->approval_status == 'pending')
+									<tr id="product-row-{{ $tempContentProduct->id }}">
+										<td>{{ $tempContentProduct->product_id }}</td>
+										<td class="product-name">{{ $tempContentProduct->name }}</td>
+										<td class="product-description">{{ $tempContentProduct->description }}</td>
+										<td class="product-description">{{ $approvalStatuses[$tempContentProduct->approval_status] ?? '' }}</td>
+										<td>
+											{{-- <a class="btn"href="{{ route('temp-products.edit_content_approval') }}"><i class="fas fa-pencil-alt"></i></a> --}}
+											<a class="btn btn-default" href="{{ route('temp-products.edit_content_approval', ['id' => $tempContentProduct->id]) }}" role="button">
+												<i class="fas fa-pencil-alt"></i>
+											</a>
+
+											{{-- <button type="button" id="edit_content_modal" data-toggle="modal" data-target="#editContentModal"
+											data-id="{{ $tempContentProduct->id }}"
+											data-name="{{ $tempContentProduct->name }}"
+											data-description="{{ $tempContentProduct->description }}"
+											data-content="{{ $tempContentProduct->content }}"
+											data-approval_status="{{ $tempContentProduct->approval_status }}"
+											data-remarks="{{ $tempContentProduct->remarks }}"
+											data-product_id="{{ $tempContentProduct->product_id }}"><i class="fas fa-pencil-alt"></i></button> --}}
+										</td>
+									</tr>
+								@endif
+							@endforeach
+						</tbody>
+					</table>
+				</div>
 			</div>
 		</div>
 
-		<div class="tab-pane fade" id="graphics" role="tabpanel" aria-labelledby="graphics-tab">
+		<div class="tab-pane fade" id="graphics" role="tabpanel" aria-labelledby="graphics_tab">
 			<div class="container mt-2">
 				<div class="row">
 					<div class="col-md-3 mb-3">
@@ -402,90 +401,6 @@
 	</div>
 	<!-- Pricing Modal -->
 
-	<!-- Content Modal -->
-	<div class="modal fade" id="editContentModal" tabindex="-1" role="dialog" aria-labelledby="editContentModalLabel" aria-hidden="true">
-		<div class="modal-dialog modal-lg content-model" role="document">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="editContentModalLabel">Edit Product</h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-				</div>
-				<div class="modal-body">
-					<form action="{{ route('temp-products.admin_content_approve') }}" method="POST">
-						@csrf
-						<div class="product-card">
-							<div class="product-header">
-								<h6>Product ID: <span id="content_temp_header_id"></span></h6>
-								<h4 id="content_temp_header_name"></h4>
-								<input type="hidden" id="content_temp_id" name="id">
-							</div>
-
-							<div class="row">
-								<div class="mb-3 col-md-12">
-									<div class="main-container">
-										<div class="presence" id="editor-presence"></div>
-										<div class="editor-container editor-container_document-editor editor-container_include-annotations" id="editor-container">
-											<div class="editor-container__toolbar" id="editor-toolbar"></div>
-											<div class="editor-container__editor-wrapper">
-												<div class="editor-container__editor"><div id="editor">
-
-													<div id="product-description"></div>
-
-												</div></div>
-												<div class="editor-container__sidebar"><div id="editor-annotations"></div></div>
-											</div>
-										</div>
-										<div class="revision-history" id="editor-revision-history">
-											<div class="revision-history__wrapper">
-												<div class="revision-history__editor" id="editor-revision-history-editor"></div>
-												<div class="revision-history__sidebar" id="editor-revision-history-sidebar"></div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-
-							<div class="row">
-								<div class="mb-3 col-md-12">
-									<label for="content_content" class="form-label">Change Content:</label>
-									<textarea class="editor" id="content_content" name="content"></textarea>
-								</div>
-							</div>
-
-							{{-- <div class="product-content">
-								<label for="content-{{ $tempContentProduct->id }}">Change Content:</label>
-								<textarea id="description-{{ $tempContentProduct->id }}" class="editor" name="content[{{ $tempContentProduct->id }}]">
-									{{ $tempContentProduct->content }}
-								</textarea>
-							</div> --}}
-
-							<div class="mb-3">
-								<input type="hidden" id="content_initial_approval_status" name="initial_approval_status">
-								<label for="content_approval_status" class="form-label">Approval Status</label>
-								<select class="form-select" id="content_approval_status" name="approval_status">
-									@foreach ($approvalStatuses as $value => $label)
-										@if(in_array($value, ['approved', 'rejected']))
-											<option value="{{ $value }}">{{ $label }}</option>
-										@endif
-									@endforeach
-								</select>
-							</div>
-
-							<div class="mb-3">
-								<label for="content_remarks" class="form-label">Remarks</label>
-								<textarea class="form-select" id="content_remarks" name="remarks"></textarea>
-							</div>
-
-							<button type="submit" class="btn btn-primary">Submit</button>
-						</div>
-					</form>
-				</div>
-			</div>
-		</div>
-	</div>
-	<!-- Content Modal -->
 
 	<!-- Graphics Modal -->
 	<div class="modal fade" id="editGraphicsModal" tabindex="-1" role="dialog" aria-labelledby="editGraphicsModalLabel" aria-hidden="true">
@@ -556,11 +471,9 @@
 
 	<!-- jQuery -->
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-	{{-- <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
-	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> --}}
-	<script src="https://cdn.ckeditor.com/ckeditor5/44.0.0/ckeditor5.umd.js" crossorigin></script>
-	<script src="https://cdn.ckeditor.com/ckeditor5-premium-features/44.0.0/ckeditor5-premium-features.umd.js" crossorigin></script>
-		<!-- For Product Description -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+	<!-- For Product Description -->
+
 	<script>
 		// Function to update the "required" attribute based on approval status
 		function updateContentRemarksRequirement() {
@@ -573,56 +486,6 @@
 			}
 		}
 		$(document).on('click', '#edit_content_modal', function () {
-			const {
-				DecoupledEditor,
-				Plugin,
-				ButtonView,
-				Alignment,
-				AutoLink,
-				Autosave,
-				BalloonToolbar,
-				Bold,
-				Bookmark,
-				CloudServices,
-				Code,
-				Essentials,
-				FontBackgroundColor,
-				FontColor,
-				FontFamily,
-				FontSize,
-				Heading,
-				HorizontalLine,
-				Indent,
-				IndentBlock,
-				Italic,
-				Link,
-				Mention,
-				Paragraph,
-				RemoveFormat,
-				SpecialCharacters,
-				Strikethrough,
-				Subscript,
-				Superscript,
-				Underline
-			} = window.CKEDITOR;
-			const {
-				Comments,
-				PresenceList,
-				RealTimeCollaborativeComments,
-				RealTimeCollaborativeEditing,
-				RealTimeCollaborativeRevisionHistory,
-				RealTimeCollaborativeTrackChanges,
-				RevisionHistory,
-				TrackChanges,
-				TrackChangesData
-			} = window.CKEDITOR_PREMIUM_FEATURES;
-
-			const LICENSE_KEY =
-				'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3MzQ0Nzk5OTksImp0aSI6IjczYzUxOWZiLWYyZjctNGVjMC1iMTM5LWNkOTU0MzU4Yzc3NCIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiLCJzaCJdLCJ3aGl0ZUxhYmVsIjp0cnVlLCJsaWNlbnNlVHlwZSI6InRyaWFsIiwiZmVhdHVyZXMiOlsiKiJdLCJ2YyI6ImQzMmJmNTU4In0.8EvUlDwSuoJdVQ2uh4y5BmFRB9Port946VGHEhSx8FczXiFGwOWf8_pxw7NSexKsGMuK_J4U8OSukgzU3CJvAw';
-
-			const CLOUD_SERVICES_TOKEN_URL = 'https://124068.cke-cs.com/token/dev/ff1755ae0a1f80bc0c7eff88a367666925e5d9dc5b87e982947f42b43863?limit=10';
-			const CLOUD_SERVICES_WEBSOCKET_URL = 'wss://124068.cke-cs.com/ws';
-
 			var id = $(this).data('id');
 			var name = $(this).data('name');
 			var description = $(this).data('description');
@@ -639,321 +502,22 @@
 
 			$('#content_initial_approval_status').val(approvalStatus);
 			// $('#content_approval_status').val(approvalStatus);
-			$('#content_content').val(content);
+			// $('#content_content').val(content);
+			// $('#annotatable-text').html(content);
+
+
+
+			// ClassicEditor
+            // .create(document.querySelector('#content_content'))
+            // .then(editor => {
+            //     editor.setData(content); // Set the content in CKEditor
+            // })
+            // .catch(error => {
+            //     console.error(error);
+            // });
+
 			$('#content_remarks').val(remarks);
 
-			/**
-			 * The `AnnotationsSidebarToggler` plugin adds an icon to the right side of the editor.
-			 *
-			 * It allows to toggle the right annotations bar visibility.
-			 */
-			class AnnotationsSidebarToggler extends Plugin {
-				static get requires() {
-					return ['AnnotationsUIs'];
-				}
-
-				static get pluginName() {
-					return 'AnnotationsSidebarToggler';
-				}
-
-				init() {
-					this.toggleButton = new ButtonView(this.editor.locale);
-
-					const NON_COLLAPSE_ANNOTATION_ICON =
-						'<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" transform="matrix(-1,0,0,1,0,0)"><path d="M11.463 5.187a.888.888 0 1 1 1.254 1.255L9.16 10l3.557 3.557a.888.888 0 1 1-1.254 1.255L7.26 10.61a.888.888 0 0 1 .16-1.382l4.043-4.042z"></path></svg>';
-					const COLLAPSE_ANNOTATION_ICON =
-						'<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" transform="matrix(1,0,0,1,0,0)"><path d="M11.463 5.187a.888.888 0 1 1 1.254 1.255L9.16 10l3.557 3.557a.888.888 0 1 1-1.254 1.255L7.26 10.61a.888.888 0 0 1 .16-1.382l4.043-4.042z"/></svg>';
-
-					const annotationsUIsPlugin = this.editor.plugins.get('AnnotationsUIs');
-					const annotationsContainer = this.editor.config.get('sidebar.container');
-					const sidebarContainer = annotationsContainer.parentElement;
-
-					this.toggleButton.set({
-						label: 'Toggle annotations sidebar',
-						tooltip: 'Hide annotations sidebar',
-						tooltipPosition: 'se',
-						icon: COLLAPSE_ANNOTATION_ICON
-					});
-
-					this.toggleButton.on('execute', () => {
-						// Toggle a CSS class on the annotations sidebar container to manage the visibility of the sidebar.
-						annotationsContainer.classList.toggle('ck-hidden');
-
-						// Change the look of the button to reflect the state of the annotations container.
-						if (annotationsContainer.classList.contains('ck-hidden')) {
-							this.toggleButton.icon = NON_COLLAPSE_ANNOTATION_ICON;
-							this.toggleButton.tooltip = 'Show annotations sidebar';
-							annotationsUIsPlugin.switchTo('inline');
-						} else {
-							this.toggleButton.icon = COLLAPSE_ANNOTATION_ICON;
-							this.toggleButton.tooltip = 'Hide annotations sidebar';
-							annotationsUIsPlugin.switchTo('wideSidebar');
-						}
-
-						// Keep the focus in the editor whenever the button is clicked.
-						this.editor.editing.view.focus();
-					});
-
-					this.toggleButton.render();
-
-					sidebarContainer.insertBefore(this.toggleButton.element, annotationsContainer);
-				}
-
-				destroy() {
-					this.toggleButton.element.remove();
-
-					return super.destroy();
-				}
-			}
-
-			const documentID = id.toString();
-			const productDescription = $(this).data('description');
-			const editorConfig = {
-				toolbar: {
-					items: [
-						'revisionHistory',
-						'trackChanges',
-						'comment',
-						'commentsArchive',
-						'|',
-						'heading',
-						'|',
-						'fontSize',
-						'fontFamily',
-						'fontColor',
-						'fontBackgroundColor',
-						'|',
-						'bold',
-						'italic',
-						'underline',
-						'strikethrough',
-						'subscript',
-						'superscript',
-						'code',
-						'removeFormat',
-						'|',
-						'specialCharacters',
-						'horizontalLine',
-						'link',
-						'bookmark',
-						'|',
-						'alignment',
-						'|',
-						'outdent',
-						'indent'
-					],
-					shouldNotGroupWhenFull: false
-				},
-				plugins: [
-					Alignment,
-					AutoLink,
-					Autosave,
-					BalloonToolbar,
-					Bold,
-					Bookmark,
-					CloudServices,
-					Code,
-					Comments,
-					Essentials,
-					FontBackgroundColor,
-					FontColor,
-					FontFamily,
-					FontSize,
-					Heading,
-					HorizontalLine,
-					Indent,
-					IndentBlock,
-					Italic,
-					Link,
-					Mention,
-					Paragraph,
-					PresenceList,
-					RealTimeCollaborativeComments,
-					RealTimeCollaborativeEditing,
-					RealTimeCollaborativeRevisionHistory,
-					RealTimeCollaborativeTrackChanges,
-					RemoveFormat,
-					RevisionHistory,
-					SpecialCharacters,
-					Strikethrough,
-					Subscript,
-					Superscript,
-					TrackChanges,
-					TrackChangesData,
-					Underline
-				],
-				extraPlugins: [AnnotationsSidebarToggler],
-				balloonToolbar: ['comment', '|', 'bold', 'italic', '|', 'link'],
-				cloudServices: {
-					tokenUrl: CLOUD_SERVICES_TOKEN_URL,
-					webSocketUrl: CLOUD_SERVICES_WEBSOCKET_URL
-				},
-				collaboration: {
-					channelId: documentID
-				},
-				comments: {
-					editorConfig: {
-						extraPlugins: [Bold, Italic, Mention],
-						mention: {
-							feeds: [
-								{
-									marker: '@',
-									feed: [
-										/* See: https://ckeditor.com/docs/ckeditor5/latest/features/mentions.html#comments-with-mentions */
-									]
-								}
-							]
-						}
-					}
-				},
-				fontFamily: {
-					supportAllValues: true
-				},
-				fontSize: {
-					options: [10, 12, 14, 'default', 18, 20, 22],
-					supportAllValues: true
-				},
-				heading: {
-					options: [
-						{
-							model: 'paragraph',
-							title: 'Paragraph',
-							class: 'ck-heading_paragraph'
-						},
-						{
-							model: 'heading1',
-							view: 'h1',
-							title: 'Heading 1',
-							class: 'ck-heading_heading1'
-						},
-						{
-							model: 'heading2',
-							view: 'h2',
-							title: 'Heading 2',
-							class: 'ck-heading_heading2'
-						},
-						{
-							model: 'heading3',
-							view: 'h3',
-							title: 'Heading 3',
-							class: 'ck-heading_heading3'
-						},
-						{
-							model: 'heading4',
-							view: 'h4',
-							title: 'Heading 4',
-							class: 'ck-heading_heading4'
-						},
-						{
-							model: 'heading5',
-							view: 'h5',
-							title: 'Heading 5',
-							class: 'ck-heading_heading5'
-						},
-						{
-							model: 'heading6',
-							view: 'h6',
-							title: 'Heading 6',
-							class: 'ck-heading_heading6'
-						}
-					]
-				},
-				initialData:productDescription,
-							licenseKey: LICENSE_KEY,
-				link: {
-					addTargetToExternalLinks: true,
-					defaultProtocol: 'https://',
-					decorators: {
-						toggleDownloadable: {
-							mode: 'manual',
-							label: 'Downloadable',
-							attributes: {
-								download: 'file'
-							}
-						}
-					}
-				},
-				mention: {
-					feeds: [
-						{
-							marker: '@',
-							feed: [
-								/* See: https://ckeditor.com/docs/ckeditor5/latest/features/mentions.html */
-							]
-						}
-					]
-				},
-				placeholder: 'Type or paste your content here!',
-				presenceList: {
-					container: document.querySelector('#editor-presence')
-				},
-				revisionHistory: {
-					editorContainer: document.querySelector('#editor-container'),
-					viewerContainer: document.querySelector('#editor-revision-history'),
-					viewerEditorElement: document.querySelector('#editor-revision-history-editor'),
-					viewerSidebarContainer: document.querySelector('#editor-revision-history-sidebar'),
-					resumeUnsavedRevision: true
-				},
-				sidebar: {
-					container: document.querySelector('#editor-annotations')
-				}
-			};
-
-			configUpdateAlert(editorConfig);
-			DecoupledEditor.create(document.querySelector('#editor'), editorConfig).then(editor => {
-				document.querySelector('#editor-toolbar').appendChild(editor.ui.view.toolbar.element);
-
-				return editor;
-			});
-
-			/**
-			 * This function exists to remind you to update the config needed for premium features.
-			 * The function can be safely removed. Make sure to also remove call to this function when doing so.
-			 */
-			function configUpdateAlert(config) {
-				if (configUpdateAlert.configUpdateAlertShown) {
-					return;
-				}
-
-				const isModifiedByUser = (currentValue, forbiddenValue) => {
-					if (currentValue === forbiddenValue) {
-						return false;
-					}
-
-					if (currentValue === undefined) {
-						return false;
-					}
-
-					return true;
-				};
-
-				const valuesToUpdate = [];
-
-				configUpdateAlert.configUpdateAlertShown = true;
-
-				if (!isModifiedByUser(config.licenseKey, '<YOUR_LICENSE_KEY>')) {
-					valuesToUpdate.push('LICENSE_KEY');
-				}
-
-				if (!isModifiedByUser(config.cloudServices?.tokenUrl, '<YOUR_CLOUD_SERVICES_TOKEN_URL>')) {
-					valuesToUpdate.push('CLOUD_SERVICES_TOKEN_URL');
-				}
-
-				if (!isModifiedByUser(config.cloudServices?.webSocketUrl, '<YOUR_CLOUD_SERVICES_WEBSOCKET_URL>')) {
-					valuesToUpdate.push('CLOUD_SERVICES_WEBSOCKET_URL');
-				}
-
-				if (valuesToUpdate.length) {
-					window.alert(
-						[
-							'Please update the following values in your editor config',
-							'to receive full access to Premium Features:',
-							'',
-							...valuesToUpdate.map(value => ` - ${value}`)
-						].join('\n')
-					);
-				}
-			}
 			// Initial check when the page loads
 			updateContentRemarksRequirement();
 		});
@@ -962,8 +526,17 @@
 		$('#content_approval_status').on('change', updateContentRemarksRequirement);
 	</script>
 
+	{{-- <script>
+		document.querySelectorAll('.editor').forEach((element) => {
+			ClassicEditor
+				.create(element)
+				.catch((error) => {
+					console.error(error);
+				});
+		});
+	</script> --}}
+
 	<!-- Bootstrap JS -->
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 
 	<style>
 		.product-card {
@@ -996,6 +569,37 @@
 			height: 150px; /* Set the height of the editor */
 		}
 	</style>
+
+<script>
+	document.addEventListener('DOMContentLoaded', function () {
+		// Get the URL query parameter 'tab'
+		const urlParams = new URLSearchParams(window.location.search);
+		const activeTab = urlParams.get('tab');
+
+		// If the 'tab' parameter exists, activate the corresponding tab
+		if (activeTab) {
+			const tabButton = document.querySelector(`#${activeTab}`);
+			const tabPane = document.querySelector(`#${tabButton?.getAttribute('data-bs-target').substring(1)}`);
+
+			if (tabButton && tabPane) {
+				// Deactivate all tabs and tab-panes
+				document.querySelectorAll('.nav-link').forEach(tab => {
+					tab.classList.remove('active');
+					tab.setAttribute('aria-selected', 'false');
+				});
+
+				document.querySelectorAll('.tab-pane').forEach(pane => {
+					pane.classList.remove('show', 'active');
+				});
+
+				// Activate the new tab and its corresponding tab content
+				tabButton.classList.add('active');
+				tabButton.setAttribute('aria-selected', 'true');
+				tabPane.classList.add('show', 'active');
+			}
+		}
+	});
+</script>
 
 <script>
 	// Function to toggle the "To Date" field for each discount group
@@ -1393,7 +997,7 @@
 		if (Array.isArray(product.images)) {
 			imagesArray = product.images;
 		} else {
-		    imagesArray = JSON.parse(product.images);
+			imagesArray = JSON.parse(product.images);
 		}
 
 		const baseUrl = "{{url('storage')}}";
@@ -1507,7 +1111,7 @@
 	}
 
 	.modal-dialog.modal-lg.content-model {
-	    max-width: 85% !important;
+		max-width: 85% !important;
 	}
 	.main-container {
 		--ckeditor5-preview-sidebar-width: 270px;

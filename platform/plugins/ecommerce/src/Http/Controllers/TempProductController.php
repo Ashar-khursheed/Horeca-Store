@@ -1,15 +1,18 @@
 <?php
 
 namespace Botble\Ecommerce\Http\Controllers;
-use Carbon\Carbon; // Make sure to import Carbon at the top
-use Botble\Ecommerce\Models\TempProduct; // Make sure this is the correct model namespace
-use Botble\Ecommerce\Models\Discount; // Make sure this is the correct model namespace
-use Botble\Ecommerce\Models\DiscountProduct; // Make sure this is the correct model namespace
-use Botble\Ecommerce\Models\UnitOfMeasurement;
-use Botble\Marketplace\Models\Store;
+
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema; // Import Schema facade
+
+use Botble\Ecommerce\Models\TempProduct;
+use Botble\Ecommerce\Models\UnitOfMeasurement;
+use Botble\Ecommerce\Models\Discount;
+use Botble\Ecommerce\Models\DiscountProduct;
+use Botble\Ecommerce\Models\TempProductComment;
+use Botble\Marketplace\Models\Store;
+
+use DB, Carbon\Carbon;
+
 class TempProductController extends BaseController
 {
 	public function index()
@@ -192,9 +195,47 @@ class TempProductController extends BaseController
 		return redirect()->route('temp-products.index')->with('success', 'Product changes approved and updated successfully.');
 	}
 
-	public function approveContentChanges(Request $request)
+	public function editContentApproval($tempContentProductID)
 	{
-		// dd($request->all());
+		logger()->info('Fetch product data with temp content product id: '.$tempContentProductID);
+		$tempContentProduct = TempProduct::find($tempContentProductID);
+
+		$approvalStatuses = [
+			'in-process' => 'Content In Progress',
+			'pending' => 'Submitted for Approval',
+			'approved' => 'Ready to Publish',
+			'rejected' => 'Rejected for Corrections',
+		];
+		$tab = 'content_tab';
+
+		return view('plugins/ecommerce::products.partials.temp-content-product-edit', compact('tempContentProduct', 'approvalStatuses', 'tab'));
+	}
+
+	public function storeComment(Request $request, $tempContentProductID)
+	{
+		// dd($request->all(), $tempContentProductID);
+		$request->validate([
+			'comment_type' => 'required',
+			'highlighted_text' => 'required',
+			'comment' => 'required'
+		]);
+
+		TempProductComment::create([
+			'temp_product_id' => $tempContentProductID,
+			'comment_type' => $request->comment_type,
+			'highlighted_text' => $request->highlighted_text,
+			'comment' => $request->comment,
+			'status' => 'Pending',
+			'created_by' => auth()->id() ?? '',
+			'updated_by' => auth()->id() ?? '',
+		]);
+
+		return response()->json(['success' => true]);
+	}
+
+	public function approveContentChanges(Request $request, $tempContentProductID)
+	{
+		// dd($request->all(), $tempContentProductID);
 		logger()->info('approveContentChanges method called.');
 		logger()->info('Request Data: ', $request->all());
 
@@ -205,10 +246,10 @@ class TempProductController extends BaseController
 			]
 		]);
 
-		$tempProduct = TempProduct::find($request->id);
+		$tempProduct = TempProduct::find($tempContentProductID);
 		$input = $request->all();
 
-		if($request->initial_approval_status=='pending' && $request->approval_status=='approved') {
+		if($tempProduct->approval_status=='pending' && $request->approval_status=='approved') {
 			unset($input['_token'], $input['id'], $input['initial_approval_status'], $input['approval_status']);
 			$tempProduct->product->update([
 				'description' => $tempProduct->description,
@@ -218,20 +259,16 @@ class TempProductController extends BaseController
 				'approval_status' => $request->approval_status,
 				'approved_by' => auth()->id()
 			]);
-		}
-
-		if($request->initial_approval_status=='pending' && $request->approval_status=='rejected') {
+		} else if($tempProduct->approval_status=='pending' && $request->approval_status=='rejected') {
 			$tempProduct->update([
 				'approval_status' => $request->approval_status,
 				'rejection_count' => \DB::raw('rejection_count + 1'),
 				'approved_by' => auth()->id(),
 				'remarks' => $request->remarks
 			]);
+		} else if($tempProduct->approval_status=='pending' && ($request->approval_status=='pending' || $request->approval_status=='in-process')) {
 		}
 
-		if($request->initial_approval_status=='pending' && ($request->approval_status=='pending' || $request->approval_status=='in-process')) {
-		}
-
-		return redirect()->route('temp-products.index')->with('success', 'Product changes approved and updated successfully.');
+		return redirect()->route('temp-products.index', ['tab' => 'content_tab'])->with('success', 'Product changes approved and updated successfully.');
 	}
 }
