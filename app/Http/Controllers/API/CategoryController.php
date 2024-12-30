@@ -600,28 +600,17 @@ private function getCategoryImageUrl($image)
 //     ], 200);
 // }
 
-
 public function getSpecificationFilters(Request $request)
 {
-    // Get the category_id and other query parameters
     $categoryId = $request->get('category_id');
-    $filters = $request->get('dynamicParams'); // Get dynamicParams from the request
+    $filters = $request->get('filters', []); // Filters from request
     $perPage = $request->get('per_page', 10); // Default pagination
-
-    // Remove dynamicParams from the request
-    $request->query->remove('dynamicParams');
 
     if (!$categoryId) {
         return response()->json([
             'success' => false,
             'message' => 'Category ID is required'
         ], 200);
-    }
-
-    // If dynamicParams is set, process it
-    if ($filters) {
-        parse_str($filters, $parsedFilters); // Decode the dynamicParams
-        $filters = $parsedFilters['filters'] ?? []; // Extract filters if they exist
     }
 
     // Step 1: Fetch product IDs for the given category
@@ -722,15 +711,8 @@ public function getSpecificationFilters(Request $request)
             ];
         });
 
-        // Fix for image path duplication
         $imagePaths = $product->images ? json_decode($product->images, true) : [];
-        $product->images = array_map(function($imagePath) {
-            // Check if the path already contains the full URL
-            if (filter_var($imagePath, FILTER_VALIDATE_URL)) {
-                return $imagePath; // If it's a full URL, return it as is
-            }
-            return asset('storage/' . $imagePath); // Otherwise, prepend 'storage/'
-        }, $imagePaths);
+        $product->images = array_map(fn($imagePath) => asset('storage/' . $imagePath), $imagePaths);
 
         return $product;
     });
@@ -770,7 +752,6 @@ public function getSpecificationFilters(Request $request)
         'products' => $products,
     ], 200);
 }
-
 // public function getSpecificationFilters(Request $request)
 // {
 //     $categoryId = $request->get('category_id');
