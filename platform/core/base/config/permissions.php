@@ -28,4 +28,8 @@ return [
         'flag' => 'tools.data-synchronize',
         'parent_flag' => 'core.tools',
     ],
+    [
+        'name' => 'Product Approval',
+        'flag' => 'core.product_approval',
+    ],
 ];

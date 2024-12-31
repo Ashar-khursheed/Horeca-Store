@@ -7,6 +7,7 @@ use Botble\Base\Http\Controllers\NotificationController;
 use Botble\Base\Http\Controllers\SearchController;
 use Botble\Base\Http\Controllers\SystemInformationController;
 use Botble\Base\Http\Controllers\ToggleThemeModeController;
+use Botble\Ecommerce\Http\Controllers\TempProductController;
 use Botble\Base\Http\Middleware\RequiresJsonRequestMiddleware;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ReviewController;
@@ -36,6 +37,15 @@ Route::group(['namespace' => 'Botble\Base\Http\Controllers'], function () {
                     ->middleware('preventDemo');
             });
         });
+
+        /* Temp Product Routes*/
+        Route::get('product-approval', [TempProductController::class, 'index'])->name('product_approval.index');
+        Route::post('product-approval/pricing-approve', [TempProductController::class, 'approvePricingChanges'])->name('product_approval.admin_pricing_approve');
+        Route::post('product-approval/graphics-approve', [TempProductController::class, 'approveGraphicsChanges'])->name('product_approval.admin_graphics_approve');
+        Route::get('product-approval/{id}/edit-content-approval', [TempProductController::class, 'editContentApproval'])->name('product_approval.edit_content');
+        Route::post('product-approval/{id}/comments', [TempProductController::class, 'storeComment']);
+        Route::put('product-approval/{id}', [TempProductController::class, 'approveContentChanges'])->name('product_approval.admin_content_approve');
+        /*************************************/
 
         Route::get('system/check-update', [
             'as' => 'system.check-update',
@@ -80,7 +90,7 @@ Route::group(['namespace' => 'Botble\Base\Http\Controllers'], function () {
             'as' => 'system.cronjob',
             'uses' => 'CronjobSettingController@index',
         ]);
-        Route::post('/reviews/{review}/update', 
+        Route::post('/reviews/{review}/update',
         [ReviewController::class, 'updateReview'])->name('reviews.update');
 
         Route::group(['permission' => false], function () {

@@ -57,7 +57,7 @@
 								<th>SKU</th>
 								<th>Price</th>
 								<th>Sale Price</th>
-								{{-- <th>Current Status</th> --}}
+								<th>Created At</th>
 								<th>Approval Status</th>
 								<th>Edit</th>
 							</tr>
@@ -71,15 +71,8 @@
 										<td class="product-description">{{ $tempPricingProduct->sku }}</td>
 										<td class="product-description">{{ $tempPricingProduct->price }}</td>
 										<td class="product-description">{{ $tempPricingProduct->sale_price }}</td>
+										<td class="product-description">{{ $approvalStatuses->created_at->format('Y-m-d H:i:s') }}</td>
 										<td class="product-description">{{ $approvalStatuses[$tempPricingProduct->approval_status] ?? '' }}</td>
-										{{-- <td class="product-status">{{ $tempPricingProduct->status }}</td> --}}
-										{{-- <td>
-											<select name="approval_status[{{ $tempPricingProduct->id }}]" class="form-control approval-status-dropdown">
-												<option value="pending" {{ $tempPricingProduct->approval_status == 'pending' ? 'selected' : '' }}>Pending</option>
-												<option value="approved" {{ $tempPricingProduct->approval_status == 'approved' ? 'selected' : '' }}>Approved</option>
-												<option value="rejected" {{ $tempPricingProduct->approval_status == 'rejected' ? 'selected' : '' }}>Rejected</option>
-											</select>
-										</td> --}}
 										<td>
 											<button type="button" id="edit_pricing_modal" data-toggle="modal" data-target="#editPricingModal" data-product="{{ htmlspecialchars(json_encode($tempPricingProduct->toArray(), JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8') }}">
 												<i class="fas fa-pencil-alt"></i>
@@ -117,6 +110,7 @@
 								<th>Product ID</th>
 								<th>Product Name</th>
 								<th>Changed Description</th>
+								<th>Created At</th>
 								<th>Approval Status</th>
 								<th>Edit</th>
 							</tr>
@@ -128,21 +122,12 @@
 										<td>{{ $tempContentProduct->product_id }}</td>
 										<td class="product-name">{{ $tempContentProduct->name }}</td>
 										<td class="product-description">{{ $tempContentProduct->description }}</td>
+										<td class="product-description">{{ $tempContentProduct->created_at->format('Y-m-d H:i:s') }}</td>
 										<td class="product-description">{{ $approvalStatuses[$tempContentProduct->approval_status] ?? '' }}</td>
 										<td>
-											{{-- <a class="btn"href="{{ route('temp-products.edit_content_approval') }}"><i class="fas fa-pencil-alt"></i></a> --}}
-											<a class="btn btn-default" href="{{ route('temp-products.edit_content_approval', ['id' => $tempContentProduct->id]) }}" role="button">
+											<a class="btn btn-default" href="{{ route('product_approval.edit_content', ['id' => $tempContentProduct->id]) }}" role="button">
 												<i class="fas fa-pencil-alt"></i>
 											</a>
-
-											{{-- <button type="button" id="edit_content_modal" data-toggle="modal" data-target="#editContentModal"
-											data-id="{{ $tempContentProduct->id }}"
-											data-name="{{ $tempContentProduct->name }}"
-											data-description="{{ $tempContentProduct->description }}"
-											data-content="{{ $tempContentProduct->content }}"
-											data-approval_status="{{ $tempContentProduct->approval_status }}"
-											data-remarks="{{ $tempContentProduct->remarks }}"
-											data-product_id="{{ $tempContentProduct->product_id }}"><i class="fas fa-pencil-alt"></i></button> --}}
 										</td>
 									</tr>
 								@endif
@@ -169,39 +154,39 @@
 						<label class="form-label bg-danger text-white text-center py-3 h6">Rejected for Corrections<br/><span class="h2">{{ $tempGraphicsProducts->sum('rejection_count') }}</span></label>
 					</div>
 				</div>
-				<form action="{{ route('temp-products.approve') }}" method="POST">
-					@csrf
-					<div class="table-responsive">
-						<table class="table table-striped">
-							<thead>
-								<tr>
-									<th>Product ID</th>
-									<th>Product Name</th>
-									<th>SKU</th>
-									<th>Approval Status</th>
-									<th>Edit</th>
-								</tr>
-							</thead>
-							<tbody>
-								@foreach ($tempGraphicsProducts as $tempGraphicsProduct)
-									@if($tempGraphicsProduct->approval_status == 'pending')
-										<tr id="product-row-{{ $tempGraphicsProduct->id }}">
-											<td>{{ $tempGraphicsProduct->product_id }}</td>
-											<td class="product-name">{{ $tempGraphicsProduct->name }}</td>
-											<td class="product-description">{{ $tempGraphicsProduct->sku }}</td>
-											<td class="product-description">{{ $approvalStatuses[$tempGraphicsProduct->approval_status] ?? '' }}</td>
-											<td>
-												<button type="button" id="edit_graphics_modal" data-toggle="modal" data-target="#editGraphicsModal" data-product="{{ htmlspecialchars(json_encode($tempGraphicsProduct->toArray(), JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8') }}">
-													<i class="fas fa-pencil-alt"></i>
-												</button>
-											</td>
-										</tr>
-									@endif
-								@endforeach
-							</tbody>
-						</table>
-					</div>
-				</form>
+
+				<div class="table-responsive">
+					<table class="table table-striped">
+						<thead>
+							<tr>
+								<th>Product ID</th>
+								<th>Product Name</th>
+								<th>SKU</th>
+								<th>Created At</th>
+								<th>Approval Status</th>
+								<th>Edit</th>
+							</tr>
+						</thead>
+						<tbody>
+							@foreach ($tempGraphicsProducts as $tempGraphicsProduct)
+								@if($tempGraphicsProduct->approval_status == 'pending')
+									<tr id="product-row-{{ $tempGraphicsProduct->id }}">
+										<td>{{ $tempGraphicsProduct->product_id }}</td>
+										<td class="product-name">{{ $tempGraphicsProduct->name }}</td>
+										<td class="product-description">{{ $tempGraphicsProduct->sku }}</td>
+										<td class="product-description">{{ $tempContentProduct->created_at->format('Y-m-d H:i:s') }}</td>
+										<td class="product-description">{{ $approvalStatuses[$tempGraphicsProduct->approval_status] ?? '' }}</td>
+										<td>
+											<button type="button" id="edit_graphics_modal" data-toggle="modal" data-target="#editGraphicsModal" data-product="{{ htmlspecialchars(json_encode($tempGraphicsProduct->toArray(), JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8') }}">
+												<i class="fas fa-pencil-alt"></i>
+											</button>
+										</td>
+									</tr>
+								@endif
+							@endforeach
+						</tbody>
+					</table>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -217,7 +202,7 @@
 					</button>
 				</div>
 				<div class="modal-body">
-					<form action="{{ route('temp-products.admin_pricing_approve') }}" method="POST">
+					<form action="{{ route('product_approval.admin_pricing_approve') }}" method="POST">
 						@csrf
 						<div class="product-card">
 							<div class="product-header">
@@ -413,7 +398,7 @@
 					</button>
 				</div>
 				<div class="modal-body">
-					<form action="{{ route('temp-products.admin_graphics_approve') }}" method="POST">
+					<form action="{{ route('product_approval.admin_graphics_approve') }}" method="POST">
 						@csrf
 						<div class="product-card">
 							<div class="product-header">

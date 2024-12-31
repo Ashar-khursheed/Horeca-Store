@@ -18,15 +18,15 @@ class TempProductController extends BaseController
 	public function index()
 	{
 		// Fetch all temporary product changes
-		$tempPricingProducts = TempProduct::where('role_id', 22)->get()->map(function ($product) {
+		$tempPricingProducts = TempProduct::where('role_id', 22)->orderBy('created_at', 'desc')->get()->map(function ($product) {
 			$product->discount = $product->discount ? json_decode($product->discount) : [];
 			return $product;
 		});
 
 		// dd($tempPricingProducts->toArray());
 
-		$tempContentProducts = TempProduct::where('role_id', 18)->get();
-		$tempGraphicsProducts = TempProduct::where('role_id', 19)->get();
+		$tempContentProducts = TempProduct::where('role_id', 18)->orderBy('created_at', 'desc')->get();
+		$tempGraphicsProducts = TempProduct::where('role_id', 19)->orderBy('created_at', 'desc')->get();
 
 		$unitOfMeasurements = UnitOfMeasurement::pluck('name', 'id')->toArray();
 		$stores = Store::pluck('name', 'id')->toArray();
@@ -150,7 +150,7 @@ class TempProductController extends BaseController
 			$tempProduct->update($input);
 		}
 
-		return redirect()->route('temp-products.index')->with('success', 'Product changes approved and updated successfully.');
+		return redirect()->route('product_approval.index')->with('success', 'Product changes approved and updated successfully.');
 	}
 
 	public function approveGraphicsChanges(Request $request)
@@ -192,7 +192,7 @@ class TempProductController extends BaseController
 		if($request->initial_approval_status=='pending' && ($request->approval_status=='pending' || $request->approval_status=='in-process')) {
 		}
 
-		return redirect()->route('temp-products.index')->with('success', 'Product changes approved and updated successfully.');
+		return redirect()->route('product_approval.index')->with('success', 'Product changes approved and updated successfully.');
 	}
 
 	public function editContentApproval($tempContentProductID)
@@ -269,6 +269,6 @@ class TempProductController extends BaseController
 		} else if($tempProduct->approval_status=='pending' && ($request->approval_status=='pending' || $request->approval_status=='in-process')) {
 		}
 
-		return redirect()->route('temp-products.index', ['tab' => 'content_tab'])->with('success', 'Product changes approved and updated successfully.');
+		return redirect()->route('product_approval.index', ['tab' => 'content_tab'])->with('success', 'Product changes approved and updated successfully.');
 	}
 }

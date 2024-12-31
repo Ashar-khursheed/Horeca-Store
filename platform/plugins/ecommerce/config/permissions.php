@@ -13,11 +13,6 @@ return [
     ],
 
    [
-    'name' => 'Approval Process',
-    'flag' => 'ecommerce::partials.temp-product-changes.index',
-    'parent_flag' => 'plugins.ecommerce',
-   ],
-   [
     'name' => 'Product Status',
     'flag' => 'ecommerce::partials.temp-product-status',
     'parent_flag' => 'plugins.ecommerce',
@@ -30,11 +25,6 @@ return [
    [
     'name' => 'Upload Product Documents',
     'flag' => 'ecommerce::partials.upload-documents',
-    'parent_flag' => 'plugins.ecommerce',
-   ],
-   [
-    'name' => 'Product Content Status',
-    'flag' => 'ecommerce::partials.temp-product-content',
     'parent_flag' => 'plugins.ecommerce',
    ],
    [
@@ -71,7 +61,7 @@ return [
         'flag' => 'products.destroy',
         'parent_flag' => 'products.index',
     ],
-   
+
     [
         'name' => 'Duplicate',
         'flag' => 'products.duplicate',
@@ -149,7 +139,7 @@ return [
         'flag' => 'product-tag.index',
         'parent_flag' => 'plugins.ecommerce',
     ],
-   
+
     [
         'name' => 'Create',
         'flag' => 'product-tag.create',
@@ -469,8 +459,8 @@ return [
         'parent_flag' => 'tools.data-synchronize',
     ],
 
-    
-    
+
+
     [
         'name' => 'Import Inventory',
         'flag' => 'ecommerce.product-inventory.import.index',

@@ -17,10 +17,10 @@
 		<div class="card">
 			<div class="card-header d-flex justify-content-between align-items-center">
 				<h5 class="mb-0">Edit Product</h5>
-				<a href="{{ route('temp-products.index') }}?tab=content_tab" class="btn btn-primary btn-sm">Product Approval List</a>
+				<a href="{{ route('product_approval.index') }}?tab=content_tab" class="btn btn-primary btn-sm">Product Approval List</a>
 			</div>
 			<div class="card-body">
-				<form action="{{ route('temp-products.admin_content_approve', $tempContentProduct->id) }}" method="POST">
+				<form action="{{ route('product_approval.admin_content_approve', $tempContentProduct->id) }}" method="POST">
 					@csrf
 					@method('PUT')
 
@@ -186,7 +186,7 @@
 			let tempContentProductId = '{{ $tempContentProduct->id}}'
 			e.preventDefault();
 			const formData = new FormData(this);
-			fetch(`/admin/ecommerce/temp-products/${tempContentProductId}/comments`, {
+			fetch(`/admin/product-approval/${tempContentProductId}/comments`, {
 				method: 'POST',
 				body: formData,
 				headers: {

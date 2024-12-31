@@ -689,22 +689,6 @@ class EcommerceServiceProvider extends ServiceProvider
                     'url' => fn () => route('ecommerce.report.index'),
                     'permissions' => ['ecommerce.report.index'],
                 ])
-
-                ->registerItem([
-                    'id' => 'cms-plugins-ecommerce::partials-temp-product-changes',
-                    'priority' => 200,
-                    'parent_id' => 'cms-plugins-ecommerce::partials',
-                    'name' => 'Approval Products',
-                    'icon' => 'ti ti-report-analytics',
-
-                    // Linking to the TempProductController's index method
-                    'url' => fn () => route('temp-products.index'),
-
-                    // Permissions for accessing the routes
-                    'permissions' => ['ecommerce::partials.temp-product-changes.index', 'ecommerce::partials.temp-products.approve', 'ecommerce::partials.document.delete'],
-
-
-                ])
                 ->registerItem([
                     'id' => 'cms-plugins-ecommerce::partials.temp-product-status',
                     'priority' => 13000,
@@ -715,28 +699,6 @@ class EcommerceServiceProvider extends ServiceProvider
                     'permissions' => ['ecommerce::partials.temp-product-status'], // Specify the permissions here
                 ])
 
-
-
-                ->registerItem([
-                    'id' => 'cms-plugins-ecommerce::partials.temp-product-content',
-                    'priority' => 14000,
-                    'parent_id' => 'cms-plugins-ecommerce::partials',
-                    'name' => 'Product Content Status',
-                    'icon' => 'ti ti-report-analytics',
-                    'url' => fn () => route('ecommerce/temp-product-content.index'),
-                    'permissions' => ['ecommerce::partials.temp-product-content'], // Specify the permissions here
-                ])
-                // ->registerItem([
-                //     'id' => 'cms-plugins-ecommerce::partials.upload-specifications', // Unique identifier for the menu item
-                //     'priority' => 1300, // Adjust this value as needed for ordering in the menu
-                //     'parent_id' => 'cms-plugins-ecommerce::partials', // Parent menu item ID where this will be nested
-                //     'name' => 'Upload Specifications', // Display name in the menu
-                //     'icon' => 'ti ti-upload', // Icon for the menu item
-                //     // Linking to the SpecificationController's upload form method
-                //     'url' => fn () => route('specifications.upload.form'),
-                //     // Permissions for accessing the routes
-
-                // ])
                 ->registerItem([
                     'id' => 'cms-plugins-ecommerce::partials.upload-specifications',
                     'priority' => 1300,
@@ -878,8 +840,8 @@ class EcommerceServiceProvider extends ServiceProvider
                     'url' => fn () => route('product-documents.form'),
                     'permissions' => ['product-documents.form'],
                 ])
-                
-                
+
+
 
                 // ->registerItem([
                 //     'id' => 'cms-plugins-ecommerce::partials.category-product-filter',
