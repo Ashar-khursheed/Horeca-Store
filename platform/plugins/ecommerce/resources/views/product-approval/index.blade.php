@@ -71,7 +71,7 @@
 										<td class="product-description">{{ $tempPricingProduct->sku }}</td>
 										<td class="product-description">{{ $tempPricingProduct->price }}</td>
 										<td class="product-description">{{ $tempPricingProduct->sale_price }}</td>
-										<td class="product-description">{{ $approvalStatuses->created_at->format('Y-m-d H:i:s') }}</td>
+										<td class="product-description">{{ $tempPricingProduct->created_at->format('Y-m-d H:i:s') }}</td>
 										<td class="product-description">{{ $approvalStatuses[$tempPricingProduct->approval_status] ?? '' }}</td>
 										<td>
 											<button type="button" id="edit_pricing_modal" data-toggle="modal" data-target="#editPricingModal" data-product="{{ htmlspecialchars(json_encode($tempPricingProduct->toArray(), JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8') }}">
@@ -109,7 +109,7 @@
 							<tr>
 								<th>Product ID</th>
 								<th>Product Name</th>
-								<th>Changed Description</th>
+								{{-- <th>Changed Description</th> --}}
 								<th>Created At</th>
 								<th>Approval Status</th>
 								<th>Edit</th>
@@ -121,7 +121,7 @@
 									<tr id="product-row-{{ $tempContentProduct->id }}">
 										<td>{{ $tempContentProduct->product_id }}</td>
 										<td class="product-name">{{ $tempContentProduct->name }}</td>
-										<td class="product-description">{{ $tempContentProduct->description }}</td>
+										{{-- <td class="product-description">{{ $tempContentProduct->description }}</td> --}}
 										<td class="product-description">{{ $tempContentProduct->created_at->format('Y-m-d H:i:s') }}</td>
 										<td class="product-description">{{ $approvalStatuses[$tempContentProduct->approval_status] ?? '' }}</td>
 										<td>
@@ -174,7 +174,7 @@
 										<td>{{ $tempGraphicsProduct->product_id }}</td>
 										<td class="product-name">{{ $tempGraphicsProduct->name }}</td>
 										<td class="product-description">{{ $tempGraphicsProduct->sku }}</td>
-										<td class="product-description">{{ $tempContentProduct->created_at->format('Y-m-d H:i:s') }}</td>
+										<td class="product-description">{{ $tempGraphicsProduct->created_at->format('Y-m-d H:i:s') }}</td>
 										<td class="product-description">{{ $approvalStatuses[$tempGraphicsProduct->approval_status] ?? '' }}</td>
 										<td>
 											<button type="button" id="edit_graphics_modal" data-toggle="modal" data-target="#editGraphicsModal" data-product="{{ htmlspecialchars(json_encode($tempGraphicsProduct->toArray(), JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8') }}">

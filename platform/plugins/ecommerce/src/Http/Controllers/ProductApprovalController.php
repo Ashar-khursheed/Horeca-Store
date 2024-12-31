@@ -13,7 +13,7 @@ use Botble\Marketplace\Models\Store;
 
 use DB, Carbon\Carbon;
 
-class TempProductController extends BaseController
+class ProductApprovalController extends BaseController
 {
 	public function index()
 	{
@@ -38,7 +38,7 @@ class TempProductController extends BaseController
 			'rejected' => 'Rejected for Corrections',
 		];
 
-		return view('plugins/ecommerce::products.partials.temp-product-changes', compact('tempPricingProducts', 'tempContentProducts', 'tempGraphicsProducts', 'unitOfMeasurements', 'stores', 'approvalStatuses'));
+		return view('plugins/ecommerce::product-approval.index', compact('tempPricingProducts', 'tempContentProducts', 'tempGraphicsProducts', 'unitOfMeasurements', 'stores', 'approvalStatuses'));
 	}
 
 	public function approvePricingChanges(Request $request)

@@ -7,7 +7,7 @@ use Botble\Base\Http\Controllers\NotificationController;
 use Botble\Base\Http\Controllers\SearchController;
 use Botble\Base\Http\Controllers\SystemInformationController;
 use Botble\Base\Http\Controllers\ToggleThemeModeController;
-use Botble\Ecommerce\Http\Controllers\TempProductController;
+use Botble\Ecommerce\Http\Controllers\ProductApprovalController;
 use Botble\Base\Http\Middleware\RequiresJsonRequestMiddleware;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ReviewController;
@@ -39,12 +39,12 @@ Route::group(['namespace' => 'Botble\Base\Http\Controllers'], function () {
         });
 
         /* Temp Product Routes*/
-        Route::get('product-approval', [TempProductController::class, 'index'])->name('product_approval.index');
-        Route::post('product-approval/pricing-approve', [TempProductController::class, 'approvePricingChanges'])->name('product_approval.admin_pricing_approve');
-        Route::post('product-approval/graphics-approve', [TempProductController::class, 'approveGraphicsChanges'])->name('product_approval.admin_graphics_approve');
-        Route::get('product-approval/{id}/edit-content-approval', [TempProductController::class, 'editContentApproval'])->name('product_approval.edit_content');
-        Route::post('product-approval/{id}/comments', [TempProductController::class, 'storeComment']);
-        Route::put('product-approval/{id}', [TempProductController::class, 'approveContentChanges'])->name('product_approval.admin_content_approve');
+        Route::get('product-approval', [ProductApprovalController::class, 'index'])->name('product_approval.index');
+        Route::post('product-approval/pricing-approve', [ProductApprovalController::class, 'approvePricingChanges'])->name('product_approval.admin_pricing_approve');
+        Route::post('product-approval/graphics-approve', [ProductApprovalController::class, 'approveGraphicsChanges'])->name('product_approval.admin_graphics_approve');
+        Route::get('product-approval/{id}/edit-content-approval', [ProductApprovalController::class, 'editContentApproval'])->name('product_approval.edit_content');
+        Route::post('product-approval/{id}/comments', [ProductApprovalController::class, 'storeComment']);
+        Route::put('product-approval/{id}', [ProductApprovalController::class, 'approveContentChanges'])->name('product_approval.admin_content_approve');
         /*************************************/
 
         Route::get('system/check-update', [
