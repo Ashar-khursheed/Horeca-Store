@@ -26,39 +26,50 @@
 
 					<div class="mb-3">
 						<h6>Product ID: {{ $tempContentProduct->product_id }}</h6>
-						<h4>{{ $tempContentProduct->name }}</h4>
+						{{-- <h4>{{ $tempContentProduct->name }}</h4> --}}
 					</div>
 
 					<div class="row mt-3">
 						<div class="col-md-12">
 							<div class="d-flex justify-content-between align-items-center mb-2">
-								<label for="description" class="form-label">Changed Description:</label>
-								<button type="button" class="btn btn-primary btn-sm add-comment-btn" data-toggle="modal" data-target="#comment-modal" data-type="description" disabled>Add Comment</button>
+								<label for="name">Name</label>
+								<button type="button" class="btn btn-primary btn-sm add-comment-btn" data-toggle="modal" data-target="#comment-modal" data-type="name" disabled>Add Comment</button>
 							</div>
-							<div class="border rounded p-3 annotatable-text" id="description-container">{!! $tempContentProduct->description !!}</div>
+							<div class="border rounded p-3 annotatable-text">{!! $tempContentProduct->name !!}</div>
 						</div>
 					</div>
 
 					<div class="row mt-3">
 						<div class="col-md-12">
 							<div class="d-flex justify-content-between align-items-center mb-2">
-								<label for="content" class="form-label">Changed Content</label>
+								<label for="description">Description</label>
+								<button type="button" class="btn btn-primary btn-sm add-comment-btn" data-toggle="modal" data-target="#comment-modal" data-type="description" disabled>Add Comment</button>
+							</div>
+							<div class="border rounded p-3 annotatable-text">{!! $tempContentProduct->description !!}</div>
+						</div>
+					</div>
+
+					<div class="row mt-3">
+						<div class="col-md-12">
+							<div class="d-flex justify-content-between align-items-center mb-2">
+								<label for="content">Content</label>
 								<button type="button" class="btn btn-primary btn-sm add-comment-btn" data-toggle="modal" data-target="#comment-modal" data-type="content" disabled>Add Comment</button>
 							</div>
-							<div class="border rounded p-3 annotatable-text" id="content-container">{!! $tempContentProduct->content !!}</div>
+							<div class="border rounded p-3 annotatable-text">{!! $tempContentProduct->content !!}</div>
 						</div>
 					</div>
 
 					<div class="row mt-3 {{ $tempContentProduct->comments->count() ? '' : 'd-none' }}" id="comments">
 						<div class="col-md-12">
+							<label>Issues</label>
 							<table class="table table-striped table-bordered">
 								<thead>
 									<tr>
 										<th>Field Name</th>
 										<th>Highlighted Text</th>
 										<th>Comment</th>
-										<th>Status</th>
-										<th>Created By</th>
+										{{-- <th>Status</th> --}}
+										{{-- <th>Created By</th> --}}
 										<th>Created At</th>
 									</tr>
 								</thead>
@@ -68,8 +79,8 @@
 										<td>{{ ucfirst($comment->comment_type) }}</td>
 										<td>{!! $comment->highlighted_text !!}</td>
 										<td>{!! $comment->comment !!}</td>
-										<td>{{ ucfirst($comment->status) }}</td>
-										<td>{{ $comment->createdBy->name }}</td>
+										{{-- <td>{{ ucfirst($comment->status) }}</td> --}}
+										{{-- <td>{{ $comment->createdBy->name }}</td> --}}
 										<td>{{ $comment->created_at->format('Y-m-d H:i:s') }}</td>
 									</tr>
 									@endforeach
@@ -80,8 +91,8 @@
 
 					<div class="row mt-2">
 						<div class="col-md-12">
-							<label for="approval_status" class="form-label">Approval Status</label>
-							<select class="form-select"name="approval_status">
+							<label for="approval_status">Approval Status</label>
+							<select class="form-select" id="content_approval_status" name="approval_status">
 								@foreach ($approvalStatuses as $value => $label)
 									@if(in_array($value, ['approved', 'rejected']))
 										<option value="{{ $value }}">{{ $label }}</option>
@@ -93,8 +104,8 @@
 
 					<div class="row mt-2">
 						<div class="col-md-12">
-							<label for="remarks" class="form-label">Remarks</label>
-							<textarea class="form-control" id="remarks" name="remarks" rows="4">{!! $tempContentProduct->remarks !!}</textarea>
+							<label for="remarks">Remarks</label>
+							<textarea class="form-control" id="content_remarks" name="remarks" rows="4">{!! $tempContentProduct->remarks !!}</textarea>
 						</div>
 					</div>
 
@@ -142,6 +153,17 @@
 
 	<script>
 		$(document).ready(function() {
+			// Function to update the "required" attribute based on approval status
+			function updateContentRemarksRequirement() {
+				const contentAprovalStatus = $('#content_approval_status');
+				const contentRemarks = $('#content_remarks');
+				if (contentAprovalStatus.val() === 'rejected') { // Replace 'rejected' with the actual value for rejection
+					contentRemarks.attr('required', 'required');
+				} else {
+					contentRemarks.removeAttr('required');
+				}
+			}
+
 			// Initialize Select2
 			$('.select2').select2();
 
@@ -178,6 +200,8 @@
 					$('#comment-type').val(textType);
 				}
 			});
+
+			$('#content_approval_status').on('change', updateContentRemarksRequirement);
 
 		});
 
