@@ -10,7 +10,6 @@
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-use Botble\Ecommerce\Http\Controllers\TempProductController;
 use Botble\Ecommerce\Http\Controllers\TempProductStatusController;
 use Botble\Ecommerce\Http\Controllers\CategoryProductTypeController;
 
@@ -27,20 +26,6 @@ use Botble\Ecommerce\Http\Controllers\ProductDocumentController;
 
 
 
-
-
-
-
-Route::get('admin/ecommerce/temp-products', [TempProductController::class, 'index'])->name('temp-products.index');
-Route::post('admin/ecommerce/temp-products/pricing-approve', [TempProductController::class, 'approvePricingChanges'])->name('temp-products.admin_pricing_approve');
-Route::post('admin/ecommerce/temp-products/graphics-approve', [TempProductController::class, 'approveGraphicsChanges'])->name('temp-products.admin_graphics_approve');
-Route::get('admin/ecommerce/temp-products/{id}/edit-content-approval', [TempProductController::class, 'editContentApproval'])->name('temp-products.edit_content_approval');
-Route::post('admin/ecommerce/temp-products/{id}/comments', [TempProductController::class, 'storeComment']);
-
-
-Route::put('admin/ecommerce/temp-products/{id}', [TempProductController::class, 'approveContentChanges'])->name('temp-products.admin_content_approve');
-
-
 Route::get('ecommerce/temp-products-status', [TempProductStatusController::class, 'index'])->name('ecommerce/temp-products-status.index');
 Route::post('ecommerce/temp-products-status/update-pricing-changes', [TempProductStatusController::class, 'updatePricingChanges'])->name('temp-products.pricing_update');
 Route::post('ecommerce/temp-products-status/update-graphics-changes', [TempProductStatusController::class, 'updateGraphicsChanges'])->name('temp-products.graphics_update');
@@ -48,18 +33,15 @@ Route::post('ecommerce/temp-products-status/update-content-changes', [TempProduc
 Route::post('ecommerce/temp-products-status/approve', [TempProductStatusController::class, 'approveChanges'])->name('temp-products.approve');
 
 
-Route::get('ecommerce/temp-products-content', [TempContentController::class, 'index'])->name('ecommerce/temp-product-content.index');
-Route::post('ecommerce/temp-products-content/pricing-approve', [TempContentController::class, 'approvePricingChanges'])->name('temp-product.pricing_approve');
-Route::post('ecommerce/temp-products-content/approve', [TempContentController::class, 'approveChanges'])->name('temp-products.approve');
+// Route::get('ecommerce/temp-products-content', [TempContentController::class, 'index'])->name('ecommerce/temp-product-content.index');
+// Route::post('ecommerce/temp-products-content/pricing-approve', [TempContentController::class, 'approvePricingChanges'])->name('temp-product.pricing_approve');
+// Route::post('ecommerce/temp-products-content/approve', [TempContentController::class, 'approveChanges'])->name('temp-products.approve');
 
 
 
 Route::get('admin/ecommerce/category-product-filter', [CategoryProductTypeController::class, 'index'])->name('categoryFilter.index');
 Route::get('admin/ecommerce/category-product-filter/{id}/edit', [CategoryProductTypeController::class, 'edit'])->name('categoryFilter.edit');
 Route::put('admin/ecommerce/category-product-filter/{id}', [CategoryProductTypeController::class, 'update'])->name('categoryFilter.update');
-
-
-
 
 
 // Define route for showing the upload form
@@ -70,27 +52,27 @@ Route::post('admin/ecommerce/upload-documents', [ProductDocumentController::clas
 
 
 Route::get('/upload-form', function () {
-    return view('upload-documents');
+	return view('upload-documents');
 });
 
-     AdminHelper::registerRoutes(function () {
-         Route::group(['namespace' => 'Botble\ProductImages\Http\Controllers', 'prefix' => 'ecommerce'], function () {
-             Route::group(['prefix' => 'product-images', 'as' => 'product-images.'], function () {
-                 Route::get('/import', [ImportProductImageController::class, 'index'])->name('import.index');
-                 Route::post('/import', [ImportProductImageController::class, 'store'])->name('import.store');
-             });
-         });
-     });
-     Route::post('product-images/import/validate', [ImportProductImageController::class, 'validateImport'])->name('product-images.import.validate');
-     Route::post('product-images/import/store', [ImportProductImageController::class, 'storeImport'])->name('product-images.import.store');
+AdminHelper::registerRoutes(function () {
+	Route::group(['namespace' => 'Botble\ProductImages\Http\Controllers', 'prefix' => 'ecommerce'], function () {
+		Route::group(['prefix' => 'product-images', 'as' => 'product-images.'], function () {
+			Route::get('/import', [ImportProductImageController::class, 'index'])->name('import.index');
+			Route::post('/import', [ImportProductImageController::class, 'store'])->name('import.store');
+		});
+	});
+});
+Route::post('product-images/import/validate', [ImportProductImageController::class, 'validateImport'])->name('product-images.import.validate');
+Route::post('product-images/import/store', [ImportProductImageController::class, 'storeImport'])->name('product-images.import.store');
 
 // Route::get('/import', [ImportProductImageController::class, 'index'])->name('import.index');
 // Route::post('/import', [ImportProductImageController::class, 'store'])->name('import.store');
 Route::group(['namespace' => 'Botble\ProductImages\Http\Controllers', 'prefix' => 'ecommerce'], function () {
-    Route::group(['prefix' => 'product-images', 'as' => 'product-images.'], function () {
-        Route::get('/import', [ImportProductImageController::class, 'index'])->name('import.index');
-        Route::post('/import', [ImportProductImageController::class, 'store'])->name('import.store');
-    });
+	Route::group(['prefix' => 'product-images', 'as' => 'product-images.'], function () {
+		Route::get('/import', [ImportProductImageController::class, 'index'])->name('import.index');
+		Route::post('/import', [ImportProductImageController::class, 'store'])->name('import.store');
+	});
 });
 
 Route::get('specifications/upload', [SpecificationController::class, 'showUploadForm'])->name('specifications.upload.form');
@@ -102,25 +84,19 @@ Route::post('specifications/upload', [SpecificationController::class, 'upload'])
 
 
 Route::group(['namespace' => 'YourNamespace'], function () {
-    Route::get('/products/search-sku', [ProductController::class, 'searchBySku'])->name('products.search-sku');
+	Route::get('/products/search-sku', [ProductController::class, 'searchBySku'])->name('products.search-sku');
 });
 
 Route::get('/products/search-sku', [ProductController::class, 'searchBySku'])
-    ->name('products.search-sku');
+->name('products.search-sku');
 
 
 
 
 
-    // Define the route for the create form
-    Route::get('admin/ecommerce/create-shipment', [EliteShipmentController::class, 'create'])->name('eliteshipment.create');
+// Define the route for the create form
+Route::get('admin/ecommerce/create-shipment', [EliteShipmentController::class, 'create'])->name('eliteshipment.create');
 
-    // Define the route to handle form submission
-    Route::post('admin/ecommerce/store-shipment', [EliteShipmentController::class, 'store'])->name('eliteshipment.store');
-
-use App\Http\Controllers\TextController;
-
-Route::get('/text', [TextController::class, 'index'])->name('text.index');
-Route::post('/texts', [TextController::class, 'store'])->name('text.store');
-Route::post('/texts/{id}/comments', [TextController::class, 'storeComment']);
+// Define the route to handle form submission
+Route::post('admin/ecommerce/store-shipment', [EliteShipmentController::class, 'store'])->name('eliteshipment.store');
 

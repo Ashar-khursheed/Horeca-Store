@@ -150,6 +150,14 @@ class BaseServiceProvider extends ServiceProvider
                     'name' => 'core/base::layouts.tools',
                     'icon' => 'ti ti-tool',
                     'permission' => ['core.tools'],
+                ])
+                ->registerItem([
+                    'id' => 'cms_core_product_approval',
+                    'priority' => 3,
+                    'name' => 'Product Approval',
+                    'icon' => 'ti ti-report-analytics',
+                    'route' => 'product_approval.index',
+                    'permissions' => ['core.product_approval'],
                 ]);
         });
     }
