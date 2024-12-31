@@ -65,7 +65,7 @@
 						<tbody>
 							@foreach ($tempPricingProducts as $tempPricingProduct)
 								@if($tempPricingProduct->approval_status == 'pending')
-									<tr id="product-row-{{ $tempPricingProduct->id }}">
+									<tr>
 										<td>{{ $tempPricingProduct->product_id }}</td>
 										<td class="product-name">{{ $tempPricingProduct->name }}</td>
 										<td class="product-description">{{ $tempPricingProduct->sku }}</td>
@@ -118,7 +118,7 @@
 						<tbody>
 							@foreach ($tempContentProducts as $tempContentProduct)
 								@if($tempContentProduct->approval_status == 'pending')
-									<tr id="product-row-{{ $tempContentProduct->id }}">
+									<tr>
 										<td>{{ $tempContentProduct->product_id }}</td>
 										<td class="product-name">{{ $tempContentProduct->name }}</td>
 										{{-- <td class="product-description">{{ $tempContentProduct->description }}</td> --}}
@@ -170,7 +170,7 @@
 						<tbody>
 							@foreach ($tempGraphicsProducts as $tempGraphicsProduct)
 								@if($tempGraphicsProduct->approval_status == 'pending')
-									<tr id="product-row-{{ $tempGraphicsProduct->id }}">
+									<tr>
 										<td>{{ $tempGraphicsProduct->product_id }}</td>
 										<td class="product-name">{{ $tempGraphicsProduct->name }}</td>
 										<td class="product-description">{{ $tempGraphicsProduct->sku }}</td>
@@ -457,71 +457,6 @@
 	<!-- jQuery -->
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-	<!-- For Product Description -->
-
-	<script>
-		// Function to update the "required" attribute based on approval status
-		function updateContentRemarksRequirement() {
-			const contentAprovalStatus = $('#content_approval_status');
-			const contentRemarks = $('#content_remarks');
-			if (contentAprovalStatus.val() === 'rejected') { // Replace 'rejected' with the actual value for rejection
-				contentRemarks.attr('required', 'required');
-			} else {
-				contentRemarks.removeAttr('required');
-			}
-		}
-		$(document).on('click', '#edit_content_modal', function () {
-			var id = $(this).data('id');
-			var name = $(this).data('name');
-			var description = $(this).data('description');
-			var content = $(this).data('content');
-			var approvalStatus = $(this).data('approval_status');
-			var productID = $(this).data('product_id');
-			var remarks = $(this).data('remarks');
-
-			// Populate the modal fields
-			$('#content_temp_header_id').text(productID);
-			$('#content_temp_header_name').text(name);
-
-			$('#content_temp_id').val(id);
-
-			$('#content_initial_approval_status').val(approvalStatus);
-			// $('#content_approval_status').val(approvalStatus);
-			// $('#content_content').val(content);
-			// $('#annotatable-text').html(content);
-
-
-
-			// ClassicEditor
-            // .create(document.querySelector('#content_content'))
-            // .then(editor => {
-            //     editor.setData(content); // Set the content in CKEditor
-            // })
-            // .catch(error => {
-            //     console.error(error);
-            // });
-
-			$('#content_remarks').val(remarks);
-
-			// Initial check when the page loads
-			updateContentRemarksRequirement();
-		});
-
-		// Update requirement whenever the approval status changes
-		$('#content_approval_status').on('change', updateContentRemarksRequirement);
-	</script>
-
-	{{-- <script>
-		document.querySelectorAll('.editor').forEach((element) => {
-			ClassicEditor
-				.create(element)
-				.catch((error) => {
-					console.error(error);
-				});
-		});
-	</script> --}}
-
-	<!-- Bootstrap JS -->
 
 	<style>
 		.product-card {
@@ -555,658 +490,536 @@
 		}
 	</style>
 
-<script>
-	document.addEventListener('DOMContentLoaded', function () {
-		// Get the URL query parameter 'tab'
-		const urlParams = new URLSearchParams(window.location.search);
-		const activeTab = urlParams.get('tab');
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			// Get the URL query parameter 'tab'
+			const urlParams = new URLSearchParams(window.location.search);
+			const activeTab = urlParams.get('tab');
 
-		// If the 'tab' parameter exists, activate the corresponding tab
-		if (activeTab) {
-			const tabButton = document.querySelector(`#${activeTab}`);
-			const tabPane = document.querySelector(`#${tabButton?.getAttribute('data-bs-target').substring(1)}`);
+			// If the 'tab' parameter exists, activate the corresponding tab
+			if (activeTab) {
+				const tabButton = document.querySelector(`#${activeTab}`);
+				const tabPane = document.querySelector(`#${tabButton?.getAttribute('data-bs-target').substring(1)}`);
 
-			if (tabButton && tabPane) {
-				// Deactivate all tabs and tab-panes
-				document.querySelectorAll('.nav-link').forEach(tab => {
-					tab.classList.remove('active');
-					tab.setAttribute('aria-selected', 'false');
-				});
+				if (tabButton && tabPane) {
+					// Deactivate all tabs and tab-panes
+					document.querySelectorAll('.nav-link').forEach(tab => {
+						tab.classList.remove('active');
+						tab.setAttribute('aria-selected', 'false');
+					});
 
-				document.querySelectorAll('.tab-pane').forEach(pane => {
-					pane.classList.remove('show', 'active');
-				});
+					document.querySelectorAll('.tab-pane').forEach(pane => {
+						pane.classList.remove('show', 'active');
+					});
 
-				// Activate the new tab and its corresponding tab content
-				tabButton.classList.add('active');
-				tabButton.setAttribute('aria-selected', 'true');
-				tabPane.classList.add('show', 'active');
+					// Activate the new tab and its corresponding tab content
+					tabButton.classList.add('active');
+					tabButton.setAttribute('aria-selected', 'true');
+					tabPane.classList.add('show', 'active');
+				}
+			}
+		});
+	</script>
+
+	<script>
+		// Function to toggle the "To Date" field for each discount group
+		function toggleToDateField(checkbox) {
+			// Find the discount item container (group) that contains the checkbox
+			const discountItem = checkbox.closest('.discount-item');
+
+			// Get the "To Date" input field within this group
+			const toDateInput = discountItem.querySelector('.to-date');
+
+			// If "Never Expired" is checked, disable the "To Date" field
+			if (checkbox.checked) {
+				toDateInput.disabled = true;
+			} else {
+				toDateInput.disabled = false;
 			}
 		}
-	});
-</script>
 
-<script>
-	// Function to toggle the "To Date" field for each discount group
-	function toggleToDateField(checkbox) {
-		// Find the discount item container (group) that contains the checkbox
-		const discountItem = checkbox.closest('.discount-item');
+		function calculateDiscount(element) {
+			const discountItem = element.closest('.discount-item');
+			const productRequiredInput = discountItem.querySelector('.product-quantity');
+			const discountPercentageInput = discountItem.querySelector('.discount-percentage');
+			const priceAfterDiscountInput = discountItem.querySelector('.price-after-discount');
+			const marginInput = discountItem.querySelector('.margin');
 
-		// Get the "To Date" input field within this group
-		const toDateInput = discountItem.querySelector('.to-date');
+			const price = document.querySelector('input[name="sale_price"]').value || document.querySelector('input[name="price"]').value || 0;
+			const costPerItem = document.querySelector('input[name="cost_per_item"]').value || 0;
+			const productRequired = parseFloat(productRequiredInput.value) || 0;
+			const discountPercentage = parseFloat(discountPercentageInput.value) || 0;
 
-		// If "Never Expired" is checked, disable the "To Date" field
-		if (checkbox.checked) {
-			toDateInput.disabled = true;
-		} else {
-			toDateInput.disabled = false;
+			// Ensure all inputs are valid
+			if (price > 0 && productRequired > 0 && discountPercentage > 0) {
+				// Calculate discount amount
+				const discountAmount = price * (discountPercentage / 100);
+
+				// Calculate final price after discount
+				const priceAfterDiscount = price - discountAmount;
+
+				// Set the result in the readonly input field
+				priceAfterDiscountInput.value = priceAfterDiscount.toFixed(2);
+
+				const marginValue = (priceAfterDiscountInput.value - costPerItem)*100/priceAfterDiscountInput.value;
+				marginInput.value = marginValue.toFixed(2);
+			} else {
+				// Clear the price after discount field if inputs are invalid or missing
+				priceAfterDiscountInput.value = '';
+			}
 		}
-	}
 
-	function calculateDiscount(element) {
-		const discountItem = element.closest('.discount-item');
-		const productRequiredInput = discountItem.querySelector('.product-quantity');
-		const discountPercentageInput = discountItem.querySelector('.discount-percentage');
-		const priceAfterDiscountInput = discountItem.querySelector('.price-after-discount');
-		const marginInput = discountItem.querySelector('.margin');
+		function calculateMargin() {
+			const price = document.querySelector('#pricing_sale_price').value || document.querySelector('#pricing_price').value || 0;
+			const costPerItem = document.querySelector('#pricing_cost_per_item').value || 0;
+			const marginInput = document.querySelector('#pricing_margin');
 
-		const price = document.querySelector('input[name="sale_price"]').value || document.querySelector('input[name="price"]').value || 0;
-		const costPerItem = document.querySelector('input[name="cost_per_item"]').value || 0;
-		const productRequired = parseFloat(productRequiredInput.value) || 0;
-		const discountPercentage = parseFloat(discountPercentageInput.value) || 0;
-
-		// Ensure all inputs are valid
-		if (price > 0 && productRequired > 0 && discountPercentage > 0) {
-			// Calculate discount amount
-			const discountAmount = price * (discountPercentage / 100);
-
-			// Calculate final price after discount
-			const priceAfterDiscount = price - discountAmount;
-
-			// Set the result in the readonly input field
-			priceAfterDiscountInput.value = priceAfterDiscount.toFixed(2);
-
-			const marginValue = (priceAfterDiscountInput.value - costPerItem)*100/priceAfterDiscountInput.value;
-			marginInput.value = marginValue.toFixed(2);
-		} else {
-			// Clear the price after discount field if inputs are invalid or missing
-			priceAfterDiscountInput.value = '';
+			if (price > 0 && costPerItem > 0) {
+				const margin = ((price - costPerItem) / price) * 100;
+				marginInput.value = `${margin.toFixed(2)}`;
+			} else {
+				marginInput.value = 0;
+			}
 		}
-	}
 
-	function calculateMargin() {
-		const price = document.querySelector('#pricing_sale_price').value || document.querySelector('#pricing_price').value || 0;
-		const costPerItem = document.querySelector('#pricing_cost_per_item').value || 0;
-		const marginInput = document.querySelector('#pricing_margin');
+		const unitOfMeasurementDropdown = document.getElementById('pricing_unit_of_measurement_id');
+		const unitLabels = {
+			1: 'Pieces',
+			2: 'Dozen',
+			3: 'Box',
+			4: 'Case'
+		};
 
-		if (price > 0 && costPerItem > 0) {
-			const margin = ((price - costPerItem) / price) * 100;
-			marginInput.value = `${margin.toFixed(2)}`;
-		} else {
-			marginInput.value = 0;
+		// Function to update all quantity labels
+		function updateAllQuantityLabels() {
+			const selectedValue = unitOfMeasurementDropdown.value;
+			const unitText = unitLabels[selectedValue] || 'Units';
+
+			// Update all labels in the discount group
+			document.querySelectorAll('.quantity-label').forEach((label, index) => {
+				label.textContent = `Buying Quantity Tier ${index+1} (in ${unitText})`;
+			});
 		}
-	}
 
-	const unitOfMeasurementDropdown = document.getElementById('pricing_unit_of_measurement_id');
-	const unitLabels = {
-		1: 'Pieces',
-		2: 'Dozen',
-		3: 'Box',
-		4: 'Case'
-	};
+		$(document).on('click', '#edit_pricing_modal', function () {
+			// Get the product data from the button's data-product attribute
+			const productData = $(this).attr('data-product');
+			const decodedData = $('<textarea/>').html(productData).text();
 
-	// Function to update all quantity labels
-	function updateAllQuantityLabels() {
-		const selectedValue = unitOfMeasurementDropdown.value;
-		const unitText = unitLabels[selectedValue] || 'Units';
+			// Parse the JSON string into a JavaScript object
+			const product = JSON.parse(decodedData);
 
-		// Update all labels in the discount group
-		document.querySelectorAll('.quantity-label').forEach((label, index) => {
-			label.textContent = `Buying Quantity Tier ${index+1} (in ${unitText})`;
-		});
-	}
+			// console.log('Parsed Product:', product.discount);
 
-	$(document).on('click', '#edit_pricing_modal', function () {
-		// Get the product data from the button's data-product attribute
-		const productData = $(this).attr('data-product');
-		const decodedData = $('<textarea/>').html(productData).text();
+			// Populate the modal fields
+			$('#pricing_temp_header_id').text(product.product_id);
+			$('#pricing_temp_header_name').text(product.name);
 
-		// Parse the JSON string into a JavaScript object
-		const product = JSON.parse(decodedData);
+			$('#pricing_temp_id').val(product.id);
+			$('#pricing_sku').val(product.sku);
+			$('#pricing_price').val(product.price);
+			$('#pricing_sale_price').val(product.sale_price);
+			$('#pricing_from_date').val(product.from_date);
+			$('#pricing_to_date').val(product.to_date);
+			$('#pricing_cost_per_item').val(product.cost_per_item);
+			$('#pricing_margin').val(product.margin);
+			$('#pricing_quantity').val(product.quantity);
 
-		// console.log('Parsed Product:', product.discount);
+			$('#pricing_store_id').val(product.store_id);
+			$('#pricing_minimum_order_quantity').val(product.minimum_order_quantity);
+			$('#pricing_box_quantity').val(product.box_quantity);
+			$('#pricing_delivery_days').val(product.delivery_days);
+			$('#pricing_unit_of_measurement_id').val(product.unit_of_measurement_id);
+			$('#pricing_variant_requires_shipping').val(product.variant_requires_shipping);
+			$('#pricing_refund').val(product.refund);
+			$('#pricing_initial_approval_status').val(product.approval_status);
+			// $('#pricing_approval_status').val(product.approval_status);
+			$('#pricing_remarks').val(product.remarks);
 
-		// Populate the modal fields
-		$('#pricing_temp_header_id').text(product.product_id);
-		$('#pricing_temp_header_name').text(product.name);
-
-		$('#pricing_temp_id').val(product.id);
-		$('#pricing_sku').val(product.sku);
-		$('#pricing_price').val(product.price);
-		$('#pricing_sale_price').val(product.sale_price);
-		$('#pricing_from_date').val(product.from_date);
-		$('#pricing_to_date').val(product.to_date);
-		$('#pricing_cost_per_item').val(product.cost_per_item);
-		$('#pricing_margin').val(product.margin);
-		$('#pricing_quantity').val(product.quantity);
-
-		$('#pricing_store_id').val(product.store_id);
-		$('#pricing_minimum_order_quantity').val(product.minimum_order_quantity);
-		$('#pricing_box_quantity').val(product.box_quantity);
-		$('#pricing_delivery_days').val(product.delivery_days);
-		$('#pricing_unit_of_measurement_id').val(product.unit_of_measurement_id);
-		$('#pricing_variant_requires_shipping').val(product.variant_requires_shipping);
-		$('#pricing_refund').val(product.refund);
-		$('#pricing_initial_approval_status').val(product.approval_status);
-		// $('#pricing_approval_status').val(product.approval_status);
-		$('#pricing_remarks').val(product.remarks);
-
-		// Set checkbox values
-		$('#pricing_with_storehouse_management').prop('checked', product.with_storehouse_management);
-		$('#pricing_allow_checkout_when_out_of_stock').prop('checked', product.allow_checkout_when_out_of_stock);
-		$(`#pricing_${productData.stock_status}`).prop('checked', true);
+			// Set checkbox values
+			$('#pricing_with_storehouse_management').prop('checked', product.with_storehouse_management);
+			$('#pricing_allow_checkout_when_out_of_stock').prop('checked', product.allow_checkout_when_out_of_stock);
+			$(`#pricing_${productData.stock_status}`).prop('checked', true);
 
 
-		// Clear existing discount items
-		const discountGroup = $('#discount-group');
-		discountGroup.empty();
+			// Clear existing discount items
+			const discountGroup = $('#discount-group');
+			discountGroup.empty();
 
-		// Populate discount items
-		if (product.discount && product.discount.length) {
-			product.discount.forEach((discount, index) => {
-				const discountItem = `
-					<div class="discount-item">
-						<div class="row g-3 mb-3">
-							<div class="col-md-6">
-								<input type="hidden" name="discount[${index}][discount_id]" value="${discount.discount_id}">
-								<label for="product_quantity_${index}" class="form-label quantity-label">Buying Quantity</label>
-								<input type="number" class="form-control product-quantity"
-									   name="discount[${index}][product_quantity]"
-									   value="${discount.product_quantity || ''}"
-									   onchange="calculateDiscount(this)">
+			// Populate discount items
+			if (product.discount && product.discount.length) {
+				product.discount.forEach((discount, index) => {
+					const discountItem = `
+						<div class="discount-item">
+							<div class="row g-3 mb-3">
+								<div class="col-md-6">
+									<input type="hidden" name="discount[${index}][discount_id]" value="${discount.discount_id}">
+									<label for="product_quantity_${index}" class="form-label quantity-label">Buying Quantity</label>
+									<input type="number" class="form-control product-quantity"
+										   name="discount[${index}][product_quantity]"
+										   value="${discount.product_quantity || ''}"
+										   onchange="calculateDiscount(this)">
+								</div>
+
+								<div class="col-md-6">
+									<label for="discount_${index}" class="form-label">Discount (%)</label>
+									<input type="number" class="form-control discount-percentage"
+										   name="discount[${index}][discount]"
+										   value="${discount.discount || ''}"
+										   onchange="calculateDiscount(this)">
+								</div>
+
+								<div class="col-md-6">
+									<label for="price_after_discount_${index}" class="form-label">Price after Discount</label>
+									<input type="number" class="form-control price-after-discount"
+										   name="discount[${index}][price_after_discount]"
+										   value="${discount.price_after_discount || ''}" readonly>
+								</div>
+
+								<div class="col-md-6">
+									<label for="margin_${index}" class="form-label">Margin (%)</label>
+									<input type="number" class="form-control margin"
+										   name="discount[${index}][margin]"
+										   value="${discount.margin || ''}" readonly>
+								</div>
 							</div>
 
-							<div class="col-md-6">
-								<label for="discount_${index}" class="form-label">Discount (%)</label>
-								<input type="number" class="form-control discount-percentage"
-									   name="discount[${index}][discount]"
-									   value="${discount.discount || ''}"
-									   onchange="calculateDiscount(this)">
+							<div class="row g-3 mb-3">
+								<div class="col-md-4">
+									<label for="fromDate_${index}" class="form-label">From Date</label>
+									<input type="datetime-local" class="form-control"
+										   name="discount[${index}][discount_from_date]"
+										   value="${discount.discount_from_date || ''}">
+								</div>
+
+								<div class="col-md-4">
+									<label for="toDate_${index}" class="form-label">To Date</label>
+									<input type="datetime-local" class="form-control to-date"
+											${discount.never_expired==1 ? 'disabled' : ''}
+										   name="discount[${index}][discount_to_date]"
+										   value="${discount.discount_to_date || ''}">
+								</div>
+
+								<div class="col-md-4 d-flex align-items-center">
+									<div class="form-check">
+										<input class="form-check-input me-2 never-expired-checkbox"
+											   type="checkbox"
+											   name="discount[${index}][never_expired]"
+											   value="1"
+											   ${discount.never_expired ? 'checked' : ''}
+											   onchange="toggleToDateField(this)">
+										<label class="form-check-label" for="never_expired_${index}">Never Expired</label>
+									</div>
+								</div>
 							</div>
 
-							<div class="col-md-6">
-								<label for="price_after_discount_${index}" class="form-label">Price after Discount</label>
-								<input type="number" class="form-control price-after-discount"
-									   name="discount[${index}][price_after_discount]"
-									   value="${discount.price_after_discount || ''}" readonly>
-							</div>
-
-							<div class="col-md-6">
-								<label for="margin_${index}" class="form-label">Margin (%)</label>
-								<input type="number" class="form-control margin"
-									   name="discount[${index}][margin]"
-									   value="${discount.margin || ''}" readonly>
-							</div>
-						</div>
-
-						<div class="row g-3 mb-3">
-							<div class="col-md-4">
-								<label for="fromDate_${index}" class="form-label">From Date</label>
-								<input type="datetime-local" class="form-control"
-									   name="discount[${index}][discount_from_date]"
-									   value="${discount.discount_from_date || ''}">
-							</div>
-
-							<div class="col-md-4">
-								<label for="toDate_${index}" class="form-label">To Date</label>
-								<input type="datetime-local" class="form-control to-date"
-										${discount.never_expired==1 ? 'disabled' : ''}
-									   name="discount[${index}][discount_to_date]"
-									   value="${discount.discount_to_date || ''}">
-							</div>
-
-							<div class="col-md-4 d-flex align-items-center">
-								<div class="form-check">
-									<input class="form-check-input me-2 never-expired-checkbox"
-										   type="checkbox"
-										   name="discount[${index}][never_expired]"
-										   value="1"
-										   ${discount.never_expired ? 'checked' : ''}
-										   onchange="toggleToDateField(this)">
-									<label class="form-check-label" for="never_expired_${index}">Never Expired</label>
+							<div class="row g-3 my-3">
+								<div class="col-md-12">&nbsp;
 								</div>
 							</div>
 						</div>
+					`;
+					discountGroup.append(discountItem);
+				});
 
-						<div class="row g-3 my-3">
-							<div class="col-md-12">&nbsp;
+				// Add "Add" button if items are less than 3
+				if (product.discount.length < 3) {
+					discountGroup.append(`
+						<div class="row g-3 mb-3">
+							<div class="col-md-12 text-end">
+								<button type="button" class="btn btn-success add-btn"><i class="fas fa-plus"></i> Add</button>
 							</div>
 						</div>
-					</div>
-				`;
-				discountGroup.append(discountItem);
-			});
-
-			// Add "Add" button if items are less than 3
-			if (product.discount.length < 3) {
-				discountGroup.append(`
-					<div class="row g-3 mb-3">
-						<div class="col-md-12 text-end">
-							<button type="button" class="btn btn-success add-btn"><i class="fas fa-plus"></i> Add</button>
-						</div>
-					</div>
-				`);
-			}
-
-			// Ensure the new label reflects the current UoM
-			updateAllQuantityLabels();
-		}
-
-		// Show the discount period fields if the dates are available
-		if (product.from_date || product.to_date) {
-			$('#discountPeriodFields').removeClass('d-none');
-		} else {
-			$('#discountPeriodFields').addClass('d-none');
-		}
-
-		// Initially hide the storehouse fields if checkbox is unchecked
-		if ($('#pricing_with_storehouse_management').is(':checked')) {
-			$('#quantity_section').removeClass('d-none');
-			$('#stock_status_section').addClass('d-none')
-		} else {
-			$('#quantity_section').addClass('d-none');
-			$('#stock_status_section').removeClass('d-none');
-		}
-
-		$('#pricing_with_storehouse_management').val($('#pricing_with_storehouse_management').is(':checked') ? 1 : 0);
-		$('#pricing_allow_checkout_when_out_of_stock').val($('#pricing_allow_checkout_when_out_of_stock').is(':checked') ? 1 : 0);
-
-		// Toggle storehouse fields and checkbox value
-
-		$('#pricing_with_storehouse_management').change(function () {
-			if ($(this).is(':checked')) {
-				$(this).val(1); // Set value to 1 when checked
-				$('#quantity_section').removeClass('d-none');
-				$('#stock_status_section').addClass('d-none')
-			} else {
-				$(this).val(0); // Set value to 0 when unchecked
-				$('#quantity_section').addClass('d-none');
-				$('#stock_status_section').removeClass('d-none');
-			}
-		});
-		$('#pricing_allow_checkout_when_out_of_stock').change(function() {
-			$(this).val(this.checked ? 1 : 0);
-		});
-
-		$('#chooseDiscountPeriod').click(function() {
-			$('#discountPeriodFields').toggleClass('d-none');
-
-			// Toggle text between "Choose Discount Period" and "Cancel"
-			const linkText = $(this).text().trim();
-			$(this).text(linkText === 'Choose Discount Period' ? 'Cancel' : 'Choose Discount Period');
-		});
-
-
-		// Get references to the select and textarea elements
-		const $approvalStatus = $('#pricing_approval_status');
-		const $remarks = $('#pricing_remarks');
-
-		// Function to update the "required" attribute based on approval status
-		function updateRemarksRequirement() {
-			if ($approvalStatus.val() === 'rejected') { // Replace 'rejected' with the actual value for rejection
-				$remarks.attr('required', 'required');
-			} else {
-				$remarks.removeAttr('required');
-			}
-		}
-
-		// Initial check when the page loads
-		updateRemarksRequirement();
-
-		// Update requirement whenever the approval status changes
-		$approvalStatus.on('change', updateRemarksRequirement);
-	});
-
-	const discountGroup = document.getElementById('discount-group');
-	discountGroup.addEventListener('click', (event) => {
-		if (event.target.classList.contains('add-btn')) {
-			// Disable the "Add" button temporarily
-			event.target.classList.add('disabled');
-			event.target.disabled = true;
-
-			/* Find the current count of discount items */
-			const count = discountGroup.querySelectorAll('.discount-item').length;
-
-			if (count < 3) {
-				/* Create a new input field group with updated name attributes */
-				const newField = document.createElement('div');
-				newField.classList.add('discount-item');
-				newField.innerHTML = `
-					<div class="row g-3 mb-3">
-						<div class="col-md-6">
-							<label for="product_quantity" class="form-label quantity-label">Buying Quantity</label>
-							<input type="number" class="form-control product-quantity" name="discount[${count}][product_quantity]" onchange="calculateDiscount(this)">
-						</div>
-						<div class="col-md-6">
-							<label for="discount" class="form-label">Discount (%)</label>
-							<input type="number" class="form-control discount-percentage" name="discount[${count}][discount]" onchange="calculateDiscount(this)">
-						</div>
-						<div class="col-md-6">
-							<label for="price_after_discount" class="form-label">Price after Discount</label>
-							<input type="number" class="form-control price-after-discount" name="discount[${count}][price_after_discount]" readonly>
-						</div>
-						<div class="col-md-6">
-							<label for="margin" class="form-label">Margin (%)</label>
-							<input type="number" class="form-control margin" name="discount[${count}][margin]" readonly>
-						</div>
-					</div>
-					<div class="row g-3 mb-3">
-						<div class="col-md-4">
-							<label for="fromDate" class="form-label">From Date</label>
-							<input type="datetime-local" class="form-control" name="discount[${count}][discount_from_date]">
-						</div>
-						<div class="col-md-4">
-							<label for="toDate" class="form-label">To Date</label>
-							<input type="datetime-local" class="form-control to-date" name="discount[${count}][discount_to_date]">
-						</div>
-						<div class="col-md-4 d-flex align-items-center">
-							<div class="form-check">
-								<input class="form-check-input me-2 never-expired-checkbox" type="checkbox" name="discount[${count}][never_expired]" value="1" onchange="toggleToDateField(this)">
-								<label class="form-check-label" for="never_expired">Never Expired</label>
-							</div>
-						</div>
-					</div>
-					<div class="row g-3 mb-3">
-						<div class="col-md-12 text-end">
-							<button type="button" class="btn btn-danger remove-btn1"><i class="fas fa-minus"></i> Remove</button>
-						</div>
-					</div>
-				`;
-				discountGroup.appendChild(newField);
+					`);
+				}
 
 				// Ensure the new label reflects the current UoM
 				updateAllQuantityLabels();
 			}
-		} else if (event.target.classList.contains('remove-btn1')) {
-			/* Remove input fields */
-			const discountItem = event.target.closest('.discount-item');
-			if (discountItem) {
-				discountItem.remove();
+
+			// Show the discount period fields if the dates are available
+			if (product.from_date || product.to_date) {
+				$('#discountPeriodFields').removeClass('d-none');
+			} else {
+				$('#discountPeriodFields').addClass('d-none');
 			}
 
-			// Re-enable the Add button after a remove
-			const addButton = discountGroup.querySelector('.add-btn');
-			if (addButton) {
-				addButton.classList.remove('disabled');
-				addButton.disabled = false;
+			// Initially hide the storehouse fields if checkbox is unchecked
+			if ($('#pricing_with_storehouse_management').is(':checked')) {
+				$('#quantity_section').removeClass('d-none');
+				$('#stock_status_section').addClass('d-none')
+			} else {
+				$('#quantity_section').addClass('d-none');
+				$('#stock_status_section').removeClass('d-none');
 			}
-		}
-	});
 
-	// Trigger label updates when the UoM dropdown changes
-	unitOfMeasurementDropdown.addEventListener('change', updateAllQuantityLabels);
-</script>
+			$('#pricing_with_storehouse_management').val($('#pricing_with_storehouse_management').is(':checked') ? 1 : 0);
+			$('#pricing_allow_checkout_when_out_of_stock').val($('#pricing_allow_checkout_when_out_of_stock').is(':checked') ? 1 : 0);
 
-<script>
-	// Function to update the "required" attribute based on approval status
-	function updateGraphicsRemarksRequirement() {
-		const graphicsAprovalStatus = $('#graphics_approval_status');
-		const graphicsRemarks = $('#graphics_remarks');
-		if (graphicsAprovalStatus.val() === 'rejected') { // Replace 'rejected' with the actual value for rejection
-			graphicsRemarks.attr('required', 'required');
-		} else {
-			graphicsRemarks.removeAttr('required');
-		}
-	}
-	$(document).on('click', '#edit_graphics_modal', function () {
-		/* Get the product data from the button's data-product attribute */
-		const productData = $(this).attr('data-product');
-		const decodedData = $('<textarea/>').html(productData).text();
+			// Toggle storehouse fields and checkbox value
 
-		/* Parse the JSON string into a JavaScript object */
-		const product = JSON.parse(decodedData);
-
-		/* Populate the modal fields */
-		$('#graphics_temp_header_id').text(product.product_id);
-		$('#graphics_temp_header_name').text(product.name);
-		$('#graphics_temp_id').val(product.id);
-		$('#graphics_sku').val(product.sku);
-
-		console.log('Parsed Product:', product.video_path); // Example:(string format need to convert in array) ["69436-2.jpg", "64900k.webp", "70250k.webp", "70118k.webp"]
-
-		/* Clear any existing images in the container */
-		$('#image-container').empty();
-
-		/* Generate dynamic image links and append them to the image container */
-		let imagesArray;
-		if (Array.isArray(product.images)) {
-			imagesArray = product.images;
-		} else {
-			imagesArray = JSON.parse(product.images);
-		}
-
-		const baseUrl = "{{url('storage')}}";
-		$('#image-container').append('<h5>Images</h5>');
-		imagesArray.forEach(function (image) {
-			const imageLink = `${baseUrl}/${image}`;
-			const imgElement = $('<a>', {
-				href: imageLink,
-				'data-lightbox': 'gallery', // Enables lightbox grouping
-				'data-title': 'Zoomable Image',
-				html: $('<img>', {
-					src: imageLink,
-					alt: 'Dynamic Image',
-					style: 'width: 200px; height: auto; margin: 5px; border: 1px solid #ccc;'
-				})
+			$('#pricing_with_storehouse_management').change(function () {
+				if ($(this).is(':checked')) {
+					$(this).val(1); // Set value to 1 when checked
+					$('#quantity_section').removeClass('d-none');
+					$('#stock_status_section').addClass('d-none')
+				} else {
+					$(this).val(0); // Set value to 0 when unchecked
+					$('#quantity_section').addClass('d-none');
+					$('#stock_status_section').removeClass('d-none');
+				}
 			});
-			$('#image-container').append(imgElement);
+			$('#pricing_allow_checkout_when_out_of_stock').change(function() {
+				$(this).val(this.checked ? 1 : 0);
+			});
+
+			$('#chooseDiscountPeriod').click(function() {
+				$('#discountPeriodFields').toggleClass('d-none');
+
+				// Toggle text between "Choose Discount Period" and "Cancel"
+				const linkText = $(this).text().trim();
+				$(this).text(linkText === 'Choose Discount Period' ? 'Cancel' : 'Choose Discount Period');
+			});
+
+
+			// Get references to the select and textarea elements
+			const $approvalStatus = $('#pricing_approval_status');
+			const $remarks = $('#pricing_remarks');
+
+			// Function to update the "required" attribute based on approval status
+			function updateRemarksRequirement() {
+				if ($approvalStatus.val() === 'rejected') { // Replace 'rejected' with the actual value for rejection
+					$remarks.attr('required', 'required');
+				} else {
+					$remarks.removeAttr('required');
+				}
+			}
+
+			// Initial check when the page loads
+			updateRemarksRequirement();
+
+			// Update requirement whenever the approval status changes
+			$approvalStatus.on('change', updateRemarksRequirement);
 		});
 
+		const discountGroup = document.getElementById('discount-group');
+		discountGroup.addEventListener('click', (event) => {
+			if (event.target.classList.contains('add-btn')) {
+				// Disable the "Add" button temporarily
+				event.target.classList.add('disabled');
+				event.target.disabled = true;
 
+				/* Find the current count of discount items */
+				const count = discountGroup.querySelectorAll('.discount-item').length;
 
+				if (count < 3) {
+					/* Create a new input field group with updated name attributes */
+					const newField = document.createElement('div');
+					newField.classList.add('discount-item');
+					newField.innerHTML = `
+						<div class="row g-3 mb-3">
+							<div class="col-md-6">
+								<label for="product_quantity" class="form-label quantity-label">Buying Quantity</label>
+								<input type="number" class="form-control product-quantity" name="discount[${count}][product_quantity]" onchange="calculateDiscount(this)">
+							</div>
+							<div class="col-md-6">
+								<label for="discount" class="form-label">Discount (%)</label>
+								<input type="number" class="form-control discount-percentage" name="discount[${count}][discount]" onchange="calculateDiscount(this)">
+							</div>
+							<div class="col-md-6">
+								<label for="price_after_discount" class="form-label">Price after Discount</label>
+								<input type="number" class="form-control price-after-discount" name="discount[${count}][price_after_discount]" readonly>
+							</div>
+							<div class="col-md-6">
+								<label for="margin" class="form-label">Margin (%)</label>
+								<input type="number" class="form-control margin" name="discount[${count}][margin]" readonly>
+							</div>
+						</div>
+						<div class="row g-3 mb-3">
+							<div class="col-md-4">
+								<label for="fromDate" class="form-label">From Date</label>
+								<input type="datetime-local" class="form-control" name="discount[${count}][discount_from_date]">
+							</div>
+							<div class="col-md-4">
+								<label for="toDate" class="form-label">To Date</label>
+								<input type="datetime-local" class="form-control to-date" name="discount[${count}][discount_to_date]">
+							</div>
+							<div class="col-md-4 d-flex align-items-center">
+								<div class="form-check">
+									<input class="form-check-input me-2 never-expired-checkbox" type="checkbox" name="discount[${count}][never_expired]" value="1" onchange="toggleToDateField(this)">
+									<label class="form-check-label" for="never_expired">Never Expired</label>
+								</div>
+							</div>
+						</div>
+						<div class="row g-3 mb-3">
+							<div class="col-md-12 text-end">
+								<button type="button" class="btn btn-danger remove-btn1"><i class="fas fa-minus"></i> Remove</button>
+							</div>
+						</div>
+					`;
+					discountGroup.appendChild(newField);
 
-		/* Clear any existing videos in the container */
-		$('#video-container').empty();
+					// Ensure the new label reflects the current UoM
+					updateAllQuantityLabels();
+				}
+			} else if (event.target.classList.contains('remove-btn1')) {
+				/* Remove input fields */
+				const discountItem = event.target.closest('.discount-item');
+				if (discountItem) {
+					discountItem.remove();
+				}
 
-		/* Parse and validate the video paths */
-		let videoArray;
-		try {
-			videoArray = Array.isArray(product.video_path)
-				? product.video_path
-				: JSON.parse(product.video_path);
-		} catch (error) {
-			console.error('Failed to parse video paths:', error);
-			videoArray = [];
-		}
+				// Re-enable the Add button after a remove
+				const addButton = discountGroup.querySelector('.add-btn');
+				if (addButton) {
+					addButton.classList.remove('disabled');
+					addButton.disabled = false;
+				}
+			}
+		});
 
-		/* Append videos to the video container */
-		const baseUrl1 = "{{asset('storage')}}";
-		$('#video-container').append('<h5>Videos</h5>');
-			if(videoArray.length > 0) {
-				videoArray.forEach(function (video) {
-					const videoElement = $('<div>', { class: 'uploaded-video mt-2' }).append(
-						$('<video>', {
-							width: 320,
-							height: 240,
-							controls: true,
-						}).append(
-							$('<source>', {
-								src: `${baseUrl1}/${video}`,
-								type: 'video/mp4',
-							})
-						),
+		// Trigger label updates when the UoM dropdown changes
+		unitOfMeasurementDropdown.addEventListener('change', updateAllQuantityLabels);
+	</script>
 
-					);
-					$('#video-container').append(videoElement);
-				});
+	<script>
+		// Function to update the "required" attribute based on approval status
+		function updateGraphicsRemarksRequirement() {
+			const graphicsAprovalStatus = $('#graphics_approval_status');
+			const graphicsRemarks = $('#graphics_remarks');
+			if (graphicsAprovalStatus.val() === 'rejected') { // Replace 'rejected' with the actual value for rejection
+				graphicsRemarks.attr('required', 'required');
 			} else {
-				$('#video-container').append('<p>No videos available.</p>');
+				graphicsRemarks.removeAttr('required');
+			}
+		}
+		$(document).on('click', '#edit_graphics_modal', function () {
+			/* Get the product data from the button's data-product attribute */
+			const productData = $(this).attr('data-product');
+			const decodedData = $('<textarea/>').html(productData).text();
+
+			/* Parse the JSON string into a JavaScript object */
+			const product = JSON.parse(decodedData);
+
+			/* Populate the modal fields */
+			$('#graphics_temp_header_id').text(product.product_id);
+			$('#graphics_temp_header_name').text(product.name);
+			$('#graphics_temp_id').val(product.id);
+			$('#graphics_sku').val(product.sku);
+
+			console.log('Parsed Product:', product.video_path); // Example:(string format need to convert in array) ["69436-2.jpg", "64900k.webp", "70250k.webp", "70118k.webp"]
+
+			/* Clear any existing images in the container */
+			$('#image-container').empty();
+
+			/* Generate dynamic image links and append them to the image container */
+			let imagesArray;
+			if (Array.isArray(product.images)) {
+				imagesArray = product.images;
+			} else {
+				imagesArray = JSON.parse(product.images);
 			}
 
-		/* Clear the existing documents in the container */
-		$('#document-container').empty();
-
-		/* Parse and validate the documents */
-		let documents;
-		try {
-			documents = JSON.parse(product.documents);
-		} catch (error) {
-			console.error('Failed to parse documents:', error);
-			documents = {};
-		}
-		/* Check if documents exist and append them */
-		$('#document-container').append('<h5>Existing Documents</h5>');
-		if (Object.keys(documents).length > 0) {
-			const documentList = $('<ul>', { class: 'uploaded-docs' });
-
-			$.each(documents, function (key, document) {
-				const documentLink = $('<a>', {
-					href: `{{ url('storage') }}/${document.path}`,
-					text: document.title,
-					target: '_blank',
+			const baseUrl = "{{url('storage')}}";
+			$('#image-container').append('<h5>Images</h5>');
+			imagesArray.forEach(function (image) {
+				const imageLink = `${baseUrl}/${image}`;
+				const imgElement = $('<a>', {
+					href: imageLink,
+					'data-lightbox': 'gallery', // Enables lightbox grouping
+					'data-title': 'Zoomable Image',
+					html: $('<img>', {
+						src: imageLink,
+						alt: 'Dynamic Image',
+						style: 'width: 200px; height: auto; margin: 5px; border: 1px solid #ccc;'
+					})
 				});
-
-				const documentItem = $('<li>').append(documentLink);
-				documentList.append(documentItem);
+				$('#image-container').append(imgElement);
 			});
 
-			$('#document-container').append(documentList);
-		} else {
-			$('#document-container').append('<p>No documents available.</p>');
-		}
-		$('#graphics_initial_approval_status').val(product.approval_status);
-		// $('#graphics_approval_status').val(product.approval_status);
-		$('#graphics_remarks').val(product.remarks);
 
-		// Initial check when the page loads
-		updateGraphicsRemarksRequirement();
-	});
 
-	// Update requirement whenever the approval status changes
-	$('#graphics_approval_status').on('change', updateGraphicsRemarksRequirement);
-</script>
 
-<style>
-	@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+			/* Clear any existing videos in the container */
+			$('#video-container').empty();
 
-	@media print {
-		body {
-			margin: 0 !important;
-		}
-	}
+			/* Parse and validate the video paths */
+			let videoArray;
+			try {
+				videoArray = Array.isArray(product.video_path)
+					? product.video_path
+					: JSON.parse(product.video_path);
+			} catch (error) {
+				console.error('Failed to parse video paths:', error);
+				videoArray = [];
+			}
 
-	.modal-dialog.modal-lg.content-model {
-		max-width: 85% !important;
-	}
-	.main-container {
-		--ckeditor5-preview-sidebar-width: 270px;
-		--ckeditor5-preview-height: 700px;
-		font-family: 'Lato';
-		width: fit-content;
-		margin-left: auto;
-		margin-right: auto;
-	}
+			/* Append videos to the video container */
+			const baseUrl1 = "{{asset('storage')}}";
+			$('#video-container').append('<h5>Videos</h5>');
+				if(videoArray.length > 0) {
+					videoArray.forEach(function (video) {
+						const videoElement = $('<div>', { class: 'uploaded-video mt-2' }).append(
+							$('<video>', {
+								width: 320,
+								height: 240,
+								controls: true,
+							}).append(
+								$('<source>', {
+									src: `${baseUrl1}/${video}`,
+									type: 'video/mp4',
+								})
+							),
 
-	.main-container .presence {
-		margin-bottom: 8px;
-	}
+						);
+						$('#video-container').append(videoElement);
+					});
+				} else {
+					$('#video-container').append('<p>No videos available.</p>');
+				}
 
-	.ck-content {
-		font-family: 'Lato';
-		line-height: 1.6;
-		word-break: break-word;
-	}
+			/* Clear the existing documents in the container */
+			$('#document-container').empty();
 
-	.editor-container__editor-wrapper {
-		display: flex;
-		width: fit-content;
-	}
+			/* Parse and validate the documents */
+			let documents;
+			try {
+				documents = JSON.parse(product.documents);
+			} catch (error) {
+				console.error('Failed to parse documents:', error);
+				documents = {};
+			}
+			/* Check if documents exist and append them */
+			$('#document-container').append('<h5>Existing Documents</h5>');
+			if (Object.keys(documents).length > 0) {
+				const documentList = $('<ul>', { class: 'uploaded-docs' });
 
-	.editor-container_document-editor {
-		border: 1px solid var(--ck-color-base-border);
-	}
+				$.each(documents, function (key, document) {
+					const documentLink = $('<a>', {
+						href: `{{ url('storage') }}/${document.path}`,
+						text: document.title,
+						target: '_blank',
+					});
 
-	.editor-container_document-editor .editor-container__toolbar {
-		display: flex;
-		position: relative;
-		box-shadow: 0 2px 3px hsla(0, 0%, 0%, 0.078);
-	}
+					const documentItem = $('<li>').append(documentLink);
+					documentList.append(documentItem);
+				});
 
-	.editor-container_document-editor .editor-container__toolbar > .ck.ck-toolbar {
-		flex-grow: 1;
-		width: 0;
-		border-bottom-right-radius: 0;
-		border-bottom-left-radius: 0;
-		border-top: 0;
-		border-left: 0;
-		border-right: 0;
-	}
+				$('#document-container').append(documentList);
+			} else {
+				$('#document-container').append('<p>No documents available.</p>');
+			}
+			$('#graphics_initial_approval_status').val(product.approval_status);
+			// $('#graphics_approval_status').val(product.approval_status);
+			$('#graphics_remarks').val(product.remarks);
 
-	.editor-container_document-editor .editor-container__editor-wrapper {
-		max-height: var(--ckeditor5-preview-height);
-		min-height: var(--ckeditor5-preview-height);
-		overflow-y: scroll;
-		background: var(--ck-color-base-foreground);
-	}
+			// Initial check when the page loads
+			updateGraphicsRemarksRequirement();
+		});
 
-	.editor-container_document-editor .editor-container__editor {
-		margin-top: 28px;
-		margin-bottom: 28px;
-		height: 100%;
-	}
-
-	.editor-container_document-editor .editor-container__editor .ck.ck-editor__editable {
-		box-sizing: border-box;
-		min-width: calc(210mm + 2px);
-		max-width: calc(210mm + 2px);
-		min-height: 297mm;
-		height: fit-content;
-		padding: 20mm 12mm;
-		border: 1px hsl(0, 0%, 82.7%) solid;
-		background: hsl(0, 0%, 100%);
-		box-shadow: 0 2px 3px hsla(0, 0%, 0%, 0.078);
-		flex: 1 1 auto;
-		margin-left: 72px;
-		margin-right: 72px;
-	}
-
-	.editor-container_include-annotations .editor-container__editor .ck.ck-editor__editable {
-		margin-right: 0;
-	}
-
-	.editor-container__sidebar {
-		min-width: var(--ckeditor5-preview-sidebar-width);
-		max-width: var(--ckeditor5-preview-sidebar-width);
-		margin-top: 28px;
-		margin-left: 10px;
-		margin-right: 10px;
-	}
-
-	.revision-history {
-		display: none;
-	}
-
-	.revision-history__wrapper {
-		display: flex;
-	}
-
-	.revision-history__wrapper .ck.ck-editor {
-		margin: 0;
-		width: 795px;
-	}
-
-	.revision-history__wrapper .revision-history__sidebar {
-		border: 1px solid var(--ck-color-base-border);
-		border-left: 0;
-		width: var(--ckeditor5-preview-sidebar-width);
-		min-height: 100%;
-	}
-
-	.revision-history__wrapper .revision-history__sidebar .ck-revision-history-sidebar {
-		height: 100%;
-	}
-</style>
-
+		// Update requirement whenever the approval status changes
+		$('#graphics_approval_status').on('change', updateGraphicsRemarksRequirement);
+	</script>
 </body>
 
 @endsection

@@ -208,7 +208,7 @@ class ProductApprovalController extends BaseController
 		];
 		$tab = 'content_tab';
 
-		return view('plugins/ecommerce::products.partials.temp-content-product-edit', compact('tempContentProduct', 'approvalStatuses', 'tab'));
+		return view('plugins/ecommerce::product-approval.content-edit', compact('tempContentProduct', 'approvalStatuses', 'tab'));
 	}
 
 	public function storeComment(Request $request, $tempContentProductID)

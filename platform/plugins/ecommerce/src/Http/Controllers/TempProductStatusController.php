@@ -17,7 +17,7 @@ class TempProductStatusController extends BaseController
 		$userRoleId = auth()->user()->roles->value('id');
 		if ($userRoleId == 22) {
 			// Fetch all temporary product changes
-			$tempPricingProducts = TempProduct::where('role_id', $userRoleId)->where('created_by_id', auth()->id())->get()->map(function ($product) {
+			$tempPricingProducts = TempProduct::where('role_id', $userRoleId)->where('created_by_id', auth()->id())->orderBy('created_at', 'desc')->get()->map(function ($product) {
 				$product->discount = $product->discount ? json_decode($product->discount) : [];
 				return $product;
 			});
@@ -30,27 +30,27 @@ class TempProductStatusController extends BaseController
 				'approved' => 'Ready to Publish',
 				'rejected' => 'Rejected for Corrections',
 			];
-			return view('plugins/ecommerce::products.partials.product-status-pricing', compact('tempPricingProducts', 'unitOfMeasurements', 'stores', 'approvalStatuses'));
+			return view('plugins/ecommerce::temp-products.pricing', compact('tempPricingProducts', 'unitOfMeasurements', 'stores', 'approvalStatuses'));
 		} else if ($userRoleId == 19) {
 			// Fetch all temporary product changes
-			$tempGraphicsProducts = TempProduct::where('role_id', $userRoleId)->where('created_by_id', auth()->id())->get();
+			$tempGraphicsProducts = TempProduct::where('role_id', $userRoleId)->where('created_by_id', auth()->id())->orderBy('created_at', 'desc')->get();
 			$approvalStatuses = [
 				'in-process' => 'Content In Progress',
 				'pending' => 'Submitted for Approval',
 				'approved' => 'Ready to Publish',
 				'rejected' => 'Rejected for Corrections',
 			];
-			return view('plugins/ecommerce::products.partials.product-status-graphics', compact('tempGraphicsProducts', 'approvalStatuses'));
+			return view('plugins/ecommerce::temp-products.graphics', compact('tempGraphicsProducts', 'approvalStatuses'));
 		} else if ($userRoleId == 18) {
 			// Fetch all temporary product changes
-			$tempContentProducts = TempProduct::where('role_id', $userRoleId)->where('created_by_id', auth()->id())->get();
+			$tempContentProducts = TempProduct::where('role_id', $userRoleId)->where('created_by_id', auth()->id())->orderBy('created_at', 'desc')->get();
 			$approvalStatuses = [
 				'in-process' => 'Content In Progress',
 				'pending' => 'Submitted for Approval',
 				'approved' => 'Ready to Publish',
 				'rejected' => 'Rejected for Corrections',
 			];
-			return view('plugins/ecommerce::products.partials.product-status-content', compact('tempContentProducts', 'approvalStatuses'));
+			return view('plugins/ecommerce::temp-products.content', compact('tempContentProducts', 'approvalStatuses'));
 		} else {
 			$tempContentProducts = TempProduct::where('role_id', 18)->where('approval_status', 'pending')->get();
 			$tempGraphicsProducts = TempProduct::where('role_id', 19)->where('approval_status', 'pending')->get();
@@ -122,12 +122,10 @@ class TempProductStatusController extends BaseController
 		$tempProduct = TempProduct::find($request->id);
 		$input = $request->all();
 		if($tempProduct->approval_status=='in-process' || $tempProduct->approval_status=='rejected') {
-			$approvalStatus = isset($request->in_process) && $request->in_process==1 ? 'in-process' : 'pending';
+			$input['approval_status'] = isset($request->in_process) && $request->in_process==1 ? 'in-process' : 'pending';
+			unset($input['_token'], $input['id'], $input['remarks'], $input['in_process']);
 
-			$tempProduct->update([
-				'approval_status' => $request->content,
-				'approval_status' => $approvalStatus
-			]);
+			$tempProduct->update($input);
 		}
 
 		return redirect()->route('ecommerce/temp-products-status.index')->with('success', 'Product changes approved and updated successfully.');
