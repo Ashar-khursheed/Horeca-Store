@@ -123,6 +123,7 @@ class ProductForm extends FormAbstract
 			// $this
 
 			// ->addAfter('brand_id', 'sku', TextField::class, TextFieldOption::make()->label(trans('plugins/ecommerce::products.sku')));
+
 			$this->add(
 				'in_process', OnOffField::class, OnOffFieldOption::make()->label('Is Draft')->defaultValue(true)->toArray()
 			);
