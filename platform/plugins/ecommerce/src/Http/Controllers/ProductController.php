@@ -836,7 +836,7 @@ class ProductController extends BaseController
                 if(!$tempProduct) {
                     $tempProduct = new TempProduct();
                 }
-                $tempProduct->name = $product->name;
+                $tempProduct->name = $request->name;
                 $tempProduct->description = $request->description;
                 $tempProduct->content = $request->content;
                 $tempProduct->created_by_id = $userId;

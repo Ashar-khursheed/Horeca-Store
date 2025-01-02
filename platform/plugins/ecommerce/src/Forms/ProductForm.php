@@ -120,10 +120,10 @@ class ProductForm extends FormAbstract
 
 			->add('content', EditorField::class, ContentFieldOption::make() ->label(trans('Features'))->allowedShortcodes()->toArray());
 
-			$this
+			// $this
 
-			->addAfter('brand_id', 'sku', TextField::class, TextFieldOption::make()->label(trans('plugins/ecommerce::products.sku')));
-			
+			// ->addAfter('brand_id', 'sku', TextField::class, TextFieldOption::make()->label(trans('plugins/ecommerce::products.sku')));
+
 			$this->add(
 				'in_process', OnOffField::class, OnOffFieldOption::make()->label('Is Draft')->defaultValue(true)->toArray()
 			);
