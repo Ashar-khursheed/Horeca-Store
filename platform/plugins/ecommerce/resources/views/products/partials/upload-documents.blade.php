@@ -12,6 +12,31 @@
 @endsection --}}
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{{-- 
+
+
+
+
 @extends($layout ?? BaseHelper::getAdminMasterLayoutTemplate())
 
 @section('content')
@@ -84,4 +109,4 @@
 </script>
 
 @endsection
-
+ --}}
