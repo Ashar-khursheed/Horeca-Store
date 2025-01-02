@@ -96,12 +96,6 @@ class TempProductStatusController extends BaseController
 	{
 		logger()->info('updateGraphicsChanges method called.');
 		logger()->info('Request Data: ', $request->all());
-		// $request->validate([
-		// 	'approval_status' => 'required',
-		// 	'remarks' => [
-		// 		'required_if:approval_status,rejected'
-		// 	]
-		// ]);
 
 		$tempProduct = TempProduct::find($request->id);
 		$input = $request->all();

@@ -429,7 +429,6 @@
 							</div>
 
 							<div class="mb-3">
-								<input type="hidden" id="graphics_initial_approval_status" name="initial_approval_status">
 								<label for="graphics_approval_status" class="form-label">Approval Status</label>
 								<select class="form-select" id="graphics_approval_status" name="approval_status">
 									@foreach ($approvalStatuses as $value => $label)
@@ -492,12 +491,7 @@
 
 	<script>
 		document.addEventListener('DOMContentLoaded', function () {
-			// Get the URL query parameter 'tab'
-			const urlParams = new URLSearchParams(window.location.search);
-			const activeTab = urlParams.get('tab');
-
-			// If the 'tab' parameter exists, activate the corresponding tab
-			if (activeTab) {
+			function selectTab(activeTab) {
 				const tabButton = document.querySelector(`#${activeTab}`);
 				const tabPane = document.querySelector(`#${tabButton?.getAttribute('data-bs-target').substring(1)}`);
 
@@ -517,6 +511,15 @@
 					tabButton.setAttribute('aria-selected', 'true');
 					tabPane.classList.add('show', 'active');
 				}
+			}
+
+			// Get the URL query parameter 'tab'
+			const urlParams = new URLSearchParams(window.location.search);
+			const activeTab = urlParams.get('tab');
+
+			// If the 'tab' parameter exists, activate the corresponding tab
+			if (activeTab) {
+				selectTab(activeTab);
 			}
 		});
 	</script>
@@ -1009,7 +1012,6 @@
 			} else {
 				$('#document-container').append('<p>No documents available.</p>');
 			}
-			$('#graphics_initial_approval_status').val(product.approval_status);
 			// $('#graphics_approval_status').val(product.approval_status);
 			$('#graphics_remarks').val(product.remarks);
 
