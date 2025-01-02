@@ -454,7 +454,7 @@ class HookServiceProvider extends ServiceProvider
                     ) {
                         return false;
                     }
-                    if(auth()->user() && \DB::table('role_users')->where('user_id', auth()->user()->id)->where('role_id', 22)->exists() ) {} else {
+                    if(auth()->user() && \DB::table('role_users')->where('user_id', auth()->user()->id)->whereIn('role_id', [18, 22])->exists() ) {} else {
                         MetaBox::addMetaBox('faq_schema_config_wrapper', __('Product FAQs'), function () {
                             return (new FaqSupport())->renderMetaBox(func_get_args()[0] ?? null);
                         }, $object::class, $context);

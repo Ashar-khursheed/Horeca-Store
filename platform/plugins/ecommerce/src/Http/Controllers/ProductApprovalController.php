@@ -252,6 +252,7 @@ class ProductApprovalController extends BaseController
 		if($tempProduct->approval_status=='pending' && $request->approval_status=='approved') {
 			unset($input['_token'], $input['id'], $input['initial_approval_status'], $input['approval_status']);
 			$tempProduct->product->update([
+				'name' => $tempProduct->name,
 				'description' => $tempProduct->description,
 				'content' => $tempProduct->content,
 			]);
