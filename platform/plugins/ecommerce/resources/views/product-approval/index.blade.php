@@ -491,9 +491,10 @@
 
 	<script>
 		document.addEventListener('DOMContentLoaded', function () {
+			// Function to activate a tab
 			function selectTab(activeTab) {
 				const tabButton = document.querySelector(`#${activeTab}`);
-				const tabPane = document.querySelector(`#${tabButton?.getAttribute('data-bs-target').substring(1)}`);
+				const tabPane = document.querySelector(tabButton?.getAttribute('data-bs-target'));
 
 				if (tabButton && tabPane) {
 					// Deactivate all tabs and tab-panes
@@ -513,11 +514,22 @@
 				}
 			}
 
-			// Get the URL query parameter 'tab'
+			// Add click event listener to tabs
+			document.querySelectorAll('.nav-link').forEach(tab => {
+				tab.addEventListener('click', function () {
+					const selectedTabId = this.id;
+
+					// Update the URL without reloading the page
+					const newUrl = new URL(window.location.href);
+					newUrl.searchParams.set('tab', selectedTabId);
+					window.history.replaceState(null, '', newUrl.toString());
+				});
+			});
+
+			// Activate the tab from the URL query parameter 'tab'
 			const urlParams = new URLSearchParams(window.location.search);
 			const activeTab = urlParams.get('tab');
 
-			// If the 'tab' parameter exists, activate the corresponding tab
 			if (activeTab) {
 				selectTab(activeTab);
 			}
