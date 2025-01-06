@@ -85,32 +85,23 @@ public function viewCart(Request $request)
 
     Log::info('User logged in:', ['user_id' => $userId]);
 
-    // Get wishlist product IDs
-    $wishlistProductIds = [];
-    if ($isUserLoggedIn) {
-        $wishlistProductIds = DB::table('ec_wish_lists')
+    $wishlistProductIds = $isUserLoggedIn
+        ? DB::table('ec_wish_lists')
             ->where('customer_id', $userId)
             ->pluck('product_id')
-            ->map(function ($id) {
-                return (int) $id;
-            })
-            ->toArray();
-    } else {
-        $wishlistProductIds = session()->get('guest_wishlist', []);
-    }
+            ->map(fn($id) => (int) $id)
+            ->toArray()
+        : session()->get('guest_wishlist', []);
 
-    // Fetch cart items with product and currency details
     $cartItems = Auth::check()
         ? Cart::where('user_id', $userId)->with('product.currency')->get()
         : Cart::where('session_id', $request->session()->getId())->with('product.currency')->get();
 
-    // Add 'is_wishlist' flag and process images
     $cartItems->each(function ($item) use ($wishlistProductIds) {
         $item->product->in_wishlist = in_array($item->product->id, $wishlistProductIds);
 
-        // Process images for full URL
+        // Update the 'images' array with full URLs
         $item->product->images = collect($item->product->images)->map(function ($image) {
-            // Check both directories for the image
             $storagePath = storage_path("app/public/{$image}");
             $productPath = storage_path("app/public/products/{$image}");
 
@@ -120,12 +111,10 @@ public function viewCart(Request $request)
                 return url("storage/products/{$image}");
             }
 
-            // Fallback if image doesn't exist in either path
-            return $image;
-        })->toArray();
+            return null; // Handle missing files
+        })->filter()->values()->toArray();
     });
 
-    // Extract currency titles into a separate array
     $currencyTitles = $cartItems->pluck('product.currency.title')->unique()->filter()->values();
 
     return response()->json([
@@ -134,6 +123,7 @@ public function viewCart(Request $request)
         'data' => $cartItems,
     ]);
 }
+
 
 
        
