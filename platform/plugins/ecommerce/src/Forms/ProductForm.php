@@ -124,6 +124,19 @@ class ProductForm extends FormAbstract
 
 			->add('content', EditorField::class, ContentFieldOption::make() ->label(trans('Features'))->allowedShortcodes()->toArray());
 
+			if ($productId) {
+				$this->addMetaBoxes([
+					'specs' => [
+						'title' => 'Specifications',
+						'content' => view('plugins/ecommerce::products.partials.specs-form', [
+							'selectedSpecs' => $this->getModel()->specifications->toArray() ?? [],
+							'categorySpecs' => $this->getModel()->latestCategorySpecifications->pluck('specification_values', 'specification_name')->toArray() ?? [],
+						]),
+						'priority' => 50,
+					],
+				]);
+			}
+
 			// $this
 
 			// ->addAfter('brand_id', 'sku', TextField::class, TextFieldOption::make()->label(trans('plugins/ecommerce::products.sku')));
