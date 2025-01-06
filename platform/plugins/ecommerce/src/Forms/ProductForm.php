@@ -109,8 +109,11 @@ class ProductForm extends FormAbstract
 
 			$this
 			->add('name', TextField::class, NameFieldOption::make()->required()->toArray())
-			->add('sku', 'text', ['label' => 'SKU'])
-
+			->add('sku', TextField::class, array_merge(TextFieldOption::make()->label(trans('plugins/ecommerce::products.sku'))->toArray(), [
+				'attr' => [
+					'readonly' => true, // Disable the field
+				],
+			]))
 			->add(
 				'description',
 				EditorField::class,
