@@ -54,6 +54,7 @@ Route::middleware(['auth:sanctum'])->prefix('addresses')->group(function () {
  Route::post('/update-default-address', [AddressController::class, 'updateDefaultAddress']);
     
 });
+Route::post('/upload-product-documents', [ProductController::class, 'uploadDocuments']);
 
 
 
