@@ -59,4 +59,8 @@ class TempProduct extends BaseModel
 	{
 		return $this->hasMany(TempProductComment::class, 'temp_product_id')->orderBy('created_at', 'desc');
 	}
+	public function createdBy()
+	{
+		return $this->belongsTo(User::class);
+	}
 }
