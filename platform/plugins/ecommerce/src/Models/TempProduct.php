@@ -1,7 +1,7 @@
 <?php
 
 namespace Botble\Ecommerce\Models;
-
+use Botble\ACL\Models\User;
 use Botble\Base\Models\BaseModel;
 
 class TempProduct extends BaseModel
