@@ -64,6 +64,17 @@ class PostApiController extends Controller
     }
 
     public function update(Request $request, $id) {
-        dd($request->all(), $id);
+        $post = Post::find($id);
+        if (isset($request->like) && $request->like == 1) {
+            $post->increment('likes');
+        } elseif (isset($request->view) && $request->view == 1) {
+            $post->increment('views');
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Post updated successfully.',
+            'data' => $post,
+        ], Response::HTTP_OK);
     }
 }
