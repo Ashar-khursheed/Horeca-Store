@@ -62,4 +62,8 @@ class PostApiController extends Controller
             'data' => $posts,
         ], Response::HTTP_OK);
     }
+
+    public function update(Request $request, $id) {
+        dd($request->all(), $id);
+    }
 }
