@@ -43,7 +43,13 @@ use App\Http\Controllers\CartController; // Adjust if the controller name is dif
 use App\Http\Controllers\API\CountryController;
  use App\Http\Controllers\API\OrderTrackingController;
  use App\Http\Controllers\API\AddressController;
+ use App\Http\Controllers\API\PopularPostsController;
 
+
+
+ Route::get('/popular-posts', [PopularPostsController::class, 'index']);
+
+ 
 Route::get('/order-tracking', [OrderTrackingController::class, 'trackOrder']);
 
 Route::middleware(['auth:sanctum'])->prefix('addresses')->group(function () {
@@ -52,7 +58,7 @@ Route::middleware(['auth:sanctum'])->prefix('addresses')->group(function () {
     Route::put('/{id}', [AddressController::class, 'update']);
     Route::delete('/{id}', [AddressController::class, 'destroy']);
  Route::post('/update-default-address', [AddressController::class, 'updateDefaultAddress']);
-
+    
 });
 Route::post('/upload-product-documents', [ProductController::class, 'uploadDocuments']);
 
@@ -98,7 +104,7 @@ Route::get('/location', [LocationController::class, 'getLocation']);
 Route::get('categories/{id}/products', [CategoryController::class, 'getProductsByCategory']);
 
 Route::prefix('categories')->group(function () {
-
+    
     Route::get('/', [CategoryController::class, 'index']);
     Route::post('/', [CategoryController::class, 'index']);
     Route::put('{id}', [CategoryController::class, 'update']);
@@ -171,7 +177,7 @@ Route::middleware('auth:sanctum')->post('/logout', [CustomerController::class, '
     Route::get('/products-guest', [ProductApiController::class, 'getAllPublicProducts']);
 
 Route::middleware('auth:sanctum')->group(function () {
-
+    
     Route::post('/apply-coupon', [CouponApiController::class, 'applyCoupon']);
 
     Route::get('/products', [ProductApiController::class, 'getAllProducts']);
@@ -217,7 +223,7 @@ Route::post('/cart/update-guest', [CartApiController::class, 'updateQuantityGues
 //     Route::delete('/clear-cart-guest', [CartApiController::class, 'clearCartGuest'])->name('cart.clear.guest');
 
 
-// Routes for Blog Posts
+// Routes for Blog Posts 
 Route::get('/posts', [PostApiController::class, 'index']);
 Route::put('/posts/{id}', [PostApiController::class, 'update']);
 Route::get('/postcategories', [PostCategoryController::class, 'index']);
