@@ -78,54 +78,67 @@ public function addToCart(Request $request)
  
          
             
-    public function viewCart(Request $request)
-            {
-                // Determine if the user is logged in and get the user ID
-                $userId = Auth::id();
-                $isUserLoggedIn = $userId !== null;
-            
-                // Log the login status for debugging purposes
-                Log::info('User logged in:', ['user_id' => $userId]);
-            
-                // Get wishlist product IDs
-                $wishlistProductIds = [];
-                if ($isUserLoggedIn) {
-                    // Fetch wishlist items for the logged-in user
-                    $wishlistProductIds = DB::table('ec_wish_lists')
-                        ->where('customer_id', $userId)
-                        ->pluck('product_id')
-                        ->map(function($id) {
-                            return (int) $id;
-                        })
-                        ->toArray();
-                } else {
-                    // Handle guest wishlist (stored in session)
-                    $wishlistProductIds = session()->get('guest_wishlist', []);
-                }
-            
-                // Fetch cart items with product and currency details
-                $cartItems = Auth::check()
-                    ? Cart::where('user_id', $userId)->with('product.currency')->get()
-                    : Cart::where('session_id', $request->session()->getId())->with('product.currency')->get();
-            
-                // Add 'is_wishlist' flag to each product in cart items
-                $cartItems->each(function($item) use ($wishlistProductIds) {
-                    $item->product->in_wishlist = in_array($item->product->id, $wishlistProductIds);
-                });
-            
-                // Extract currency titles into a separate array
-                $currencyTitles = $cartItems->pluck('product.currency.title')->unique()->filter()->values();
-            
-                return response()->json([
-                    'success' => true,
-                    'currency_title' => $currencyTitles,
-                    'data' => $cartItems,
-                ]);
+public function viewCart(Request $request)
+{
+    $userId = Auth::id();
+    $isUserLoggedIn = $userId !== null;
+
+    Log::info('User logged in:', ['user_id' => $userId]);
+
+    // Get wishlist product IDs
+    $wishlistProductIds = [];
+    if ($isUserLoggedIn) {
+        $wishlistProductIds = DB::table('ec_wish_lists')
+            ->where('customer_id', $userId)
+            ->pluck('product_id')
+            ->map(function ($id) {
+                return (int) $id;
+            })
+            ->toArray();
+    } else {
+        $wishlistProductIds = session()->get('guest_wishlist', []);
+    }
+
+    // Fetch cart items with product and currency details
+    $cartItems = Auth::check()
+        ? Cart::where('user_id', $userId)->with('product.currency')->get()
+        : Cart::where('session_id', $request->session()->getId())->with('product.currency')->get();
+
+    // Add 'is_wishlist' flag and process images
+    $cartItems->each(function ($item) use ($wishlistProductIds) {
+        $item->product->in_wishlist = in_array($item->product->id, $wishlistProductIds);
+
+        // Process images for full URL
+        $item->product->images = collect($item->product->images)->map(function ($image) {
+            // Check both directories for the image
+            $storagePath = storage_path("app/public/{$image}");
+            $productPath = storage_path("app/public/products/{$image}");
+
+            if (file_exists($storagePath)) {
+                return url("storage/{$image}");
+            } elseif (file_exists($productPath)) {
+                return url("storage/products/{$image}");
             }
+
+            // Fallback if image doesn't exist in either path
+            return $image;
+        })->toArray();
+    });
+
+    // Extract currency titles into a separate array
+    $currencyTitles = $cartItems->pluck('product.currency.title')->unique()->filter()->values();
+
+    return response()->json([
+        'success' => true,
+        'currency_title' => $currencyTitles,
+        'data' => $cartItems,
+    ]);
+}
 
 
        
-    public function clearCart(Request $request)
+   
+            public function clearCart(Request $request)
     {
         if (Auth::check()) {
             Cart::where('user_id', Auth::id())->delete();
@@ -140,22 +153,22 @@ public function addToCart(Request $request)
     }
     public function clearProductFromCart(Request $request, $productId)
     {
-    // Determine if the user is logged in and get the user ID
-    $userId = Auth::id();
+        // Determine if the user is logged in and get the user ID
+        $userId = Auth::id();
 
-    if (Auth::check()) {
-        // Remove the product from the cart for logged-in user
-        Cart::where('user_id', $userId)
-            ->where('product_id', $productId)
-            ->delete();
-    } else {
-        // Remove the product from the cart for guest user (using session ID)
-        Cart::where('session_id', $request->session()->getId())
-            ->where('product_id', $productId)
-            ->delete();
-    }
+        if (Auth::check()) {
+            // Remove the product from the cart for logged-in user
+            Cart::where('user_id', $userId)
+                ->where('product_id', $productId)
+                ->delete();
+        } else {
+            // Remove the product from the cart for guest user (using session ID)
+            Cart::where('session_id', $request->session()->getId())
+                ->where('product_id', $productId)
+                ->delete();
+        }
 
-    return response()->json(['success' => true]);
+        return response()->json(['success' => true]);
 }
 
    
