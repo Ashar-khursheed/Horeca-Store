@@ -175,63 +175,50 @@ public function viewCart(Request $request)
     $userId = Auth::id();
     $isUserLoggedIn = $userId !== null;
 
-    Log::info('User viewing cart:', [
-        'user_id' => $userId,
-        'session_id' => $request->session()->getId()
-    ]);
+    Log::info('User logged in:', ['user_id' => $userId]);
 
     // Get wishlist product IDs
     $wishlistProductIds = $isUserLoggedIn
         ? DB::table('ec_wish_lists')
             ->where('customer_id', $userId)
             ->pluck('product_id')
-            ->map(fn($id) => (int)$id)
+            ->map(function ($id) {
+                return (int) $id;
+            })
             ->toArray()
-        : session()->get('guest_wishlist', []);
+        : session()->get('guest_wishlist', []); 
 
     // Fetch cart items with product and currency details
-    $cartItems = Cart::query()
-        ->when($isUserLoggedIn, function ($query) use ($userId) {
-            $query->where('user_id', $userId);
-        }, function ($query) use ($request) {
-            $query->where('session_id', $request->session()->getId());
-        })
-        ->with('product.currency')
-        ->get();
+    $cartItems = Auth::check()
+        ? Cart::where('user_id', $userId)->with('product.currency')->get()
+        : Cart::where('session_id', $request->session()->getId())->with('product.currency')->get();
 
-    // Determine the correct base URL
-    $baseStorageUrl = url('storage/');
-    $baseProductsUrl = url('storage/products/');
+    // Add 'is_wishlist' flag and generate full URLs for product images
+    $cartItems->each(function ($item) use ($wishlistProductIds) {
+        $item->product->in_wishlist = in_array($item->product->id, $wishlistProductIds);
 
-    // Process cart items
-    $cartItems->each(function ($item) use ($wishlistProductIds, $baseStorageUrl, $baseProductsUrl) {
-        if ($item->product) {
-            // Add 'in_wishlist' flag
-            $item->product->in_wishlist = in_array($item->product->id, $wishlistProductIds);
+        // Generate full URLs for images
+        $baseStorageUrl = url('storage/');
+        $baseProductsUrl = url('storage/products/');
+        
+        // Generate full URLs for product images
+        $item->product->images = collect($item->product->images ?? [])->map(function ($image) use ($baseStorageUrl, $baseProductsUrl) {
+            // Check if the image exists in 'products' directory, else use the general 'storage' directory
+            $url = Storage::exists('products/' . $image) ? $baseProductsUrl : $baseStorageUrl;
+            return $url . '/' . $image;  // Ensure there's a '/' between the base URL and image file
+        });
 
-            // Generate full URLs for images
-            $item->product->images = collect($item->product->images ?? [])->map(function ($image) use ($baseStorageUrl, $baseProductsUrl) {
-                $url = Storage::exists('products/' . $image) ? $baseProductsUrl : $baseStorageUrl;
-                return $url . $image;
-            });
-
-            // Add full URL for the main product image
-            if ($item->product->image) {
-                $imagePath = 'products/' . $item->product->image;
-                $url = Storage::exists($imagePath) ? $baseProductsUrl : $baseStorageUrl;
-                $item->product->image = $url . $item->product->image;
-            } else {
-                $item->product->image = null;
-            }
+        // Add full URL for the main product image
+        if ($item->product->image) {
+            $imagePath = 'products/' . $item->product->image;
+            $url = Storage::exists($imagePath) ? $baseProductsUrl : $baseStorageUrl;
+            $item->product->image = $url . '/' . $item->product->image;  // Ensure '/' is added here
+        } else {
+            $item->product->image = null;
         }
     });
 
-    // Collect unique currency titles
-    $currencyTitles = $cartItems
-        ->pluck('product.currency.title')
-        ->filter()
-        ->unique()
-        ->values();
+    $currencyTitles = $cartItems->pluck('product.currency.title')->unique()->filter()->values();
 
     return response()->json([
         'success' => true,
@@ -239,6 +226,7 @@ public function viewCart(Request $request)
         'data' => $cartItems,
     ]);
 }
+
 
 
        
