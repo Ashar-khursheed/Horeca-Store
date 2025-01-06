@@ -9,6 +9,7 @@ use Botble\Ecommerce\Models\Cart;
 use Botble\Ecommerce\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage; // Import the Storage facade
 
 
 class CartApiController extends Controller
