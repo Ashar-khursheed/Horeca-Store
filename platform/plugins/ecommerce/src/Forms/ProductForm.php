@@ -109,6 +109,7 @@ class ProductForm extends FormAbstract
 
 			$this
 			->add('name', TextField::class, NameFieldOption::make()->required()->toArray())
+			->add('sku', 'text', ['label' => 'SKU'])
 
 			->add(
 				'description',
