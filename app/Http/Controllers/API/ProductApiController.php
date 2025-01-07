@@ -1264,16 +1264,17 @@ public function getSimpleProductData(Request $request)
     ]);
 }
 
-
 public function getPublicProductData(Request $request)
 {
-    // Build product query
+
+
+   
     $query = Product::query()
         ->select([
             'id', 'name', 'images', 'video_url', 'video_path', 'sku',
             'price', 'sale_price', 'start_date', 'end_date', 'warranty_information', 'currency_id',
         ])
-        ->with(['reviews', 'currency:id,title,is_prefix_symbol']) // Include only necessary fields
+        ->with(['reviews', 'currency'])
         ->when($request->filled('sort_by'), function ($query) use ($request) {
             $validSortOptions = ['created_at', 'price', 'name'];
             $sortBy = $request->input('sort_by');
@@ -1282,11 +1283,9 @@ public function getPublicProductData(Request $request)
             }
         });
 
-    // Paginate the products
     $products = $query->paginate($request->input('per_page', 15));
 
-    // Transform the data to include required fields
-    $products->getCollection()->transform(function ($product) {
+    $products->getCollection()->transform(function ($product)  {
         $totalReviews = $product->reviews->count();
         $avgRating = $totalReviews > 0 ? $product->reviews->avg('star') : null;
 
@@ -1311,22 +1310,23 @@ public function getPublicProductData(Request $request)
             'total_reviews' => $totalReviews,
             'avg_rating' => $avgRating,
             'best_price' => $product->sale_price ?? $product->price,
-            'best_delivery_date' => null, // Customize if necessary
+            'best_delivery_date' => null,
             'leftStock' => $product->quantity - ($product->units_sold ?? 0),
-            'currency_title' => $product->currency
-                ? ($product->currency->is_prefix_symbol
-                    ? $product->currency->title
-                    : ($product->price . ' ' . $product->currency->title))
+            'currency_title' => $product->currency 
+                ? ($product->currency->is_prefix_symbol 
+                    ? $product->currency->title 
+                    : ($product->price . ' ' . $product->currency->title)) 
                 : $product->price,
+            'debug_currency' => $product->currency ? $product->currency->toArray() : 'Currency is null',
         ];
     });
 
-    // Return response
     return response()->json([
         'success' => true,
         'data' => $products,
     ]);
 }
+
 
 
 
