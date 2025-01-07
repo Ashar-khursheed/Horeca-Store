@@ -109,7 +109,11 @@ class ProductForm extends FormAbstract
 
 			$this
 			->add('name', TextField::class, NameFieldOption::make()->required()->toArray())
-
+			->add('sku', TextField::class, array_merge(TextFieldOption::make()->label(trans('plugins/ecommerce::products.sku'))->toArray(), [
+				'attr' => [
+					'readonly' => true, // Disable the field
+				],
+			]))
 			->add(
 				'description',
 				EditorField::class,
@@ -119,6 +123,19 @@ class ProductForm extends FormAbstract
 			)
 
 			->add('content', EditorField::class, ContentFieldOption::make() ->label(trans('Features'))->allowedShortcodes()->toArray());
+
+			if ($productId) {
+				$this->addMetaBoxes([
+					'specs' => [
+						'title' => 'Specifications',
+						'content' => view('plugins/ecommerce::products.partials.specs-form', [
+							'selectedSpecs' => $this->getModel()->specifications->toArray() ?? [],
+							'categorySpecs' => $this->getModel()->latestCategorySpecifications->pluck('specification_values', 'specification_name')->toArray() ?? [],
+						]),
+						'priority' => 50,
+					],
+				]);
+			}
 
 			// $this
 
