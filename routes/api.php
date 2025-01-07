@@ -181,6 +181,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/apply-coupon', [CouponApiController::class, 'applyCoupon']);
 
     Route::get('/products', [ProductApiController::class, 'getAllProducts']);
+    Route::get('/product-listing', [ProductApiController::class, 'getSimpleProductData']);
+    
     // Routes for logged-in users
     Route::post('/cart', [CartApiController::class, 'addToCart']);
     Route::get('/cart', [CartApiController::class, 'viewCart']);

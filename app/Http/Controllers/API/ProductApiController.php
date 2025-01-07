@@ -703,89 +703,89 @@ class ProductApiController extends Controller
                         $product->compare_products = $compareProducts;
                     }
                     
-//                     if ($product->compare_products) {
-//     $compareIds = json_decode($product->compare_products, true);
+                //                     if ($product->compare_products) {
+                //     $compareIds = json_decode($product->compare_products, true);
 
-//     $compareProducts = Product::whereIn('id', $compareIds)
-//         ->with('reviews', 'currency') // Include reviews and currency in query
-//         ->get();
+                //     $compareProducts = Product::whereIn('id', $compareIds)
+                //         ->with('reviews', 'currency') // Include reviews and currency in query
+                //         ->get();
 
-//     // Step 1: Define the fixed order of specification names
-//     $fixedSpecOrder = [
-//         'Manufacturer',
-//         'Model Number',
-//         'Shipping Weight',
-//         'Width',
-//         'Depth',
-//         'Height',
-//         'Amps',
-//         'Hertz',
-//         'Phase',
-//         'Voltage',
-//         'Capacity',
-//         'Casters',
-//         'Compressor Location',
-//         'Door style',
-//         'Door Type'
-//     ];
+                //     // Step 1: Define the fixed order of specification names
+                //     $fixedSpecOrder = [
+                //         'Manufacturer',
+                //         'Model Number',
+                //         'Shipping Weight',
+                //         'Width',
+                //         'Depth',
+                //         'Height',
+                //         'Amps',
+                //         'Hertz',
+                //         'Phase',
+                //         'Voltage',
+                //         'Capacity',
+                //         'Casters',
+                //         'Compressor Location',
+                //         'Door style',
+                //         'Door Type'
+                //     ];
 
-//     // Step 2: Prepare to collect specifications
-//     $specData = [];
-//     $uniqueSpecNames = [];
+                //     // Step 2: Prepare to collect specifications
+                //     $specData = [];
+                //     $uniqueSpecNames = [];
 
-//     // Step 3: Collect specifications from each compare product
-//     foreach ($compareProducts as $compareProduct) {
-//         if ($compareProduct->specs_sheet) {
-//             $specifications = json_decode($compareProduct->specs_sheet, true);
-//             foreach ($specifications as $spec) {
-//                 $specName = $spec['spec_name'] ?? null;
-//                 $specValue = $spec['spec_value'] ?? 'N/A';
+                //     // Step 3: Collect specifications from each compare product
+                //     foreach ($compareProducts as $compareProduct) {
+                //         if ($compareProduct->specs_sheet) {
+                //             $specifications = json_decode($compareProduct->specs_sheet, true);
+                //             foreach ($specifications as $spec) {
+                //                 $specName = $spec['spec_name'] ?? null;
+                //                 $specValue = $spec['spec_value'] ?? 'N/A';
 
-//                 if ($specName) {
-//                     // Store unique spec names
-//                     if (!in_array($specName, $uniqueSpecNames)) {
-//                         $uniqueSpecNames[] = $specName;
-//                     }
-//                     // Map specifications to their values
-//                     $specData[$compareProduct->id][$specName] = $specValue;
-//                 }
-//             }
-//         }
-//     }
+                //                 if ($specName) {
+                //                     // Store unique spec names
+                //                     if (!in_array($specName, $uniqueSpecNames)) {
+                //                         $uniqueSpecNames[] = $specName;
+                //                     }
+                //                     // Map specifications to their values
+                //                     $specData[$compareProduct->id][$specName] = $specValue;
+                //                 }
+                //             }
+                //         }
+                //     }
 
-//     // Step 4: Prepare structured specification arrays in fixed order
-//     foreach ($compareProducts as $compareProduct) {
-//         $totalReviews = $compareProduct->reviews->count();
-//         $avgRating = $totalReviews > 0 ? $compareProduct->reviews->avg('star') : null;
+                //     // Step 4: Prepare structured specification arrays in fixed order
+                //     foreach ($compareProducts as $compareProduct) {
+                //         $totalReviews = $compareProduct->reviews->count();
+                //         $avgRating = $totalReviews > 0 ? $compareProduct->reviews->avg('star') : null;
 
-//         $compareProduct->total_reviews = $totalReviews;
-//         $compareProduct->avg_rating = $avgRating;
+                //         $compareProduct->total_reviews = $totalReviews;
+                //         $compareProduct->avg_rating = $avgRating;
 
-//         // Add currency details
-//         if ($compareProduct->currency) {
-//             $compareProduct->currency_title = $compareProduct->currency->is_prefix_symbol
-//                 ? $compareProduct->currency->title
-//                 : $compareProduct->price . ' ' . $compareProduct->currency->title;
-//         } else {
-//             $compareProduct->currency_title = $compareProduct->price;
-//         }
+                //         // Add currency details
+                //         if ($compareProduct->currency) {
+                //             $compareProduct->currency_title = $compareProduct->currency->is_prefix_symbol
+                //                 ? $compareProduct->currency->title
+                //                 : $compareProduct->price . ' ' . $compareProduct->currency->title;
+                //         } else {
+                //             $compareProduct->currency_title = $compareProduct->price;
+                //         }
 
-//         // Step 5: Create specifications in the fixed order
-//         $specifications = []; // Temporary array to hold specifications
-//         foreach ($fixedSpecOrder as $specName) {
-//             $specifications[] = [
-//                 'spec_name' => $specName,
-//                 'spec_value' => $specData[$compareProduct->id][$specName] ?? 'N/A', // Get value or default to 'N/A'
-//             ];
-//         }
+                //         // Step 5: Create specifications in the fixed order
+                //         $specifications = []; // Temporary array to hold specifications
+                //         foreach ($fixedSpecOrder as $specName) {
+                //             $specifications[] = [
+                //                 'spec_name' => $specName,
+                //                 'spec_value' => $specData[$compareProduct->id][$specName] ?? 'N/A', // Get value or default to 'N/A'
+                //             ];
+                //         }
 
-//         // Assign the structured specifications back to the compare product
-//         $compareProduct->setAttribute('specifications', $specifications);
-//     }
+                //         // Assign the structured specifications back to the compare product
+                //         $compareProduct->setAttribute('specifications', $specifications);
+                //     }
 
-//     // Step 6: Assign the enhanced compare products back to the original product
-//     $product->compare_products = $compareProducts;
-// }
+                //     // Step 6: Assign the enhanced compare products back to the original product
+                //     $product->compare_products = $compareProducts;
+                // }
 
             
                     // Add tags and types
@@ -1104,6 +1104,88 @@ class ProductApiController extends Controller
             \Log::info($query->getBindings());
         }
         
+
+
+        public function getSimpleProductData(Request $request)
+{
+    $userId = Auth::id();
+    $wishlistProductIds = [];
+
+    // Handle wishlist IDs for logged-in users or guests
+    if ($userId) {
+        $wishlistProductIds = DB::table('ec_wish_lists')
+            ->where('customer_id', $userId)
+            ->pluck('product_id')
+            ->toArray();
+    } else {
+        $wishlistProductIds = session()->get('guest_wishlist', []);
+    }
+
+    // Build product query
+    $query = Product::query()
+        ->select([
+            'id',
+            'name',
+            'images',
+            'sku',
+            'price',
+            'sale_price',
+            'start_date',
+            'end_date',
+            'warranty_information',
+        ])
+        ->with(['reviews', 'currency'])
+        ->when($request->filled('sort_by'), function ($query) use ($request) {
+            $validSortOptions = ['created_at', 'price', 'name'];
+            $sortBy = $request->input('sort_by');
+            if (in_array($sortBy, $validSortOptions)) {
+                $query->orderBy($sortBy, 'asc');
+            }
+        });
+
+    // Paginate the products
+    $products = $query->paginate($request->input('per_page', 15));
+
+    // Transform the data to include required fields
+    $products->getCollection()->transform(function ($product) use ($wishlistProductIds) {
+        $totalReviews = $product->reviews->count();
+        $avgRating = $totalReviews > 0 ? $product->reviews->avg('star') : null;
+
+        return [
+            'id' => $product->id,
+            'name' => $product->name,
+            'images' => collect($product->images)->map(function ($image) {
+                if (filter_var($image, FILTER_VALIDATE_URL)) {
+                    return $image;
+                }
+                return url('storage/' . ltrim($image, '/'));
+            }),
+            'sku' => $product->sku,
+            'price' => $product->price,
+            'sale_price' => $product->sale_price,
+            'start_date' => $product->start_date,
+            'end_date' => $product->end_date,
+            'warranty_information' => $product->warranty_information,
+            'currency' => $product->currency ? $product->currency->title : null,
+            'total_reviews' => $totalReviews,
+            'avg_rating' => $avgRating,
+            'best_price' => $product->sale_price ?? $product->price,
+            'best_delivery_date' => null, // Customize as needed
+            'leftStock' => $product->quantity - ($product->units_sold ?? 0),
+            'in_wishlist' => in_array($product->id, $wishlistProductIds),
+            'currency_title' => $product->currency
+                ? ($product->currency->is_prefix_symbol ? $product->currency->title : $product->price . ' ' . $product->currency->title)
+                : $product->price,
+        ];
+    });
+
+    // Return response
+    return response()->json([
+        'success' => true,
+        'data' => $products,
+    ]);
+}
+
 
 
 
