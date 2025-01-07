@@ -63,7 +63,8 @@ class ProductApiController extends Controller
 
                             
                 // Start building the query
-                $query = Product::with('categories', 'brand', 'tags', 'producttypes'); // Ensure 'categories' is included
+                $query = Product::with('categories', 'brand', 'tags', 'producttypes') // Ensure 'categories' is included
+                ->where('status', 'published');
             
                 // Apply filters
                 $this->applyFilters($query, $request);
