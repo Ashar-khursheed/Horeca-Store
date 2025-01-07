@@ -182,7 +182,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/products', [ProductApiController::class, 'getAllProducts']);
     Route::get('/product-listing', [ProductApiController::class, 'getAllProductsLising']);
-    Route::get('/product-public-listing', [ProductApiController::class, 'getPublicProductData']);
     Route::get('/product-public-listing-guest', [ProductApiController::class, 'getAllProductsLisingGuest']);
     
     
