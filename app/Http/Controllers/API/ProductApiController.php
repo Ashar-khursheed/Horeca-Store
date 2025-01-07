@@ -272,7 +272,11 @@ class ProductApiController extends Controller
                     'price' => $item->price,
                     'delivery_days'=>$item->delivery_days,
                     'images' => $item->images,
-                    'currency_title' => $currencyTitle, // Include formatted currency title
+                  'currency_title' => $product->currency
+                            ? ($product->currency->is_prefix_symbol
+                                ? $product->currency->title
+                                : ($product->price . ' ' . $product->currency->title))
+                            : $product->price,
                 ];
                 });
                     
