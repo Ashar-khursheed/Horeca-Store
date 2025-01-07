@@ -127,6 +127,7 @@ class ProductApiController extends Controller
                 ->whereIn('id', $filteredProductIds) // Add the filtered IDs back to ensure all filters are respected
                 ->select('ec_products.*', 'best_products.best_price', 'best_products.best_delivery_date')
                 ->with('reviews', 'currency', 'specifications') // Including necessary relationships
+                ->orderBy('created_at', 'desc')
                 ->paginate($request->input('per_page', 15)); // Pagination
             
                 // Collect unique categories from products
