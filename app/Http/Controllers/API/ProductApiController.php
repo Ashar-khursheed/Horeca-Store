@@ -1265,6 +1265,68 @@ public function getSimpleProductData(Request $request)
 }
 
 
+public function getPublicProductData(Request $request)
+{
+    // Build product query
+    $query = Product::query()
+        ->select([
+            'id', 'name', 'images', 'video_url', 'video_path', 'sku',
+            'price', 'sale_price', 'start_date', 'end_date', 'warranty_information', 'currency_id',
+        ])
+        ->with(['reviews', 'currency:id,title,is_prefix_symbol']) // Include only necessary fields
+        ->when($request->filled('sort_by'), function ($query) use ($request) {
+            $validSortOptions = ['created_at', 'price', 'name'];
+            $sortBy = $request->input('sort_by');
+            if (in_array($sortBy, $validSortOptions)) {
+                $query->orderBy($sortBy, 'asc');
+            }
+        });
+
+    // Paginate the products
+    $products = $query->paginate($request->input('per_page', 15));
+
+    // Transform the data to include required fields
+    $products->getCollection()->transform(function ($product) {
+        $totalReviews = $product->reviews->count();
+        $avgRating = $totalReviews > 0 ? $product->reviews->avg('star') : null;
+
+        return [
+            'id' => $product->id,
+            'name' => $product->name,
+            'images' => collect($product->images)->map(function ($image) {
+                if (filter_var($image, FILTER_VALIDATE_URL)) {
+                    return $image;
+                }
+                return url('storage/' . ltrim($image, '/'));
+            }),
+            'video_url' => $product->video_url,
+            'video_path' => $product->video_path,
+            'sku' => $product->sku,
+            'price' => $product->price,
+            'sale_price' => $product->sale_price,
+            'start_date' => $product->start_date,
+            'end_date' => $product->end_date,
+            'warranty_information' => $product->warranty_information,
+            'currency' => $product->currency ? $product->currency->title : null,
+            'total_reviews' => $totalReviews,
+            'avg_rating' => $avgRating,
+            'best_price' => $product->sale_price ?? $product->price,
+            'best_delivery_date' => null, // Customize if necessary
+            'leftStock' => $product->quantity - ($product->units_sold ?? 0),
+            'currency_title' => $product->currency
+                ? ($product->currency->is_prefix_symbol
+                    ? $product->currency->title
+                    : ($product->price . ' ' . $product->currency->title))
+                : $product->price,
+        ];
+    });
+
+    // Return response
+    return response()->json([
+        'success' => true,
+        'data' => $products,
+    ]);
+}
 
 
 
