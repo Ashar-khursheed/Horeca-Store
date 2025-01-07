@@ -43,6 +43,7 @@ class PostApiController extends Controller
         // Remove empty or invalid content like "<><>"
         $post->content = preg_replace('/<[^>]*>/s', '', $post->content); // Removes any malformed or empty tags
         $post->content = trim($post->content); // Remove any leading/trailing spaces
+        $post->content = preg_replace('/&nbsp;/', '', $post->content); // Removes &nbsp;
 
         // If content is empty after cleaning, set it to null or an empty string
         if (empty($post->content)) {
