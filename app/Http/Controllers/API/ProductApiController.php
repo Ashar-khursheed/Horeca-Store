@@ -1127,6 +1127,8 @@ class ProductApiController extends Controller
             'id',
             'name',
             'images',
+            'video_url',
+            'video_path',
             'sku',
             'price',
             'sale_price',
