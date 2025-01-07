@@ -255,8 +255,8 @@ class ProductApiController extends Controller
                 ->with('currency') // Eager load the currency relationship
                 ->get(); // Retrieve the results as a collection
             
-            // Prepare the results with additional details including currency information
-            $product->same_sku_product_ids = $sameSkuProducts->map(function ($item) {
+                 // Prepare the results with additional details including currency information
+                $product->same_sku_product_ids = $sameSkuProducts->map(function ($item) {
                 // Prepare currency title
                 $currencyTitle = $item->currency 
                     ? ($item->currency->is_prefix_symbol 
@@ -272,9 +272,9 @@ class ProductApiController extends Controller
                     'images' => $item->images,
                     'currency_title' => $currencyTitle, // Include formatted currency title
                 ];
-            });
-                 
-                 
+                });
+                    
+                    
                    $sameBrandSkuProducts = Product::where('sku', $product->sku)
                                         ->where('id', '!=', $product->id) // Exclude current product
                                         ->where('brand_id', $product->brand_id) // Filter by the same vendor
@@ -358,11 +358,11 @@ class ProductApiController extends Controller
                     $product->producttypes = $product->producttypes; // Assuming producttypes is a relationship in the Product model
               
               
-                    return $product;
-                });
-            
-                return response()->json([
-                    'success' => true,
+                        return $product;
+                    });
+                
+                    return response()->json([
+                        'success' => true,
                     'data' => $products,
                     'brands' => $brands,
                     'categories' => $categories,
@@ -375,11 +375,175 @@ class ProductApiController extends Controller
                     'height_min' => $heightMin,
                     'height_max' => $heightMax,
                     'delivery_min' =>  $DeliveryMin ,
-                    'delivery_max' => $DeliveryMax ,
+                            'delivery_max' => $DeliveryMax ,
+                        ]);
+            }
+                    
+            
+            public function getAllProductsLising(Request $request)
+            {
+                // Get the logged-in user's ID
+                $userId = Auth::id();
+                $isUserLoggedIn = $userId !== null; // Check if the user is logged in
+            
+                // Log if the user is logged in or not
+                Log::info('User logged in:', ['user_id' => $userId]);
+            
+                // Initialize an empty array to store product IDs in the wishlist
+                $wishlistProductIds = [];
+            
+                // Check if user is logged in
+                if ($isUserLoggedIn) {
+                    // Fetch wishlist items for logged-in user
+                    $wishlistProductIds = DB::table('ec_wish_lists')
+                        ->where('customer_id', $userId)
+                        ->pluck('product_id')
+                        ->map(function ($id) {
+                            return (int) $id; // Ensure all IDs are integers
+                        })
+                        ->toArray(); // Get all product IDs in the user's wishlist
+                } else {
+                    // Handle guest wishlist (example using session)
+                    $wishlistProductIds = session()->get('guest_wishlist', []); // Adjust based on your actual guest wishlist handling
+                }
+            
+                // Start building the query
+                $query = Product::with('categories', 'brand', 'tags', 'producttypes'); // Ensure 'categories' is included
+            
+                // Apply filters
+                $this->applyFilters($query, $request);
+            
+                // Log the final SQL query for debugging
+                \Log::info($query->toSql());
+                \Log::info($query->getBindings());
+            
+                // Get sort_by parameter
+                $sortBy = $request->input('sort_by', 'created_at'); // Defaults to 'created_at'
+            
+                // Validate the sort_by option to avoid any SQL injection
+                $validSortOptions = ['created_at', 'price', 'name']; // Add other valid fields as needed
+                if (!in_array($sortBy, $validSortOptions)) {
+                    $sortBy = 'created_at';
+                }
+            
+                // Build the query with the specified sort option or default to created_at
+                $products = Product::orderBy($sortBy, 'desc')->get();
+            
+                // Get filtered product IDs
+                $filteredProductIds = $query->pluck('id');
+            
+                // Calculate min and max values for price, length, width, and height
+                $priceMin = Product::whereIn('id', $filteredProductIds)->min('sale_price');
+                $priceMax = Product::whereIn('id', $filteredProductIds)->max('sale_price');
+                $lengthMin = Product::whereIn('id', $filteredProductIds)->min('length');
+                $lengthMax = Product::whereIn('id', $filteredProductIds)->max('length');
+                $widthMin = Product::whereIn('id', $filteredProductIds)->min('width');
+                $widthMax = Product::whereIn('id', $filteredProductIds)->max('width');
+                $heightMin = Product::whereIn('id', $filteredProductIds)->min('height');
+                $heightMax = Product::whereIn('id', $filteredProductIds)->max('height');
+                $DeliveryMin = Product::whereNotNull('delivery_days')
+                    ->selectRaw('MIN(CAST(delivery_days AS UNSIGNED)) as min_delivery_days')
+                    ->value('min_delivery_days'); // This should return the correct minimum
+            
+                $DeliveryMax = Product::whereNotNull('delivery_days')
+                    ->selectRaw('MAX(CAST(delivery_days AS UNSIGNED)) as max_delivery_days')
+                    ->value('max_delivery_days'); // This should return the correct maximum
+            
+                // Subquery for best price and delivery date
+                $subQuery = Product::select('sku')
+                    ->selectRaw('MIN(price) as best_price')
+                    ->selectRaw('MIN(delivery_days) as best_delivery_date')
+                    ->whereIn('id', $filteredProductIds)
+                    ->groupBy('sku');
+            
+                // Create the final products query while still respecting previous filters
+                $products = Product::leftJoinSub($subQuery, 'best_products', function ($join) {
+                    $join->on('ec_products.sku', '=', 'best_products.sku')
+                        ->whereColumn('ec_products.price', 'best_products.best_price');
+                })
+                    ->whereIn('id', $filteredProductIds) // Add the filtered IDs back to ensure all filters are respected
+                    ->select('ec_products.*', 'best_products.best_price', 'best_products.best_delivery_date')
+                    ->with('reviews', 'currency', 'specifications') // Including necessary relationships
+                    ->orderBy('created_at', 'desc') // Ensure products are sorted by latest creation date
+                    ->paginate($request->input('per_page', 15)); // Pagination
+            
+                // Collect unique categories from products
+                $categories = ProductCategory::select('id', 'name')->get();
+            
+                // Collect brands
+                $brands = Brand::select('id', 'name')->get();
+            
+                // Transform the result to include additional data
+                $products->getCollection()->transform(function ($product) use ($wishlistProductIds) {
+            
+                    // Select only required fields for the response
+                    $product->images = collect($product->images)->map(function ($image) {
+                        return filter_var($image, FILTER_VALIDATE_URL) ? $image : url('storage/' . ltrim($image, '/'));
+                    });
+            
+                    $totalReviews = $product->reviews->count();
+                    $avgRating = $totalReviews > 0 ? $product->reviews->avg('star') : null;
+                    $quantity = $product->quantity ?? 0;
+                    $unitsSold = $product->units_sold ?? 0;
+                    $leftStock = $quantity - $unitsSold;
+            
+                    // Prepare the custom response structure
+                    return [
+                        'id' => $product->id,
+                        'name' => $product->name,
+                        'images' => $product->images,
+                        'video_url' => $product->video_url,
+                        'video_path' => $product->video_path,
+                        'sku' => $product->sku,
+                        'price' => $product->price,
+                        'sale_price' => $product->sale_price,
+                        'start_date' => $product->start_date,
+                        'end_date' => $product->end_date,
+                        'warranty_information' => $product->warranty_information,
+                        'currency' => $product->currency ? $product->currency->title : null,
+                        'total_reviews' => $totalReviews,
+                        'avg_rating' => $avgRating,
+                        'best_price' => $product->sale_price ?? $product->price,
+                        'best_delivery_date' => null, // Customize as needed
+                        'leftStock' => $leftStock,
+                        'currency_title' => $product->currency
+                            ? ($product->currency->is_prefix_symbol
+                                ? $product->currency->title
+                                : ($product->price . ' ' . $product->currency->title))
+                            : $product->price,
+                        'in_wishlist' => in_array($product->id, $wishlistProductIds), // Check if the product is in the user's wishlist
+                    ];
+                });
+            
+                return response()->json([
+                    'success' => true,
+                    'data' => $products,
+                    'categories' => $categories,
+                    'brands' => $brands,
+                    'price_min' => $priceMin,
+                    'price_max' => $priceMax,
+                    'length_min' => $lengthMin,
+                    'length_max' => $lengthMax,
+                    'width_min' => $widthMin,
+                    'width_max' => $widthMax,
+                    'height_min' => $heightMin,
+                    'height_max' => $heightMax,
+                    'delivery_min' => $DeliveryMin,
+                    'delivery_max' => $DeliveryMax,
                 ]);
             }
             
-        public function getAllPublicProducts(Request $request)
+            
+      
+      
+      
+      
+      
+      
+      
+      
+           
+                public function getAllPublicProducts(Request $request)
             {
                
 
@@ -703,89 +867,6 @@ class ProductApiController extends Controller
                         $product->compare_products = $compareProducts;
                     }
                     
-                //                     if ($product->compare_products) {
-                //     $compareIds = json_decode($product->compare_products, true);
-
-                //     $compareProducts = Product::whereIn('id', $compareIds)
-                //         ->with('reviews', 'currency') // Include reviews and currency in query
-                //         ->get();
-
-                //     // Step 1: Define the fixed order of specification names
-                //     $fixedSpecOrder = [
-                //         'Manufacturer',
-                //         'Model Number',
-                //         'Shipping Weight',
-                //         'Width',
-                //         'Depth',
-                //         'Height',
-                //         'Amps',
-                //         'Hertz',
-                //         'Phase',
-                //         'Voltage',
-                //         'Capacity',
-                //         'Casters',
-                //         'Compressor Location',
-                //         'Door style',
-                //         'Door Type'
-                //     ];
-
-                //     // Step 2: Prepare to collect specifications
-                //     $specData = [];
-                //     $uniqueSpecNames = [];
-
-                //     // Step 3: Collect specifications from each compare product
-                //     foreach ($compareProducts as $compareProduct) {
-                //         if ($compareProduct->specs_sheet) {
-                //             $specifications = json_decode($compareProduct->specs_sheet, true);
-                //             foreach ($specifications as $spec) {
-                //                 $specName = $spec['spec_name'] ?? null;
-                //                 $specValue = $spec['spec_value'] ?? 'N/A';
-
-                //                 if ($specName) {
-                //                     // Store unique spec names
-                //                     if (!in_array($specName, $uniqueSpecNames)) {
-                //                         $uniqueSpecNames[] = $specName;
-                //                     }
-                //                     // Map specifications to their values
-                //                     $specData[$compareProduct->id][$specName] = $specValue;
-                //                 }
-                //             }
-                //         }
-                //     }
-
-                //     // Step 4: Prepare structured specification arrays in fixed order
-                //     foreach ($compareProducts as $compareProduct) {
-                //         $totalReviews = $compareProduct->reviews->count();
-                //         $avgRating = $totalReviews > 0 ? $compareProduct->reviews->avg('star') : null;
-
-                //         $compareProduct->total_reviews = $totalReviews;
-                //         $compareProduct->avg_rating = $avgRating;
-
-                //         // Add currency details
-                //         if ($compareProduct->currency) {
-                //             $compareProduct->currency_title = $compareProduct->currency->is_prefix_symbol
-                //                 ? $compareProduct->currency->title
-                //                 : $compareProduct->price . ' ' . $compareProduct->currency->title;
-                //         } else {
-                //             $compareProduct->currency_title = $compareProduct->price;
-                //         }
-
-                //         // Step 5: Create specifications in the fixed order
-                //         $specifications = []; // Temporary array to hold specifications
-                //         foreach ($fixedSpecOrder as $specName) {
-                //             $specifications[] = [
-                //                 'spec_name' => $specName,
-                //                 'spec_value' => $specData[$compareProduct->id][$specName] ?? 'N/A', // Get value or default to 'N/A'
-                //             ];
-                //         }
-
-                //         // Assign the structured specifications back to the compare product
-                //         $compareProduct->setAttribute('specifications', $specifications);
-                //     }
-
-                //     // Step 6: Assign the enhanced compare products back to the original product
-                //     $product->compare_products = $compareProducts;
-                // }
 
             
                     // Add tags and types
@@ -1105,227 +1186,6 @@ class ProductApiController extends Controller
         }
         
 
-
-//         public function getSimpleProductData(Request $request)
-// {
-//     $userId = Auth::id();
-//     $wishlistProductIds = [];
-
-//     // Handle wishlist IDs for logged-in users or guests
-//     if ($userId) {
-//         $wishlistProductIds = DB::table('ec_wish_lists')
-//             ->where('customer_id', $userId)
-//             ->pluck('product_id')
-//             ->toArray();
-//     } else {
-//         $wishlistProductIds = session()->get('guest_wishlist', []);
-//     }
-
-//     // Build product query
-//     $query = Product::query()
-//         ->select([
-//             'id',
-//             'name',
-//             'images',
-//             'video_url',
-//             'video_path',
-//             'sku',
-//             'price',
-//             'sale_price',
-//             'start_date',
-//             'end_date',
-//             'warranty_information',
-//         ])
-//         ->with(['reviews', 'currency'])
-//         ->when($request->filled('sort_by'), function ($query) use ($request) {
-//             $validSortOptions = ['created_at', 'price', 'name'];
-//             $sortBy = $request->input('sort_by');
-//             if (in_array($sortBy, $validSortOptions)) {
-//                 $query->orderBy($sortBy, 'asc');
-//             }
-//         });
-
-//     // Paginate the products
-//     $products = $query->paginate($request->input('per_page', 15));
-
-//     // Transform the data to include required fields
-//     $products->getCollection()->transform(function ($product) use ($wishlistProductIds) {
-//         $totalReviews = $product->reviews->count();
-//         $avgRating = $totalReviews > 0 ? $product->reviews->avg('star') : null;
-
-//         return [
-//             'id' => $product->id,
-//             'name' => $product->name,
-//             'images' => collect($product->images)->map(function ($image) {
-//                 if (filter_var($image, FILTER_VALIDATE_URL)) {
-//                     return $image;
-//                 }
-//                 return url('storage/' . ltrim($image, '/'));
-//             }),
-//             'video_path'=> $product->video_path,
-//             'video_url' => $product->video_url,
-//             'sku' => $product->sku,
-//             'price' => $product->price,
-//             'sale_price' => $product->sale_price,
-//             'start_date' => $product->start_date,
-//             'end_date' => $product->end_date,
-//             'warranty_information' => $product->warranty_information,
-//             'currency' => $product->currency ? $product->currency->title : null,
-//             'total_reviews' => $totalReviews,
-//             'avg_rating' => $avgRating,
-//             'best_price' => $product->sale_price ?? $product->price,
-//             'best_delivery_date' => null, // Customize as needed
-//             'leftStock' => $product->quantity - ($product->units_sold ?? 0),
-//             'in_wishlist' => in_array($product->id, $wishlistProductIds),
-//             'currency_title' => $product->currency
-//     ? (($product->currency->is_prefix_symbol ? $product->currency->title : $product->price . ' ' . $product->currency->title) ?? $product->price)
-//     : $product->price,
-//         ];
-//     });
-
-//     // Return response
-//     return response()->json([
-//         'success' => true,
-//         'data' => $products,
-//     ]);
-// }
-
-
-public function getSimpleProductData(Request $request)
-{
-    $userId = Auth::id();
-    $wishlistProductIds = [];
-
-    if ($userId) {
-        $wishlistProductIds = DB::table('ec_wish_lists')
-            ->where('customer_id', $userId)
-            ->pluck('product_id')
-            ->toArray();
-    } else {
-        $wishlistProductIds = session()->get('guest_wishlist', []);
-    }
-
-    $query = Product::query()
-        ->select([
-            'id', 'name', 'images', 'video_url', 'video_path', 'sku',
-            'price', 'sale_price', 'start_date', 'end_date', 'warranty_information', 'currency_id',
-        ])
-        ->with(['reviews', 'currency'])
-        ->when($request->filled('sort_by'), function ($query) use ($request) {
-            $validSortOptions = ['created_at', 'price', 'name'];
-            $sortBy = $request->input('sort_by');
-            if (in_array($sortBy, $validSortOptions)) {
-                $query->orderBy($sortBy, 'asc');
-            }
-        });
-
-    $products = $query->paginate($request->input('per_page', 15));
-
-    $products->getCollection()->transform(function ($product) use ($wishlistProductIds) {
-        $totalReviews = $product->reviews->count();
-        $avgRating = $totalReviews > 0 ? $product->reviews->avg('star') : null;
-
-        return [
-            'id' => $product->id,
-            'name' => $product->name,
-            'images' => collect($product->images)->map(function ($image) {
-                if (filter_var($image, FILTER_VALIDATE_URL)) {
-                    return $image;
-                }
-                return url('storage/' . ltrim($image, '/'));
-            }),
-            'video_url' => $product->video_url,
-            'video_path' => $product->video_path,
-            'sku' => $product->sku,
-            'price' => $product->price,
-            'sale_price' => $product->sale_price,
-            'start_date' => $product->start_date,
-            'end_date' => $product->end_date,
-            'warranty_information' => $product->warranty_information,
-            'currency' => $product->currency ? $product->currency->title : null,
-            'total_reviews' => $totalReviews,
-            'avg_rating' => $avgRating,
-            'best_price' => $product->sale_price ?? $product->price,
-            'best_delivery_date' => null,
-            'leftStock' => $product->quantity - ($product->units_sold ?? 0),
-            'in_wishlist' => in_array($product->id, $wishlistProductIds),
-            'currency_title' => $product->currency 
-                ? ($product->currency->is_prefix_symbol 
-                    ? $product->currency->title 
-                    : ($product->price . ' ' . $product->currency->title)) 
-                : $product->price,
-            'debug_currency' => $product->currency ? $product->currency->toArray() : 'Currency is null',
-        ];
-    });
-
-    return response()->json([
-        'success' => true,
-        'data' => $products,
-    ]);
-}
-
-public function getPublicProductData(Request $request)
-{
-
-
-   
-    $query = Product::query()
-        ->select([
-            'id', 'name', 'images', 'video_url', 'video_path', 'sku',
-            'price', 'sale_price', 'start_date', 'end_date', 'warranty_information', 'currency_id',
-        ])
-        ->with(['reviews', 'currency'])
-        ->when($request->filled('sort_by'), function ($query) use ($request) {
-            $validSortOptions = ['created_at', 'price', 'name'];
-            $sortBy = $request->input('sort_by');
-            if (in_array($sortBy, $validSortOptions)) {
-                $query->orderBy($sortBy, 'asc');
-            }
-        });
-
-    $products = $query->paginate($request->input('per_page', 15));
-
-    $products->getCollection()->transform(function ($product)  {
-        $totalReviews = $product->reviews->count();
-        $avgRating = $totalReviews > 0 ? $product->reviews->avg('star') : null;
-
-        return [
-            'id' => $product->id,
-            'name' => $product->name,
-            'images' => collect($product->images)->map(function ($image) {
-                if (filter_var($image, FILTER_VALIDATE_URL)) {
-                    return $image;
-                }
-                return url('storage/' . ltrim($image, '/'));
-            }),
-            'video_url' => $product->video_url,
-            'video_path' => $product->video_path,
-            'sku' => $product->sku,
-            'price' => $product->price,
-            'sale_price' => $product->sale_price,
-            'start_date' => $product->start_date,
-            'end_date' => $product->end_date,
-            'warranty_information' => $product->warranty_information,
-            'currency' => $product->currency ? $product->currency->title : null,
-            'total_reviews' => $totalReviews,
-            'avg_rating' => $avgRating,
-            'best_price' => $product->sale_price ?? $product->price,
-            'best_delivery_date' => null,
-            'leftStock' => $product->quantity - ($product->units_sold ?? 0),
-            'currency_title' => $product->currency 
-                ? ($product->currency->is_prefix_symbol 
-                    ? $product->currency->title 
-                    : ($product->price . ' ' . $product->currency->title)) 
-                : $product->price,
-            'debug_currency' => $product->currency ? $product->currency->toArray() : 'Currency is null',
-        ];
-    });
-
-    return response()->json([
-        'success' => true,
-        'data' => $products,
-    ]);
-}
 
 
 
