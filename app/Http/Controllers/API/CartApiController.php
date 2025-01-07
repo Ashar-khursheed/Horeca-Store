@@ -15,6 +15,67 @@ use Illuminate\Support\Facades\Storage; // Import the Storage facade
 class CartApiController extends Controller
 {
 
+// public function addToCart(Request $request)
+// {
+//     $request->validate([
+//         'product_id' => 'required|exists:ec_products,id',
+//         'quantity' => 'required|integer|min:1',
+//     ]);
+
+//     $productId = $request->input('product_id');
+//     $quantity = $request->input('quantity');
+
+//     if (Auth::check()) {
+//         $userId = Auth::id();
+
+//         // Check if the user has already added this product
+//         $cartItem = Cart::where('user_id', $userId)
+//                         ->where('product_id', $productId)
+//                         ->first();
+
+//         if ($cartItem) {
+//             \Log::info('Cart item already exists', ['cartItem' => $cartItem]);
+
+//             // Only update if the current quantity differs
+//             if ($cartItem->quantity != $quantity) {
+//                 \Log::info('Updating cart item with new quantity', ['old_quantity' => $cartItem->quantity, 'new_quantity' => $quantity]);
+//                 $cartItem->quantity = $quantity;
+//                 $cartItem->save();
+//             } else {
+//                 \Log::info('Quantity is the same, no update needed');
+//             }
+//         } else {
+//             \Log::info('No cart item found, creating new');
+//             $cartItem = Cart::create([
+//                 'user_id' => $userId,
+//                 'product_id' => $productId,
+//                 'quantity' => $quantity,
+//             ]);
+//         }
+
+//         $cartItem = Cart::with('product.currency')->find($cartItem->id);
+
+//         return response()->json([
+//             'success' => true,
+//             'data' => [
+//                 'id' => $cartItem->id,
+//                 'user_id' => $cartItem->user_id,
+//                 'product_id' => $cartItem->product_id,
+//                 'quantity' => $cartItem->quantity,
+//                 'currency_id' => $cartItem->product->currency->id,
+//                 'currency_title' => $cartItem->product->currency->title,
+//             ],
+//         ]);
+//     }
+
+//     return response()->json([
+//         'success' => false,
+//         'message' => 'Unauthorized user',
+//     ], 200);
+// }
+
+
+
 public function addToCart(Request $request)
 {
     $request->validate([
@@ -36,14 +97,10 @@ public function addToCart(Request $request)
         if ($cartItem) {
             \Log::info('Cart item already exists', ['cartItem' => $cartItem]);
 
-            // Only update if the current quantity differs
-            if ($cartItem->quantity != $quantity) {
-                \Log::info('Updating cart item with new quantity', ['old_quantity' => $cartItem->quantity, 'new_quantity' => $quantity]);
-                $cartItem->quantity = $quantity;
-                $cartItem->save();
-            } else {
-                \Log::info('Quantity is the same, no update needed');
-            }
+            // Update the quantity by adding the new quantity
+            \Log::info('Updating cart item with added quantity', ['old_quantity' => $cartItem->quantity, 'added_quantity' => $quantity]);
+            $cartItem->quantity += $quantity;
+            $cartItem->save();
         } else {
             \Log::info('No cart item found, creating new');
             $cartItem = Cart::create([
@@ -73,7 +130,6 @@ public function addToCart(Request $request)
         'message' => 'Unauthorized user',
     ], 200);
 }
-
 
 
  
