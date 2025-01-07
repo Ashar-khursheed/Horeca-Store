@@ -235,7 +235,7 @@ class ProductApiController extends Controller
                                     ? $fbProduct->currency->title
                                     : $fbProduct->price . ' ' . $fbProduct->currency->title;
                             } else {
-                                $fbProduct->currency_title = $fbProduct->price;
+                                $fbProduct->currency_title = $fbProduct->currency->title;
                             }
                     
                             return $fbProduct;
