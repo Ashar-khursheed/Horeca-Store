@@ -229,6 +229,7 @@ Route::post('/cart/update-guest', [CartApiController::class, 'updateQuantityGues
 
 // Routes for Blog Posts 
 Route::get('/posts', [PostApiController::class, 'index']);
+Route::get('/get-views', [PostApiController::class, 'getlikes']);
 Route::put('/posts/{id}', [PostApiController::class, 'update']);
 Route::put('/post-comments/{id}', [PostApiController::class, 'postComment']);
 Route::get('/postcategories', [PostCategoryController::class, 'index']);

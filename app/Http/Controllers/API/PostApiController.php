@@ -61,7 +61,23 @@ class PostApiController extends Controller
         ], Response::HTTP_OK);
     }
     
-
+	public function getlikes(Request $request)
+	{
+		// Fetch all posts, you can modify this to include pagination if necessary
+		$posts = Post::with(['tags', 'categories', 'author'])->get();
+	
+		// Process posts to include only the required fields
+		$posts = $posts->map(function ($post) {
+			// Include only the required fields (id, views, likes, shares)
+			return $post->only(['id', 'views', 'likes', 'shares']);
+		});
+	
+		return response()->json([
+			'status' => 'success',
+			'data' => $posts,
+		], Response::HTTP_OK);
+	}
+	
 
 	public function update(Request $request, $id) {
 		/* Validate incoming request data*/
