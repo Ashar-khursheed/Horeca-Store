@@ -814,7 +814,6 @@ class ProductController extends BaseController
     StoreProductService $service,
     StoreProductTagService $storeProductTagService ,   StoreProductTypesService $storeProductTypesService )
     {
-        // dd($request->producttypes);
         // Get the currently authenticated user
         $userId = Auth::id();
 
@@ -1452,137 +1451,43 @@ class ProductController extends BaseController
                 'discount.1.discount_from_date.required_with' => 'The start date for the second discount is required when the first discount start date is provided.',
             ]);
 
+            $existingDocuments = json_decode($product->documents, true) ?? [];
 
-                    // Load existing documents if any
-                     $existingDocuments = json_decode($product->documents, true) ?? [];
-                    // $documentsPath = storage_path('app/public/products/documents');
+            // Prepare associative array for easy updates
+            $documentsByTitle = [];
+            foreach ($existingDocuments as $doc) {
+                $documentsByTitle[$doc['title']] = $doc['path'];
+            }
 
-                    // // Ensure documents directory exists
-                    // if (!is_dir($documentsPath)) {
-                    //     mkdir($documentsPath, 0775, true);
-                    // }
+            // Titles for predefined documents
+            $titles = ['Specsheet', 'Manual', 'Warranty', 'Brochure'];
 
-                    // $documents = $existingDocuments;
+            if ($request->hasFile('documents')) {
+                foreach ($request->file('documents') as $index => $document) {
+                    if ($document) {
+                        $path = $document->store('products/documents', 'public');
 
-                    // // Handle new document uploads
-                    // if ($request->hasFile('documents')) {
-                    //     $titles = ['Specsheet', 'Manual', 'Warranty', 'Brochure'];
+                        // Determine the title for the uploaded document
+                        $title = $index < count($titles)
+                            ? $titles[$index]
+                            : ($request->titles[$index] ?? 'Untitled');
 
-                    //     foreach ($request->file('documents') as $index => $document) {
-                    //         // If existing document, remove old file
-                    //         if ($index < count($documents)) {
-                    //             if (file_exists(storage_path('app/public/' . $documents[$index]['path']))) {
-                    //                 unlink(storage_path('app/public/' . $documents[$index]['path']));
-                    //             }
-                    //         }
-
-                    //         // Save new document
-                    //         $path = $document->store('products/documents', 'public');
-                    //         $title = $titles[$index] ?? ($request->titles[$index] ?? 'Untitled');
-
-                    //         // Update document details
-                    //         $documents[$index] = [
-                    //             'title' => $title,
-                    //             'path' => $path,
-                    //         ];
-                    //     }
-                    // }
-                    // $product->documents = json_encode($documents);
-                    $existingDocuments = json_decode($product->documents, true) ?? [];
-
-                    // Prepare associative array for easy updates
-                    $documentsByTitle = [];
-                    foreach ($existingDocuments as $doc) {
-                        $documentsByTitle[$doc['title']] = $doc['path'];
+                        // Overwrite existing document or add new one
+                        $documentsByTitle[$title] = $path;
                     }
+                }
+            }
 
-                    // Titles for predefined documents
-                    $titles = ['Specsheet', 'Manual', 'Warranty', 'Brochure'];
+            // Rebuild and save the documents array
+            $documents = [];
+            foreach ($documentsByTitle as $title => $path) {
+                $documents[] = ['title' => $title, 'path' => $path];
+            }
 
-                    if ($request->hasFile('documents')) {
-                        foreach ($request->file('documents') as $index => $document) {
-                            if ($document) {
-                                $path = $document->store('products/documents', 'public');
+            // Save updated documents to the database
+            $product->documents = json_encode($documents, JSON_THROW_ON_ERROR);
 
-                                // Determine the title for the uploaded document
-                                $title = $index < count($titles)
-                                    ? $titles[$index]
-                                    : ($request->titles[$index] ?? 'Untitled');
-
-                                // Overwrite existing document or add new one
-                                $documentsByTitle[$title] = $path;
-                            }
-                        }
-                    }
-
-                    // Rebuild and save the documents array
-                    $documents = [];
-                    foreach ($documentsByTitle as $title => $path) {
-                        $documents[] = ['title' => $title, 'path' => $path];
-                    }
-
-                    // Save updated documents to the database
-                    $product->documents = json_encode($documents, JSON_THROW_ON_ERROR);
-
-
-
-                    // $videoPaths = [];
-                    // if ($request->hasFile('videos')) {
-                    //     foreach ($request->file('videos') as $video) {
-                    //         $videoPaths[] = $video->store('videos', 'public');
-                    //     }
-                    // }
-
-                    // // $existingVideos = json_decode($product->video_path, true) ?? [];
-                    //   $existingVideos = is_string($product->video_path)
-                    // ? json_decode($product->video_path, true) ?? []
-                    // : (is_array($product->video_path) ? $product->video_path : []);
-
-                    //                 if ($request->has('deleted_videos')) {
-                    //     $deletedVideos = explode(',', $request->input('deleted_videos'));
-                    //     $existingVideos = array_filter($existingVideos, fn($video) => !in_array($video, $deletedVideos));
-                    // }
-                    // $allVideos = array_merge($existingVideos, $videoPaths);
-                    // $product->video_path = json_encode($allVideos);
-
-                //                 $videoPaths = [];
-                // if ($request->hasFile('videos')) {
-                //     foreach ($request->file('videos') as $video) {
-                //         $videoPaths[] = $video->store('videos', 'public'); // Store and get the path
-                //     }
-                // }
-
-                // // Retrieve existing video paths
-                // $existingVideos = is_string($product->video_path)
-                //     ? json_decode($product->video_path, true) // Decode if it's a JSON string
-                //     : (is_array($product->video_path) ? $product->video_path : []); // Already an array
-
-                // // Handle deleted videos
-                // // if ($request->has('deleted_videos')) {
-                // //     $deletedVideos = explode(',', $request->input('deleted_videos'));
-                // //     $existingVideos = array_filter($existingVideos, fn($video) => !in_array($video, $deletedVideos));
-                // // }
-                // if ($request->has('deleted_videos')) {
-                //     $deletedVideos = explode(',', $request->input('deleted_videos'));
-
-                //     // Ensure $existingVideos is an array
-                //     $existingVideos = $existingVideos ?? [];
-
-                //     // Filter existing videos
-                //     $existingVideos = array_filter($existingVideos, fn($video) => !in_array($video, $deletedVideos));
-                // }
-
-                // // Merge with newly uploaded video paths
-                // $allVideos = array_merge($existingVideos, $videoPaths);
-                // $allVideos = array_values(array_unique($allVideos)); // Ensure unique paths
-
-                // // Encode the final paths as JSON
-                // $product->video_path = json_encode($allVideos); // Convert array to JSON string
-
-                // // Save the product with updated video paths
-                // $product->save();
-
-                $videoPaths = [];
+            $videoPaths = [];
 
             // Check if there are any uploaded videos
             if ($request->hasFile('videos')) {
@@ -1618,98 +1523,74 @@ class ProductController extends BaseController
             // Save the product with updated video paths
             $product->save();
 
+            // Update additional fields
+            $product->variant_requires_shipping = $request->input('variant_requires_shipping');
+            $product->refund = $request->input('refund');
+            $product->shipping_weight = $request->input('shipping_weight');
 
-                    // Update additional fields
-                    $product->variant_requires_shipping = $request->input('variant_requires_shipping');
-                    $product->refund = $request->input('refund');
-                    $product->shipping_weight = $request->input('shipping_weight');
+            $allowedOptions = ['Kg', 'g', 'pounds', 'oz'];
+            $shippingWeightOption = $request->input('shipping_weight_option');
+            if (in_array($shippingWeightOption, $allowedOptions)) {
+                $product->shipping_weight_option = $shippingWeightOption;
+            } else {
+                return response()->json(['error' => 'Invalid shipping weight option.'], 400);
+            }
 
-                    $allowedOptions = ['Kg', 'g', 'pounds', 'oz'];
-                    $shippingWeightOption = $request->input('shipping_weight_option');
-                    if (in_array($shippingWeightOption, $allowedOptions)) {
-                        $product->shipping_weight_option = $shippingWeightOption;
-                    } else {
-                        return response()->json(['error' => 'Invalid shipping weight option.'], 400);
-                    }
+            // Save additional attributes
+            $product->variant_color_title = "Color";
+            $product->variant_color_value = $request->input('variant_color_value');
+            $product->variant_color_products = $request->input('variant_color_products');
+            $product->variant_1_title = $request->input('variant_1_title');
+            $product->variant_1_value = $request->input('variant_1_value');
+            $product->variant_1_products = $request->input('variant_1_products');
+            $product->variant_2_title = $request->input('variant_2_title');
+            $product->variant_2_value = $request->input('variant_2_value');
+            $product->variant_2_products = $request->input('variant_2_products');
+            $product->variant_3_title = $request->input('variant_3_title');
+            $product->variant_3_value = $request->input('variant_3_value');
+            $product->variant_3_products = $request->input('variant_3_products');
 
-                    // Save additional attributes
-                    $product->variant_color_title = "Color";
-                    $product->variant_color_value = $request->input('variant_color_value');
-                    $product->variant_color_products = $request->input('variant_color_products');
-                    $product->variant_1_title = $request->input('variant_1_title');
-                    $product->variant_1_value = $request->input('variant_1_value');
-                    $product->variant_1_products = $request->input('variant_1_products');
-                    $product->variant_2_title = $request->input('variant_2_title');
-                    $product->variant_2_value = $request->input('variant_2_value');
-                    $product->variant_2_products = $request->input('variant_2_products');
-                    $product->variant_3_title = $request->input('variant_3_title');
-                    $product->variant_3_value = $request->input('variant_3_value');
-                    $product->variant_3_products = $request->input('variant_3_products');
+            // Additional properties and Google Shopping fields
+            $product->google_shopping_category = $request->input('google_shopping_category');
+            $product->unit_of_measurement_id = $request->input('unit_of_measurement_id');
+            $product->weight_unit_id = $request->input('weight_unit_id');
+            $product->length_unit_id = $request->input('length_unit_id');
+            $product->depth_unit_id = $request->input('depth_unit_id');
+            $product->height_unit_id = $request->input('height_unit_id');
+            $product->width_unit_id = $request->input('width_unit_id');
+            $product->shipping_length_id = $request->input('shipping_length_id');
+            $product->shipping_depth_id = $request->input('shipping_depth_id');
+            $product->shipping_height_id = $request->input('shipping_height_id');
+            $product->shipping_width_id = $request->input('shipping_width_id');
+            $product->compare_type = json_encode(explode(',', $request->input('compare_type')));
+            $product->compare_products = json_encode(explode(',', $request->input('compare_products')));
+            $product->frequently_bought_together = $request->input('frequently_bought_together');
+            $product->google_shopping_mpn = $request->input('google_shopping_mpn');
+            $product->box_quantity = $request->input('box_quantity');
 
-                    // Additional properties and Google Shopping fields
-                    $product->google_shopping_category = $request->input('google_shopping_category');
-                    $product->unit_of_measurement_id = $request->input('unit_of_measurement_id');
-                    $product->weight_unit_id = $request->input('weight_unit_id');
-                    $product->length_unit_id = $request->input('length_unit_id');
-                    $product->depth_unit_id = $request->input('depth_unit_id');
-                    $product->height_unit_id = $request->input('height_unit_id');
-                    $product->width_unit_id = $request->input('width_unit_id');
-                    $product->shipping_length_id = $request->input('shipping_length_id');
-                    $product->shipping_depth_id = $request->input('shipping_depth_id');
-                    $product->shipping_height_id = $request->input('shipping_height_id');
-                    $product->shipping_width_id = $request->input('shipping_width_id');
-                    $product->compare_type = json_encode(explode(',', $request->input('compare_type')));
-                    $product->compare_products = json_encode(explode(',', $request->input('compare_products')));
-                    $product->frequently_bought_together = $request->input('frequently_bought_together');
-                    $product->google_shopping_mpn = $request->input('google_shopping_mpn');
-                    $product->box_quantity = $request->input('box_quantity');
+            $product->save();
 
-                    $product->save();
+            if ($request->discount) {
+                // Fetch existing discount IDs related to the product
+                $existingDiscountIds = $product->discounts->pluck('id')->toArray();
 
-                if ($request->discount) {
-                    // Fetch existing discount IDs related to the product
-                    $existingDiscountIds = $product->discounts->pluck('id')->toArray();
+                // Keep track of processed discount IDs
+                $processedDiscountIds = [];
 
-                    // Keep track of processed discount IDs
-                    $processedDiscountIds = [];
+                foreach ($request->discount as $discountDetail) {
+                    if (
+                            array_key_exists('product_quantity', $discountDetail) && $discountDetail['product_quantity']
+                            && array_key_exists('discount', $discountDetail) && $discountDetail['discount']
+                            && array_key_exists('discount_from_date', $discountDetail) && $discountDetail['discount_from_date']
+                        ) {
+                        if (array_key_exists('discount_id', $discountDetail) && $discountDetail['discount_id']) {
+                            // Update existing discount
+                            $discountId = $discountDetail['discount_id'];
+                            $discount = Discount::find($discountId);
 
-                    foreach ($request->discount as $discountDetail) {
-                        if (
-                                array_key_exists('product_quantity', $discountDetail) && $discountDetail['product_quantity']
-                                && array_key_exists('discount', $discountDetail) && $discountDetail['discount']
-                                && array_key_exists('discount_from_date', $discountDetail) && $discountDetail['discount_from_date']
-                            ) {
-                            if (array_key_exists('discount_id', $discountDetail) && $discountDetail['discount_id']) {
-                                // Update existing discount
-                                $discountId = $discountDetail['discount_id'];
-                                $discount = Discount::find($discountId);
-
-                                if ($discount) {
-                                    $discount->product_quantity = $discountDetail['product_quantity'];
-                                    $discount->title = ($discountDetail['product_quantity']) . ' products';
-                                    $discount->value = $discountDetail['discount'];
-                                    $discount->start_date = Carbon::parse($discountDetail['discount_from_date']);
-                                    $discount->end_date = array_key_exists('never_expired', $discountDetail) && $discountDetail['never_expired'] == 1
-                                        ? null
-                                        : Carbon::parse($discountDetail['discount_to_date']);
-                                    $discount->save();
-
-                                    // Update relation
-                                    DiscountProduct::updateOrCreate(
-                                        ['discount_id' => $discountId, 'product_id' => $product->id],
-                                        ['discount_id' => $discountId, 'product_id' => $product->id]
-                                    );
-                                }
-
-                                // Mark this discount ID as processed
-                                $processedDiscountIds[] = $discountId;
-                            } else {
-                                // Create new discount
-                                $discount = new Discount();
+                            if ($discount) {
                                 $discount->product_quantity = $discountDetail['product_quantity'];
                                 $discount->title = ($discountDetail['product_quantity']) . ' products';
-                                $discount->type_option = 'percentage';
-                                $discount->type = 'promotion';
                                 $discount->value = $discountDetail['discount'];
                                 $discount->start_date = Carbon::parse($discountDetail['discount_from_date']);
                                 $discount->end_date = array_key_exists('never_expired', $discountDetail) && $discountDetail['never_expired'] == 1
@@ -1717,42 +1598,66 @@ class ProductController extends BaseController
                                     : Carbon::parse($discountDetail['discount_to_date']);
                                 $discount->save();
 
-                                // Save relation
-                                $discountProduct = new DiscountProduct();
-                                $discountProduct->discount_id = $discount->id;
-                                $discountProduct->product_id = $product->id;
-                                $discountProduct->save();
-
-                                // Mark this discount ID as processed
-                                $processedDiscountIds[] = $discount->id;
+                                // Update relation
+                                DiscountProduct::updateOrCreate(
+                                    ['discount_id' => $discountId, 'product_id' => $product->id],
+                                    ['discount_id' => $discountId, 'product_id' => $product->id]
+                                );
                             }
+
+                            // Mark this discount ID as processed
+                            $processedDiscountIds[] = $discountId;
+                        } else {
+                            // Create new discount
+                            $discount = new Discount();
+                            $discount->product_quantity = $discountDetail['product_quantity'];
+                            $discount->title = ($discountDetail['product_quantity']) . ' products';
+                            $discount->type_option = 'percentage';
+                            $discount->type = 'promotion';
+                            $discount->value = $discountDetail['discount'];
+                            $discount->start_date = Carbon::parse($discountDetail['discount_from_date']);
+                            $discount->end_date = array_key_exists('never_expired', $discountDetail) && $discountDetail['never_expired'] == 1
+                                ? null
+                                : Carbon::parse($discountDetail['discount_to_date']);
+                            $discount->save();
+
+                            // Save relation
+                            $discountProduct = new DiscountProduct();
+                            $discountProduct->discount_id = $discount->id;
+                            $discountProduct->product_id = $product->id;
+                            $discountProduct->save();
+
+                            // Mark this discount ID as processed
+                            $processedDiscountIds[] = $discount->id;
                         }
                     }
-
-                    // Delete removed discounts
-                    $discountsToDelete = array_diff($existingDiscountIds, $processedDiscountIds);
-                    if (!empty($discountsToDelete)) {
-                        Discount::whereIn('id', $discountsToDelete)->delete();
-                        DiscountProduct::whereIn('discount_id', $discountsToDelete)->delete();
-                    }
                 }
 
-
-                // Additional processing
-                $product->status = $request->input('status');
-                if (EcommerceHelper::isEnabledSupportDigitalProducts() && $productType = $request->input('product_type')) {
-                    $product->product_type = $productType;
+                // Delete removed discounts
+                $discountsToDelete = array_diff($existingDiscountIds, $processedDiscountIds);
+                if (!empty($discountsToDelete)) {
+                    Discount::whereIn('id', $discountsToDelete)->delete();
+                    DiscountProduct::whereIn('discount_id', $discountsToDelete)->delete();
                 }
-                $product = $service->execute($request, $product);
+            }
 
-                $storeProductTagService->execute($request, $product);
 
-                $storeProductTypesService->execute($request, $product);
+            // Additional processing
+            $product->status = $request->input('status');
+            if (EcommerceHelper::isEnabledSupportDigitalProducts() && $productType = $request->input('product_type')) {
+                $product->product_type = $productType;
+            }
+            /* SEO metadata will be execute in this service*/
+            $product = $service->execute($request, $product);
 
-                // Handle product variations and attributes
-                $addedAttributes = $request->input('added_attributes', []);
-                if ($request->input('is_added_attributes') == 1 && $addedAttributes) {
-                    $storeAttributesOfProductService->execute(
+            $storeProductTagService->execute($request, $product);
+
+            $storeProductTypesService->execute($request, $product);
+
+            // Handle product variations and attributes
+            $addedAttributes = $request->input('added_attributes', []);
+            if ($request->input('is_added_attributes') == 1 && $addedAttributes) {
+                $storeAttributesOfProductService->execute(
                     $product,
                     array_keys($addedAttributes),
                     array_values($addedAttributes)
@@ -1783,7 +1688,6 @@ class ProductController extends BaseController
                     $this->httpResponse()
                 );
             }
-
             // Handle grouped products
             if ($request->has('grouped_products')) {
                 GroupedProduct::createGroupedProducts(
