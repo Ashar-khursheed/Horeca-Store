@@ -174,15 +174,13 @@ class ProductApiController extends Controller
                 $product->in_wishlist = in_array($product->id, $wishlistProductIds); // Correct check
                                 
             
-                    // Add currency details
-                    if ($product->currency) {
-                        $product->currency_title = $product->currency->is_prefix_symbol
-                            ? $product->currency->title
-                            : $product->price . ' ' . $product->currency->title;
-                    } else {
-                        $product->currency_title = $product->price; // Fallback if no currency found
-                    }
-            
+                if ($product->currency) {
+                    $product->currency_title = $product->currency->is_prefix_symbol
+                        ? $product->currency->title
+                        : $product->price . ' ' . $product->currency->title;
+                } else {
+                    $product->currency_title = $product->price; // Fallback if no currency found
+                }
                     // Add specifications
                     if ($product->specs_sheet) {
                         $specifications = json_decode($product->specs_sheet, true);
@@ -619,8 +617,8 @@ class ProductApiController extends Controller
              
                             
                 // Start building the query
-                $query = Product::with('categories', 'brand', 'tags', 'producttypes'); // Ensure 'categories' is included
-            
+                $query = Product::with('categories', 'brand', 'tags', 'producttypes') // Ensure 'categories' is included
+                ->where('status', 'published');
                 // Apply filters
                 $this->applyFilters($query, $request);
             
@@ -645,7 +643,7 @@ class ProductApiController extends Controller
                 
                             
                                // Build the query with the specified sort option or default to created_at
-                $products = Product::orderBy($sortBy, 'asc')->get();
+                $products = Product::orderBy($sortBy, 'desc')->get();
                 // Get filtered product IDs
                 $filteredProductIds = $query->pluck('id');
                 
