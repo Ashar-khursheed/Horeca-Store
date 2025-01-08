@@ -384,14 +384,94 @@ public function getAllFeaturedProductsByCategory(Request $request)
 }
 
 
+// public function getAllGuestFeaturedProductsByCategory(Request $request)
+// {
+//     // Fetch only the first five categories that have featured products
+//     $categories = ProductCategory::whereHas('products', function($query) {
+//         $query->where('is_featured', 1); // Ensure there are featured products
+//     })
+//     ->with(['products' => function($query) {
+//         $query->where('is_featured', 1); // Only get featured products
+//     }])
+//     ->take(5) // Limit to 5 categories
+//     ->get();
+
+//     // Prepare a subquery for best price and delivery date
+//     $subQuery = Product::select('sku')
+//         ->selectRaw('MIN(price) as best_price')
+//         ->selectRaw('MIN(delivery_days) as best_delivery_date')
+//         ->groupBy('sku');
+
+//     // Map the categories to include featured products with additional info
+//     $categories = $categories->map(function ($category) use ($subQuery) {
+//         return [
+//             'category_name' => $category->name,
+//             'featured_products' => $category->products->take(10)->map(function ($product) use ($subQuery) {
+//                 // Join with the subquery to get best price and delivery date
+//                 $productDetails = Product::leftJoinSub($subQuery, 'best_products', function ($join) {
+//                     $join->on('ec_products.sku', '=', 'best_products.sku')
+//                          ->whereColumn('ec_products.price', 'best_products.best_price');
+//                 })
+//                 ->select('ec_products.*', 'best_products.best_price', 'best_products.best_delivery_date')
+//                 ->with('reviews', 'currency')
+//                 ->where('ec_products.id', $product->id) // Only get the current product
+//                 ->first(); // Fetch the product details
+
+//                 // Count total reviews and calculate average rating
+//                 $totalReviews = $productDetails->reviews->count();
+//                 $avgRating = $totalReviews > 0 ? $productDetails->reviews->avg('star') : null;
+
+//                 // Calculate left stock
+//                 $quantity = $productDetails->quantity ?? 0;
+//                 $unitsSold = $productDetails->units_sold ?? 0;
+//                 $leftStock = $quantity - $unitsSold;
+
+//                 // Add currency symbol
+//                 $currencyTitle = $productDetails->currency ? $productDetails->currency->title : $productDetails->price; // Fallback if no currency found
+
+//                 // Get the images URLs by prepending the correct base URL
+//                 $imageUrls = collect($productDetails->images)->map(function ($image) {
+//                     if (strpos($image, 'storage/products/') === 0) {
+//                         // Image is inside storage/products folder
+//                         return asset('storage/products/' . $image);
+//                     } elseif (strpos($image, 'storage/') === 0) {
+//                         // Image is inside storage folder but not in the 'products' subfolder
+//                         return asset('storage/' . $image);
+//                     } else {
+//                         // Image is not inside storage, assume it's in public
+//                         return asset('storage/' . $image);  // This assumes fallback logic if images are in public
+//                     }
+//                 });
+
+//                 // Return product data with additional info
+//                 return array_merge($productDetails->toArray(), [
+//                     'total_reviews' => $totalReviews,
+//                     'avg_rating' => $avgRating,
+//                     'leftStock' => $leftStock,
+//                     'currency' => $currencyTitle,
+//                     'images' => $imageUrls, // Add the full image URLs here
+//                 ]);
+//             }),
+//         ];
+//     });
+
+//     return response()->json([
+//         'success' => true,
+//         'data' => $categories,
+//     ]);
+// }
+
 public function getAllGuestFeaturedProductsByCategory(Request $request)
 {
     // Fetch only the first five categories that have featured products
     $categories = ProductCategory::whereHas('products', function($query) {
-        $query->where('is_featured', 1); // Ensure there are featured products
+        $query->where('is_featured', 1)
+              ->where('status', 'published'); // Ensure products are published
     })
     ->with(['products' => function($query) {
-        $query->where('is_featured', 1); // Only get featured products
+        $query->where('is_featured', 1)
+              ->where('status', 'published') // Ensure products are published
+              ->orderBy('created_at', 'desc'); // Order by latest created
     }])
     ->take(5) // Limit to 5 categories
     ->get();
@@ -414,8 +494,14 @@ public function getAllGuestFeaturedProductsByCategory(Request $request)
                 })
                 ->select('ec_products.*', 'best_products.best_price', 'best_products.best_delivery_date')
                 ->with('reviews', 'currency')
-                ->where('ec_products.id', $product->id) // Only get the current product
+                ->where('ec_products.id', $product->id)
+                ->where('ec_products.status', 'published') // Ensure product is published
+                ->orderBy('ec_products.created_at', 'desc') // Order by latest created
                 ->first(); // Fetch the product details
+
+                if (!$productDetails) {
+                    return null; // Skip if no product details found
+                }
 
                 // Count total reviews and calculate average rating
                 $totalReviews = $productDetails->reviews->count();
@@ -432,14 +518,11 @@ public function getAllGuestFeaturedProductsByCategory(Request $request)
                 // Get the images URLs by prepending the correct base URL
                 $imageUrls = collect($productDetails->images)->map(function ($image) {
                     if (strpos($image, 'storage/products/') === 0) {
-                        // Image is inside storage/products folder
                         return asset('storage/products/' . $image);
                     } elseif (strpos($image, 'storage/') === 0) {
-                        // Image is inside storage folder but not in the 'products' subfolder
                         return asset('storage/' . $image);
                     } else {
-                        // Image is not inside storage, assume it's in public
-                        return asset('storage/' . $image);  // This assumes fallback logic if images are in public
+                        return asset('storage/' . $image);
                     }
                 });
 
@@ -451,7 +534,7 @@ public function getAllGuestFeaturedProductsByCategory(Request $request)
                     'currency' => $currencyTitle,
                     'images' => $imageUrls, // Add the full image URLs here
                 ]);
-            }),
+            })->filter(), // Remove null products
         ];
     });
 
@@ -460,7 +543,6 @@ public function getAllGuestFeaturedProductsByCategory(Request $request)
         'data' => $categories,
     ]);
 }
-
 
 
 }
