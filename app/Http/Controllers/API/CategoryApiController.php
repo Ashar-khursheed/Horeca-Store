@@ -201,10 +201,10 @@ public function getAllFeaturedProductsByCategory(Request $request)
 
     // Fetch only the first five categories that have featured products
     $categories = ProductCategory::whereHas('products', function($query) {
-        $query->where('is_featured', 1); // Ensure there are featured products
+        $query->where('is_featured', 1) ->where('ec_products.status', 'published'); // Ensure there are featured products
     })
     ->with(['products' => function($query) {
-        $query->where('is_featured', 1); // Only get featured products
+        $query->where('is_featured', 1) ->where('ec_products.status', 'published'); // Only get featured products
     }])
     ->take(5) // Limit to 5 categories
     ->get();
@@ -227,7 +227,9 @@ public function getAllFeaturedProductsByCategory(Request $request)
                 })
                 ->select('ec_products.*', 'best_products.best_price', 'best_products.best_delivery_date')
                 ->with('reviews', 'currency')
+                ->orderBy('created_at', 'desc')
                 ->where('ec_products.status', 'published')
+                
                 ->where('ec_products.id', $product->id) // Only get the current product
                 ->first(); // Fetch the product details
 
@@ -285,10 +287,10 @@ public function getAllGuestFeaturedProductsByCategory(Request $request)
 {
     // Fetch only the first five categories that have featured products
     $categories = ProductCategory::whereHas('products', function($query) {
-        $query->where('is_featured', 1); // Ensure there are featured products
+        $query->where('is_featured', 1) ->where('ec_products.status', 'published'); // Ensure there are featured products
     })
     ->with(['products' => function($query) {
-        $query->where('is_featured', 1); // Only get featured products
+        $query->where('is_featured', 1) ->where('ec_products.status', 'published'); // Only get featured products
     }])
     ->take(5) // Limit to 5 categories
     ->get();
@@ -311,6 +313,8 @@ public function getAllGuestFeaturedProductsByCategory(Request $request)
                 })
                 ->select('ec_products.*', 'best_products.best_price', 'best_products.best_delivery_date')
                 ->with('reviews', 'currency')
+                ->orderBy('created_at', 'desc')
+
                 ->where('ec_products.status', 'published')
                 ->where('ec_products.id', $product->id) // Only get the current product
                 ->first(); // Fetch the product details
