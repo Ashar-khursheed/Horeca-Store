@@ -358,18 +358,22 @@ public function getAllFeaturedProductsByCategory(Request $request)
                         return $image;
                     }
 
-                    // If the image starts with 'storage/products/', return it directly
-                    if (strpos($image, 'storage/products/') === 0) {
-                        return asset($image);
+                    // Dynamically resolve image paths
+                    $basePaths = [
+                        'storage/products/', // First, check 'products/' subfolder
+                        'storage/',          // Then, check the general 'storage/' folder
+                    ];
+
+                    // Loop through paths and check if the file exists
+                    foreach ($basePaths as $basePath) {
+                        $fullPath = asset($basePath . $image);
+                        if (file_exists(public_path($basePath . $image))) {
+                            return $fullPath; // Return the first valid path
+                        }
                     }
 
-                    // If the image starts with 'storage/', assume it's a valid storage path
-                    if (strpos($image, 'storage/') === 0) {
-                        return asset($image);
-                    }
-
-                    // Default: Assume it's in the 'products' folder inside 'storage'
-                    return asset('storage/products/' . $image);
+                    // Default: Return null or a fallback image if no valid path found
+                    return null; // Or a default placeholder image
                 });
 
                 // Append the values to the product
@@ -381,7 +385,7 @@ public function getAllFeaturedProductsByCategory(Request $request)
                     'in_wishlist' => $isInWishlist, // Add wishlist status
                     'images' => $imageUrls, // Add the full image URLs here
                 ]);
-            }),
+            })->toArray(),
         ];
     });
 
@@ -391,6 +395,7 @@ public function getAllFeaturedProductsByCategory(Request $request)
         'data' => $categories,
     ]);
 }
+
 
 
 
