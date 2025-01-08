@@ -102,7 +102,9 @@ Route::get('/search', [SearchApiController::class, 'search']);
 
 Route::get('/location', [LocationController::class, 'getLocation']);
 Route::get('categories/{id}/products', [CategoryController::class, 'getProductsByCategory']);
-
+Route::get('categories/filters', [CategoryController::class, 'getSpecificationFilters']);
+Route::post('categories/specification-filters', [CategoryController::class, 'getSpecificationFilters']);
+Route::post('categories/filtered-products', [CategoryController::class, 'getFilteredProducts']);
 Route::prefix('categories')->group(function () {
     
     Route::get('/', [CategoryController::class, 'index']);
