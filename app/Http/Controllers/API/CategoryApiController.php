@@ -227,6 +227,7 @@ public function getAllFeaturedProductsByCategory(Request $request)
                 })
                 ->select('ec_products.*', 'best_products.best_price', 'best_products.best_delivery_date')
                 ->with('reviews', 'currency')
+                ->where('ec_products.status', 'published')
                 ->where('ec_products.id', $product->id) // Only get the current product
                 ->first(); // Fetch the product details
 
@@ -310,6 +311,7 @@ public function getAllGuestFeaturedProductsByCategory(Request $request)
                 })
                 ->select('ec_products.*', 'best_products.best_price', 'best_products.best_delivery_date')
                 ->with('reviews', 'currency')
+                ->where('ec_products.status', 'published')
                 ->where('ec_products.id', $product->id) // Only get the current product
                 ->first(); // Fetch the product details
 
