@@ -835,6 +835,7 @@ class ProductController extends BaseController
                 if(!$tempProduct) {
                     $tempProduct = new TempProduct();
                 }
+                dd($request->all());
                 $tempProduct->name = $request->name;
                 $tempProduct->description = $request->description;
                 $tempProduct->content = $request->content;
@@ -1417,6 +1418,7 @@ class ProductController extends BaseController
         }
         /* Default User */
         else {
+            // dd($product->seoMeta->toArray());
             // Validate incoming request data
             $this->validate($request, [
                 // Group 0 Validation

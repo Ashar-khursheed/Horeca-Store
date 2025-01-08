@@ -6,6 +6,7 @@ use Botble\ACL\Models\User;
 use Botble\Base\Casts\SafeContent;
 use Botble\Base\Enums\BaseStatusEnum;
 use Botble\Base\Models\BaseModel;
+use Botble\Base\Models\MetaBox;
 use Botble\Ecommerce\Enums\DiscountTargetEnum;
 use Botble\Ecommerce\Enums\DiscountTypeEnum;
 use Botble\Ecommerce\Enums\ProductTypeEnum;
@@ -844,11 +845,16 @@ class Product extends BaseModel
         return false; // Or return null if you want to differentiate between guest and no wishlist
     }
 
+    // In the Product model (e.g., app/Models/Product.php)
+    public function recentlyViewed()
+    {
+        return $this->hasMany(RecentlyViewedProduct::class, 'product_id');
+    }
 
-            // In the Product model (e.g., app/Models/Product.php)
-        public function recentlyViewed()
-        {
-            return $this->hasMany(RecentlyViewedProduct::class, 'product_id');
-        }
+    // In the Product model (e.g., app/Models/Product.php)
+    public function seoMeta()
+    {
+        return $this->morphOne(MetaBox::class, 'reference');
+    }
 
 }

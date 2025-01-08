@@ -59,6 +59,26 @@
 						</div>
 					</div>
 
+					<div class="row mt-3">
+						<div class="col-md-12">
+							<div class="d-flex justify-content-between align-items-center mb-2">
+								<label for="seo_title">SEO Title</label>
+								<button type="button" class="btn btn-primary btn-sm add-comment-btn" data-toggle="modal" data-target="#comment-modal" data-type="seo_title" disabled>Add Comment</button>
+							</div>
+							<div class="border rounded p-3 annotatable-text">{!! $tempContentProduct->seo_title !!}</div>
+						</div>
+					</div>
+
+					<div class="row mt-3">
+						<div class="col-md-12">
+							<div class="d-flex justify-content-between align-items-center mb-2">
+								<label for="seo_description">SEO Description</label>
+								<button type="button" class="btn btn-primary btn-sm add-comment-btn" data-toggle="modal" data-target="#comment-modal" data-type="seo_description" disabled>Add Comment</button>
+							</div>
+							<div class="border rounded p-3 annotatable-text">{!! $tempContentProduct->seo_descriptions !!}</div>
+						</div>
+					</div>
+
 					<div class="row mt-3 {{ $tempContentProduct->comments->count() ? '' : 'd-none' }}" id="comments">
 						<div class="col-md-12">
 							<label>Issues</label>
