@@ -516,27 +516,28 @@ public function getAllGuestFeaturedProductsByCategory(Request $request)
                 // Add currency symbol
                 $currencyTitle = $productDetails->currency ? $productDetails->currency->title : $productDetails->price; // Fallback if no currency found
 
-               // Get the images URLs by prepending the correct base URL
-               $imageUrls = collect($productDetails->images)->map(function ($image) {
-                // If the image is already a full URL, return it directly
-                if (filter_var($image, FILTER_VALIDATE_URL)) {
-                    return $image;
-                }
+                                // Get the images URLs by prepending the correct base URL
+                    $imageUrls = collect($productDetails->images)->map(function ($image) {
+                        // If the image is already a full URL, return it directly
+                        if (filter_var($image, FILTER_VALIDATE_URL)) {
+                            return $image;
+                        }
 
-                // If the image starts with 'storage/products/', return it directly
-                if (strpos($image, 'storage/products/') === 0) {
-                    return asset($image);
-                }
+                        // If the image starts with 'storage/products/', return it directly
+                        if (strpos($image, 'storage/products/') === 0) {
+                            return asset($image); // Already has 'storage/products/' part, so no need to prepend
+                        }
 
-                // If the image starts with 'storage/', assume it's a valid storage path
-                if (strpos($image, 'storage/') === 0) {
-                    return asset($image);
-                }
+                        // If the image starts with 'storage/', assume it's in storage, not products folder
+                        if (strpos($image, 'storage/') === 0) {
+                            return asset($image); // Only prepend 'storage/'
+                        }
 
-                // Default: Assume it's in the 'products' folder inside 'storage'
-                return asset('storage/products/' . $image);
-            });
-                // Return product data with additional info
+                        // Default case: Assume it's in the 'products' folder inside 'storage/'
+                        return asset('storage/products/' . $image); // Prepend 'storage/products/' in case the path is relative
+                    });
+
+                                    // Return product data with additional info
                 return array_merge($productDetails->toArray(), [
                     'total_reviews' => $totalReviews,
                     'avg_rating' => $avgRating,
