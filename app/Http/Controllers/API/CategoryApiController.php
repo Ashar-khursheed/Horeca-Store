@@ -516,28 +516,31 @@ public function getAllGuestFeaturedProductsByCategory(Request $request)
                 // Add currency symbol
                 $currencyTitle = $productDetails->currency ? $productDetails->currency->title : $productDetails->price; // Fallback if no currency found
 
-                                // Get the images URLs by prepending the correct base URL
-                    $imageUrls = collect($productDetails->images)->map(function ($image) {
-                        // If the image is already a full URL, return it directly
-                        if (filter_var($image, FILTER_VALIDATE_URL)) {
-                            return $image;
+                // Correctly resolve image paths
+                $imageUrls = collect($productDetails->images)->map(function ($image) {
+                    // Check if the image already has a full URL
+                    if (filter_var($image, FILTER_VALIDATE_URL)) {
+                        return $image; // Use the full URL as it is
+                    }
+
+                    // Dynamically check if the image is in 'storage/products/' or 'storage/' folder
+                    $basePaths = [
+                        'storage/products/', // First, check 'products/' subfolder
+                        'storage/',          // Then, check the general 'storage/' folder
+                    ];
+
+                    foreach ($basePaths as $basePath) {
+                        $fullPath = asset($basePath . $image);
+                        if (file_exists(public_path($basePath . $image))) {
+                            return $fullPath; // Return the first valid path
                         }
+                    }
 
-                        // If the image starts with 'storage/products/', return it directly
-                        if (strpos($image, 'storage/products/') === 0) {
-                            return asset($image); // Already has 'storage/products/' part, so no need to prepend
-                        }
+                    // Handle fallback for missing paths
+                    return null; // Or a default placeholder image
+                })->filter(); // Remove null values
 
-                        // If the image starts with 'storage/', assume it's in storage, not products folder
-                        if (strpos($image, 'storage/') === 0) {
-                            return asset($image); // Only prepend 'storage/'
-                        }
-
-                        // Default case: Assume it's in the 'products' folder inside 'storage/'
-                        return asset('storage/products/' . $image); // Prepend 'storage/products/' in case the path is relative
-                    });
-
-                                    // Return product data with additional info
+                // Return product data with additional info
                 return array_merge($productDetails->toArray(), [
                     'total_reviews' => $totalReviews,
                     'avg_rating' => $avgRating,
