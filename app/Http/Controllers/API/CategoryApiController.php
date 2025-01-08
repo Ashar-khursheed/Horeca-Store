@@ -287,8 +287,8 @@ public function getAllFeaturedProductsByCategory(Request $request)
     // Initialize an empty array to store product IDs in the wishlist
     $wishlistProductIds = [];
     
+    // Fetch wishlist product IDs if the user is logged in
     if ($isUserLoggedIn) {
-        // Fetch wishlist product IDs if the user is logged in
         $wishlistProductIds = DB::table('ec_wish_lists')
             ->where('customer_id', $userId)
             ->pluck('product_id')
@@ -303,13 +303,14 @@ public function getAllFeaturedProductsByCategory(Request $request)
 
     // Fetch only the first five categories that have featured products
     $categories = ProductCategory::whereHas('products', function($query) {
-        $query->where('is_featured', 1)
-              ->where('status', 'published'); // Ensure there are published featured products
+        $query->where('is_featured', 1) // Ensure there are featured products
+              ->where('ec_products.status', 'published') // Only published products
+              ->orderBy('created_at', 'desc'); // Order by creation date
     })
     ->with(['products' => function($query) {
         $query->where('is_featured', 1)
-              ->where('status', 'published') // Only get published featured products
-              ->orderBy('created_at', 'desc'); // Order by created_at descending
+              ->where('ec_products.status', 'published')
+              ->orderBy('created_at', 'desc'); // Match published and ordered products
     }])
     ->take(5) // Limit to 5 categories
     ->get();
@@ -332,9 +333,7 @@ public function getAllFeaturedProductsByCategory(Request $request)
                 })
                 ->select('ec_products.*', 'best_products.best_price', 'best_products.best_delivery_date')
                 ->with('reviews', 'currency')
-                ->where('ec_products.status', 'published') // Ensure only published products
                 ->where('ec_products.id', $product->id) // Only get the current product
-                ->orderBy('ec_products.created_at', 'desc') // Order by created_at descending
                 ->first(); // Fetch the product details
 
                 // Count total reviews and calculate average rating
@@ -354,13 +353,23 @@ public function getAllFeaturedProductsByCategory(Request $request)
 
                 // Get the images URLs by prepending the correct base URL
                 $imageUrls = collect($productDetails->images)->map(function ($image) {
-                    if (strpos($image, 'storage/products/') === 0) {
-                        return asset('storage/products/' . $image);
-                    } elseif (strpos($image, 'storage/') === 0) {
-                        return asset('storage/' . $image);
-                    } else {
-                        return asset('storage/' . $image);
+                    // If the image is already a full URL, return it directly
+                    if (filter_var($image, FILTER_VALIDATE_URL)) {
+                        return $image;
                     }
+
+                    // If the image starts with 'storage/products/', return it directly
+                    if (strpos($image, 'storage/products/') === 0) {
+                        return asset($image);
+                    }
+
+                    // If the image starts with 'storage/', assume it's a valid storage path
+                    if (strpos($image, 'storage/') === 0) {
+                        return asset($image);
+                    }
+
+                    // Default: Assume it's in the 'products' folder inside 'storage'
+                    return asset('storage/products/' . $image);
                 });
 
                 // Append the values to the product
@@ -369,8 +378,8 @@ public function getAllFeaturedProductsByCategory(Request $request)
                     'avg_rating' => $avgRating,
                     'leftStock' => $leftStock,
                     'currency' => $currencyTitle,
-                    'in_wishlist' => $isInWishlist,
-                    'images' => $imageUrls,
+                    'in_wishlist' => $isInWishlist, // Add wishlist status
+                    'images' => $imageUrls, // Add the full image URLs here
                 ]);
             }),
         ];
@@ -382,6 +391,7 @@ public function getAllFeaturedProductsByCategory(Request $request)
         'data' => $categories,
     ]);
 }
+
 
 
 // public function getAllGuestFeaturedProductsByCategory(Request $request)
@@ -464,14 +474,11 @@ public function getAllFeaturedProductsByCategory(Request $request)
 public function getAllGuestFeaturedProductsByCategory(Request $request)
 {
     // Fetch only the first five categories that have featured products
-    $categories = ProductCategory::whereHas('products', function($query) {
-        $query->where('is_featured', 1)
-              ->where('status', 'published'); // Ensure products are published
+    $categories = ProductCategory::whereHas('products', function ($query) {
+        $query->where('is_featured', 1); // Ensure there are featured products
     })
-    ->with(['products' => function($query) {
-        $query->where('is_featured', 1)
-              ->where('status', 'published') // Ensure products are published
-              ->orderBy('created_at', 'desc'); // Order by latest created
+    ->with(['products' => function ($query) {
+        $query->where('is_featured', 1); // Only get featured products
     }])
     ->take(5) // Limit to 5 categories
     ->get();
@@ -494,14 +501,8 @@ public function getAllGuestFeaturedProductsByCategory(Request $request)
                 })
                 ->select('ec_products.*', 'best_products.best_price', 'best_products.best_delivery_date')
                 ->with('reviews', 'currency')
-                ->where('ec_products.id', $product->id)
-                ->where('ec_products.status', 'published') // Ensure product is published
-                ->orderBy('ec_products.created_at', 'desc') // Order by latest created
+                ->where('ec_products.id', $product->id) // Only get the current product
                 ->first(); // Fetch the product details
-
-                if (!$productDetails) {
-                    return null; // Skip if no product details found
-                }
 
                 // Count total reviews and calculate average rating
                 $totalReviews = $productDetails->reviews->count();
@@ -517,12 +518,21 @@ public function getAllGuestFeaturedProductsByCategory(Request $request)
 
                 // Get the images URLs by prepending the correct base URL
                 $imageUrls = collect($productDetails->images)->map(function ($image) {
-                    if (strpos($image, 'storage/products/') === 0) {
-                        return asset('storage/products/' . $image);
+                    // Check if the image already has a full URL
+                    if (filter_var($image, FILTER_VALIDATE_URL)) {
+                        return $image; // Use the full URL as it is
+                    }
+
+                    // Determine the correct storage path
+                    if (strpos($image, 'products/') === 0) {
+                        // Image is inside 'storage/products/' folder
+                        return asset('storage/' . $image);
                     } elseif (strpos($image, 'storage/') === 0) {
-                        return asset('storage/' . $image);
+                        // Image is already in 'storage/' folder but not 'products/'
+                        return asset($image);
                     } else {
-                        return asset('storage/' . $image);
+                        // Handle fallback case for other paths
+                        return asset('storage/products/' . $image);
                     }
                 });
 
@@ -534,7 +544,7 @@ public function getAllGuestFeaturedProductsByCategory(Request $request)
                     'currency' => $currencyTitle,
                     'images' => $imageUrls, // Add the full image URLs here
                 ]);
-            })->filter(), // Remove null products
+            }),
         ];
     });
 
@@ -543,6 +553,7 @@ public function getAllGuestFeaturedProductsByCategory(Request $request)
         'data' => $categories,
     ]);
 }
+
 
 
 }
