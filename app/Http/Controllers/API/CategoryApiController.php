@@ -176,6 +176,108 @@ class CategoryApiController extends Controller
 //     ]);
 // }
 
+// public function getAllFeaturedProductsByCategory(Request $request)
+// {
+//     // Get the logged-in user's ID
+//     $userId = Auth::id();
+//     $isUserLoggedIn = $userId !== null; // Check if the user is logged in
+
+//     // Initialize an empty array to store product IDs in the wishlist
+//     $wishlistProductIds = [];
+    
+//     // Fetch wishlist product IDs if the user is logged in
+//     if ($isUserLoggedIn) {
+//         $wishlistProductIds = DB::table('ec_wish_lists')
+//             ->where('customer_id', $userId)
+//             ->pluck('product_id')
+//             ->map(function($id) {
+//                 return (int) $id; // Ensure all IDs are integers
+//             })
+//             ->toArray(); // Get all product IDs in the user's wishlist
+//     } else {
+//         // Handle guest wishlist (using session, adjust as needed)
+//         $wishlistProductIds = session()->get('guest_wishlist', []); // Example for guest wishlist
+//     }
+
+//     // Fetch only the first five categories that have featured products
+//     $categories = ProductCategory::whereHas('products', function($query) {
+//         $query->where('is_featured', 1); // Ensure there are featured products
+//     })
+//     ->with(['products' => function($query) {
+//         $query->where('is_featured', 1); // Only get featured products
+//     }])
+//     ->take(5) // Limit to 5 categories
+//     ->get();
+
+//     // Prepare a subquery for best price and delivery date
+//     $subQuery = Product::select('sku')
+//         ->selectRaw('MIN(price) as best_price')
+//         ->selectRaw('MIN(delivery_days) as best_delivery_date')
+//         ->groupBy('sku');
+
+//     // Map the categories to include featured products with additional info
+//     $categories = $categories->map(function ($category) use ($subQuery, $wishlistProductIds) {
+//         return [
+//             'category_name' => $category->name,
+//             'featured_products' => $category->products->take(10)->map(function ($product) use ($subQuery, $wishlistProductIds) {
+//                 // Join with the subquery to get best price and delivery date
+//                 $productDetails = Product::leftJoinSub($subQuery, 'best_products', function ($join) {
+//                     $join->on('ec_products.sku', '=', 'best_products.sku')
+//                          ->whereColumn('ec_products.price', 'best_products.best_price');
+//                 })
+//                 ->select('ec_products.*', 'best_products.best_price', 'best_products.best_delivery_date')
+//                 ->with('reviews', 'currency')
+//                 ->where('ec_products.id', $product->id) // Only get the current product
+//                 ->first(); // Fetch the product details
+
+//                 // Count total reviews and calculate average rating
+//                 $totalReviews = $productDetails->reviews->count();
+//                 $avgRating = $totalReviews > 0 ? $productDetails->reviews->avg('star') : null;
+
+//                 // Calculate left stock
+//                 $quantity = $productDetails->quantity ?? 0;
+//                 $unitsSold = $productDetails->units_sold ?? 0;
+//                 $leftStock = $quantity - $unitsSold;
+
+//                 // Add currency symbol
+//                 $currencyTitle = $productDetails->currency ? $productDetails->currency->title : $productDetails->price; // Fallback if no currency found
+
+//                 // Check if the product is in the wishlist
+//                 $isInWishlist = in_array($productDetails->id, $wishlistProductIds);
+
+//                 // Get the images URLs by prepending the correct base URL
+//                 $imageUrls = collect($productDetails->images)->map(function ($image) {
+//                     if (strpos($image, 'storage/products/') === 0) {
+//                         // Image is inside storage/products folder
+//                         return asset('storage/products/' . $image);
+//                     } elseif (strpos($image, 'storage/') === 0) {
+//                         // Image is inside storage folder but not in the 'products' subfolder
+//                         return asset('storage/' . $image);
+//                     } else {
+//                         // Image is not inside storage, assume it's in public
+//                         return asset('storage/' . $image);  // this should be your fallback logic if images are in public
+//                     }
+//                 });
+
+//                 // Append the values to the product
+//                 return array_merge($productDetails->toArray(), [
+//                     'total_reviews' => $totalReviews,
+//                     'avg_rating' => $avgRating,
+//                     'leftStock' => $leftStock,
+//                     'currency' => $currencyTitle,
+//                     'in_wishlist' => $isInWishlist, // Add wishlist status
+//                     'images' => $imageUrls, // Add the full image URLs here
+//                 ]);
+//             }),
+//         ];
+//     });
+
+//     // Return the result in a JSON response
+//     return response()->json([
+//         'success' => true,
+//         'data' => $categories,
+//     ]);
+// }
 public function getAllFeaturedProductsByCategory(Request $request)
 {
     // Get the logged-in user's ID
@@ -185,8 +287,8 @@ public function getAllFeaturedProductsByCategory(Request $request)
     // Initialize an empty array to store product IDs in the wishlist
     $wishlistProductIds = [];
     
-    // Fetch wishlist product IDs if the user is logged in
     if ($isUserLoggedIn) {
+        // Fetch wishlist product IDs if the user is logged in
         $wishlistProductIds = DB::table('ec_wish_lists')
             ->where('customer_id', $userId)
             ->pluck('product_id')
@@ -201,10 +303,13 @@ public function getAllFeaturedProductsByCategory(Request $request)
 
     // Fetch only the first five categories that have featured products
     $categories = ProductCategory::whereHas('products', function($query) {
-        $query->where('is_featured', 1) ->where('ec_products.status', 'published'); // Ensure there are featured products
+        $query->where('is_featured', 1)
+              ->where('status', 'published'); // Ensure there are published featured products
     })
     ->with(['products' => function($query) {
-        $query->where('is_featured', 1) ->where('ec_products.status', 'published'); // Only get featured products
+        $query->where('is_featured', 1)
+              ->where('status', 'published') // Only get published featured products
+              ->orderBy('created_at', 'desc'); // Order by created_at descending
     }])
     ->take(5) // Limit to 5 categories
     ->get();
@@ -227,10 +332,9 @@ public function getAllFeaturedProductsByCategory(Request $request)
                 })
                 ->select('ec_products.*', 'best_products.best_price', 'best_products.best_delivery_date')
                 ->with('reviews', 'currency')
-                ->orderBy('created_at', 'desc')
-                ->where('ec_products.status', 'published')
-                
+                ->where('ec_products.status', 'published') // Ensure only published products
                 ->where('ec_products.id', $product->id) // Only get the current product
+                ->orderBy('ec_products.created_at', 'desc') // Order by created_at descending
                 ->first(); // Fetch the product details
 
                 // Count total reviews and calculate average rating
@@ -251,14 +355,11 @@ public function getAllFeaturedProductsByCategory(Request $request)
                 // Get the images URLs by prepending the correct base URL
                 $imageUrls = collect($productDetails->images)->map(function ($image) {
                     if (strpos($image, 'storage/products/') === 0) {
-                        // Image is inside storage/products folder
                         return asset('storage/products/' . $image);
                     } elseif (strpos($image, 'storage/') === 0) {
-                        // Image is inside storage folder but not in the 'products' subfolder
                         return asset('storage/' . $image);
                     } else {
-                        // Image is not inside storage, assume it's in public
-                        return asset('storage/' . $image);  // this should be your fallback logic if images are in public
+                        return asset('storage/' . $image);
                     }
                 });
 
@@ -268,8 +369,8 @@ public function getAllFeaturedProductsByCategory(Request $request)
                     'avg_rating' => $avgRating,
                     'leftStock' => $leftStock,
                     'currency' => $currencyTitle,
-                    'in_wishlist' => $isInWishlist, // Add wishlist status
-                    'images' => $imageUrls, // Add the full image URLs here
+                    'in_wishlist' => $isInWishlist,
+                    'images' => $imageUrls,
                 ]);
             }),
         ];
@@ -287,10 +388,10 @@ public function getAllGuestFeaturedProductsByCategory(Request $request)
 {
     // Fetch only the first five categories that have featured products
     $categories = ProductCategory::whereHas('products', function($query) {
-        $query->where('is_featured', 1) ->where('ec_products.status', 'published'); // Ensure there are featured products
+        $query->where('is_featured', 1); // Ensure there are featured products
     })
     ->with(['products' => function($query) {
-        $query->where('is_featured', 1) ->where('ec_products.status', 'published'); // Only get featured products
+        $query->where('is_featured', 1); // Only get featured products
     }])
     ->take(5) // Limit to 5 categories
     ->get();
@@ -313,9 +414,6 @@ public function getAllGuestFeaturedProductsByCategory(Request $request)
                 })
                 ->select('ec_products.*', 'best_products.best_price', 'best_products.best_delivery_date')
                 ->with('reviews', 'currency')
-                ->orderBy('created_at', 'desc')
-
-                ->where('ec_products.status', 'published')
                 ->where('ec_products.id', $product->id) // Only get the current product
                 ->first(); // Fetch the product details
 
