@@ -17,7 +17,7 @@ class TempProductStatusController extends BaseController
 		$userRoleId = auth()->user()->roles->value('id');
 		if ($userRoleId == 22) {
 			// Fetch all temporary product changes
-			$tempPricingProducts = TempProduct::where('role_id', $userRoleId)->where('created_by_id', auth()->id())->orderBy('created_at', 'desc')->get()->map(function ($product) {
+			$tempPricingProducts = TempProduct::where('role_id', $userRoleId)->where('created_by', auth()->id())->orderBy('created_at', 'desc')->get()->map(function ($product) {
 				$product->discount = $product->discount ? json_decode($product->discount) : [];
 				return $product;
 			});
@@ -33,7 +33,7 @@ class TempProductStatusController extends BaseController
 			return view('plugins/ecommerce::temp-products.pricing', compact('tempPricingProducts', 'unitOfMeasurements', 'stores', 'approvalStatuses'));
 		} else if ($userRoleId == 19) {
 			// Fetch all temporary product changes
-			$tempGraphicsProducts = TempProduct::where('role_id', $userRoleId)->where('created_by_id', auth()->id())->orderBy('created_at', 'desc')->get();
+			$tempGraphicsProducts = TempProduct::where('role_id', $userRoleId)->where('created_by', auth()->id())->orderBy('created_at', 'desc')->get();
 			$approvalStatuses = [
 				'in-process' => 'Content In Progress',
 				'pending' => 'Submitted for Approval',
@@ -43,7 +43,7 @@ class TempProductStatusController extends BaseController
 			return view('plugins/ecommerce::temp-products.graphics', compact('tempGraphicsProducts', 'approvalStatuses'));
 		} else if ($userRoleId == 18) {
 			// Fetch all temporary product changes
-			$tempContentProducts = TempProduct::where('role_id', $userRoleId)->where('created_by_id', auth()->id())->orderBy('created_at', 'desc')->get();
+			$tempContentProducts = TempProduct::where('role_id', $userRoleId)->where('created_by', auth()->id())->orderBy('created_at', 'desc')->get();
 			$approvalStatuses = [
 				'in-process' => 'Content In Progress',
 				'pending' => 'Submitted for Approval',

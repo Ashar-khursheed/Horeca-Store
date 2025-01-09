@@ -47,7 +47,8 @@ class TempProduct extends BaseModel
 		'discount',
 		'margin',
 		'remarks',
-		'rejection_count'
+		'rejection_count',
+		'created_by'
 	];
 
 	public function product()
@@ -59,8 +60,9 @@ class TempProduct extends BaseModel
 	{
 		return $this->hasMany(TempProductComment::class, 'temp_product_id')->orderBy('created_at', 'desc');
 	}
+
 	public function createdBy()
 	{
-		return $this->belongsTo(User::class);
+		return $this->belongsTo(User::class, 'created_by');
 	}
 }

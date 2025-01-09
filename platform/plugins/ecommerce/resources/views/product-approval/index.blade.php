@@ -123,7 +123,7 @@
 										<td>{{ $tempContentProduct->product_id }}</td>
 										<td class="product-name">{{ $tempContentProduct->name }}</td>
 										{{-- <td class="product-description">{{ $tempContentProduct->description }}</td> --}}
-										<td class="product-description">{{ $tempContentProduct->createdBy->name }}</td>
+										<td class="product-description">{{ $tempContentProduct->createdBy ? $tempContentProduct->createdBy->name:'' }}</td>
 										<td class="product-description">{{ $tempContentProduct->created_at->format('Y-m-d H:i:s') }}</td>
 										<td class="product-description">{{ $approvalStatuses[$tempContentProduct->approval_status] ?? '' }}</td>
 										<td>

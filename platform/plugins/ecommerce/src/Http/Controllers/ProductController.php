@@ -831,20 +831,31 @@ class ProductController extends BaseController
         /* Check if the user has role ID 18 (Copywriter) */
         if ($userId && DB::table('role_users')->where('user_id', $userId)->where('role_id',18)->exists()) {
             if ($product) {
-                $tempProduct = TempProduct::where('created_by_id', $userId)->where('role_id', 18)->where('approval_status', 'in-process')->first();
+                $tempProduct = TempProduct::where('product_id', $product->id)->where('created_by', $userId)->where('role_id', 18)->where('approval_status', 'in-process')->first();
                 if(!$tempProduct) {
                     $tempProduct = new TempProduct();
                 }
-                dd($request->all());
+
+                $tempProduct->product_id = $product->id;
                 $tempProduct->name = $request->name;
+                $tempProduct->slug_id = $request->slug_id;
+                $tempProduct->slug_modal = $request->model;
+                $tempProduct->slug = $product->slug;
+                $tempProduct->sku = $request->sku;
                 $tempProduct->description = $request->description;
                 $tempProduct->content = $request->content;
-                $tempProduct->created_by_id = $userId;
-                $tempProduct->created_at = now();
-                $tempProduct->updated_at = now();
-                $tempProduct->product_id = $product->id;
+                $tempProduct->warranty_information = $request->warranty_information;
+                $tempProduct->specification_details = isset($request->specs) && $request->specs ? json_encode($request->specs):null;
+                $tempProduct->seo_title = $request->seo_meta['seo_title'] ?? null;
+                $tempProduct->seo_description = $request->seo_meta['seo_description'] ?? null;
+                $tempProduct->category_ids = isset($request->categories) && $request->categories ? json_encode($request->categories):null;;
+                $tempProduct->product_type_ids = isset($request->producttypes) && $request->producttypes ? json_encode($request->producttypes):null;;
+                $tempProduct->google_shopping_category = $request->google_shopping_category;
+                $tempProduct->created_by = $userId;
                 $tempProduct->role_id = 18;
                 $tempProduct->approval_status = isset($request->in_process) && $request->in_process==1 ? 'in-process' : 'pending';
+                $tempProduct->created_at = now();
+                $tempProduct->updated_at = now();
 
                 $tempProduct->save();
             }
@@ -861,13 +872,13 @@ class ProductController extends BaseController
                     'titles.*' => 'nullable|string|max:255',
                 ]);
 
-                $tempProduct = TempProduct::where('created_by_id', auth()->id())->where('role_id', 19)->whereIn('approval_status', ['in-process', 'rejected'])->first();
+                $tempProduct = TempProduct::where('product_id', $product->id)->where('created_by', auth()->id())->where('role_id', 19)->whereIn('approval_status', ['in-process', 'rejected'])->first();
                 if(!$tempProduct) {
                     $tempProduct = new TempProduct();
                 }
                 $tempProduct->name = $product->name;
                 $tempProduct->sku = $product->sku;
-                $tempProduct->created_by_id = $userId;
+                $tempProduct->created_by = $userId;
                 $tempProduct->created_at = now();
                 $tempProduct->updated_at = now();
                 $tempProduct->product_id = $product->id;
@@ -992,7 +1003,7 @@ class ProductController extends BaseController
             ]);
 
             if ($product) {  // Check if the product exists
-                $tempProduct = TempProduct::where('created_by_id', auth()->id())->where('role_id', 22)->where('approval_status', 'in-process')->first();
+                $tempProduct = TempProduct::where('product_id', $product->id)->where('created_by', auth()->id())->where('role_id', 22)->where('approval_status', 'in-process')->first();
                 if(!$tempProduct) {
                     $tempProduct = new TempProduct();
                 }
@@ -1017,7 +1028,7 @@ class ProductController extends BaseController
                 $tempProduct->unit_of_measurement_id = $request->unit_of_measurement_id;
                 $tempProduct->delivery_days = $request->delivery_days;
                 $tempProduct->box_quantity = $request->box_quantity;
-                $tempProduct->created_by_id = auth()->id();
+                $tempProduct->created_by = auth()->id();
                 $tempProduct->created_at = now();
                 $tempProduct->updated_at = now();
                 $tempProduct->product_id = $product->id;
