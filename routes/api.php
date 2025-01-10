@@ -102,7 +102,9 @@ Route::get('/search', [SearchApiController::class, 'search']);
 
 Route::get('/location', [LocationController::class, 'getLocation']);
 Route::get('categories/{id}/products', [CategoryController::class, 'getProductsByCategory']);
-
+Route::get('categories/filters', [CategoryController::class, 'getSpecificationFilters']);
+Route::post('categories/specification-filters', [CategoryController::class, 'getSpecificationFilters']);
+Route::post('categories/filtered-products', [CategoryController::class, 'getFilteredProducts']);
 Route::prefix('categories')->group(function () {
     
     Route::get('/', [CategoryController::class, 'index']);
@@ -229,6 +231,9 @@ Route::post('/cart/update-guest', [CartApiController::class, 'updateQuantityGues
 
 // Routes for Blog Posts 
 Route::get('/posts', [PostApiController::class, 'index']);
+Route::get('/get-views', [PostApiController::class, 'getlikes']);
+Route::get('/posts/{id}', [PostApiController::class, 'show']);
+
 Route::put('/posts/{id}', [PostApiController::class, 'update']);
 Route::put('/post-comments/{id}', [PostApiController::class, 'postComment']);
 Route::get('/postcategories', [PostCategoryController::class, 'index']);
