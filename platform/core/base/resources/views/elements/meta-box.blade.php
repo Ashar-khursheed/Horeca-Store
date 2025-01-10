@@ -1,4 +1,4 @@
-{{-- 
+{{--
 @if (!empty($data))
     <div
         id="{{ $context }}-sortables"
@@ -20,7 +20,7 @@
 
 @endphp
 
-@if (!empty($data) && !$hasGraphicsRole) 
+@if (!empty($data) && !$hasGraphicsRole)
     <div
         id="{{ $context }}-sortables"
         class="meta-box-sortables"
