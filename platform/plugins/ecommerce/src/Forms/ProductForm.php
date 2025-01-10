@@ -83,35 +83,27 @@ class ProductForm extends FormAbstract
 		->exists();
 
 		if ($hasContentWritingRole) {
-			// Additional JavaScript code will be required to disable the field
 
-			$brands = Brand::query()->pluck('name', 'id')->all();
-
-			$productCollections = ProductCollection::query()->pluck('name', 'id')->all();
-
-			// $productLabels = ProductLabel::query()->pluck('name', 'id')->all();
+			$productTypeOptions = ProductTypes::pluck('name', 'id')->all();
 
 			$productId = null;
 			$selectedCategories = [];
-			$tags = null;
-			$frequently_bought_together= null;
-			$totalProductVariations = 0;
+			$producttypes = null;
 
 			if ($this->getModel()) {
 				$productId = $this->getModel()->id;
-
 				$selectedCategories = $this->getModel()->categories()->pluck('category_id')->all();
-
-				$totalProductVariations = ProductVariation::query()->where('configurable_product_id', $productId)->count();
-
-				$tags = $this->getModel()->tags()->pluck('name')->implode(',');
+				$producttypes = $this->getModel()->producttypes()->pluck('name')->implode(',');
 			}
 
 			$this
+			->setupModel(new Product())
+			->setValidatorClass(ProductRequest::class)
+			->setFormOption('files', true)
 			->add('name', TextField::class, NameFieldOption::make()->required()->toArray())
 			->add('sku', TextField::class, array_merge(TextFieldOption::make()->label(trans('plugins/ecommerce::products.sku'))->toArray(), [
 				'attr' => [
-					'readonly' => true, // Disable the field
+					// 'readonly' => true, // Disable the field
 				],
 			]))
 			->add(
@@ -121,8 +113,15 @@ class ProductForm extends FormAbstract
 				->label(trans('core/base::forms.description'))
 				->placeholder(trans('core/base::forms.description_placeholder'))->toArray()
 			)
+			->add('content', EditorField::class, ContentFieldOption::make() ->label(trans('Features'))->allowedShortcodes()->toArray())
+			->add(
+				'warranty_information',
+				EditorField::class,
+				EditorFieldOption::make()
+				->label(trans('warranty information'))
+				->placeholder(trans('core/base::forms.description_placeholder'))->toArray()
+			);
 
-			->add('content', EditorField::class, ContentFieldOption::make() ->label(trans('Features'))->allowedShortcodes()->toArray());
 
 			if ($productId) {
 				$this->addMetaBoxes([
@@ -137,11 +136,35 @@ class ProductForm extends FormAbstract
 				]);
 			}
 
-			// $this
-
-			// ->addAfter('brand_id', 'sku', TextField::class, TextFieldOption::make()->label(trans('plugins/ecommerce::products.sku')));
-
-			$this->add(
+			$this
+			->add('status', SelectField::class, array_merge(StatusFieldOption::make()->toArray(), [
+				'attr' => [
+					'disabled' => true, // Disable the field
+				],
+			]))
+			->add(
+				'categories[]',
+				TreeCategoryField::class,
+				SelectFieldOption::make()
+				->label(trans('plugins/ecommerce::products.form.categories'))
+				->choices(ProductCategoryHelper::getActiveTreeCategories())
+				->selected(old('categories', $selectedCategories))
+				->addAttribute('card-body-class', 'p-0')
+				->toArray()
+			)
+			->add(
+				'producttypes',
+				SelectField::class,
+				SelectFieldOption::make()
+				->label(trans('plugins/ecommerce::products.form.producttypes'))
+				->choices($productTypeOptions)
+				->searchable(true)
+				->multiple(true)
+				->toArray()
+			)
+			->add('google_shopping_category', 'text', ['label' => 'Google Shopping / Google Product Category'])
+			->setBreakFieldPoint('status')
+			->add(
 				'in_process', OnOffField::class, OnOffFieldOption::make()->label('Is Draft')->defaultValue(true)->toArray()
 			);
 		}

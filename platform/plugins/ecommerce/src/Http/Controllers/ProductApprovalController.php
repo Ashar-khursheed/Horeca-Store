@@ -9,6 +9,8 @@ use Botble\Ecommerce\Models\UnitOfMeasurement;
 use Botble\Ecommerce\Models\Discount;
 use Botble\Ecommerce\Models\DiscountProduct;
 use Botble\Ecommerce\Models\TempProductComment;
+use Botble\Ecommerce\Models\ProductCategory;
+use Botble\Ecommerce\Models\ProductTypes;
 use Botble\Marketplace\Models\Store;
 
 use DB, Carbon\Carbon;
@@ -22,7 +24,7 @@ class ProductApprovalController extends BaseController
 			$product->discount = $product->discount ? json_decode($product->discount) : [];
 			return $product;
 		});
-
+		// dd($tempPricingProducts->first()->createdBy->name);
 		// dd($tempPricingProducts->toArray());
 
 		$tempContentProducts = TempProduct::where('role_id', 18)->orderBy('created_at', 'desc')->get();
@@ -196,6 +198,23 @@ class ProductApprovalController extends BaseController
 	{
 		logger()->info('Fetch product data with temp content product id: '.$tempContentProductID);
 		$tempContentProduct = TempProduct::find($tempContentProductID);
+
+		$tempContentProduct = TempProduct::find($tempContentProductID);
+
+		if ($tempContentProduct) {
+			// Decode JSON values once
+			$categoryIds = $tempContentProduct->category_ids ? json_decode($tempContentProduct->category_ids, true) : [];
+			$productTypeIds = $tempContentProduct->product_type_ids ? json_decode($tempContentProduct->product_type_ids, true) : [];
+
+			// Fetch categories and product types if IDs exist
+			$categories = !empty($categoryIds) ? ProductCategory::whereIn('id', $categoryIds)->pluck('name')->toArray() : [];
+			$productTypes = !empty($productTypeIds) ? ProductTypes::whereIn('id', $productTypeIds)->pluck('name')->toArray() : [];
+
+			// Assign concatenated names back to the model
+			$tempContentProduct->categories = implode(', ', $categories);
+			$tempContentProduct->productTypes = implode(', ', $productTypes);
+		}
+
 
 		$approvalStatuses = [
 			'in-process' => 'Content In Progress',
