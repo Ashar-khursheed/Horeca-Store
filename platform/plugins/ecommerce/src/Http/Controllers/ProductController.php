@@ -848,8 +848,8 @@ class ProductController extends BaseController
                 $tempProduct->specification_details = isset($request->specs) && $request->specs ? json_encode($request->specs):null;
                 $tempProduct->seo_title = $request->seo_meta['seo_title'] ?? null;
                 $tempProduct->seo_description = $request->seo_meta['seo_description'] ?? null;
-                $tempProduct->category_ids = isset($request->categories) && $request->categories ? json_encode($request->categories):null;;
-                $tempProduct->product_type_ids = isset($request->producttypes) && $request->producttypes ? json_encode($request->producttypes):null;;
+                $tempProduct->category_ids = isset($request->categories) && $request->categories ? json_encode($request->categories):null;
+                $tempProduct->product_type_ids = isset($request->producttypes) && $request->producttypes ? json_encode($request->producttypes):null;
                 $tempProduct->google_shopping_category = $request->google_shopping_category;
                 $tempProduct->created_by = $userId;
                 $tempProduct->role_id = 18;

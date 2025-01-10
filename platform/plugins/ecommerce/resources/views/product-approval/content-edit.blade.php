@@ -133,17 +133,17 @@
 						</div>
 					</div>
 
-					@php
-					$specifications = json_decode($tempContentProduct->specification_details, true);
+					{{-- @php
+					$specifications = json_decode($tempContentProduct->specification_details, true) ?? [];
 					@endphp
 
 					<div class="row mt-3 {{ count($specifications) ? '' : 'd-none' }}">
 						<div class="col-md-12">
 							<div class="d-flex justify-content-between align-items-center mb-2">
 								<label for="specification_details">Specifications</label>
-								<button type="button" class="btn btn-primary btn-sm add-comment-btn" data-toggle="modal" data-target="#comment-modal" data-type="specification_details">Add Comment</button>
+								<button type="button" class="btn btn-primary btn-sm spec-comment-btn" data-toggle="modal" data-target="#comment-modal" data-type="specification_details">Add Comment</button>
 							</div>
-							<div class="border rounded p-3 annotatable-text">
+							<div class="border rounded p-3">
 								<table class="table table-striped table-bordered">
 									<thead>
 										<tr>
@@ -164,7 +164,7 @@
 								</table>
 							</div>
 						</div>
-					</div>
+					</div> --}}
 
 					<div class="row mt-3 {{ $tempContentProduct->comments->count() ? '' : 'd-none' }}" id="comments">
 						<div class="col-md-12">
@@ -299,9 +299,7 @@
 
 				// Get the selected range
 				let selectedHtml = '';
-				if (textType == 'specification_details') {
-					selectedHtml = 'Not allowed';
-				} else if (selection.rangeCount > 0) {
+				if (selection.rangeCount > 0) {
 					const range = selection.getRangeAt(0);
 
 					// Create a temporary container to hold the HTML content
@@ -315,6 +313,21 @@
 				$('#highlighted-text').val(selectedHtml); // Save the HTML markup
 				$('#comment-type').val(textType);
 			});
+
+			// Set highlighted text and comment type when the "Add Comment" button is clicked
+			// $('.spec-comment-btn').on('click', function () {
+			// 	const textType = $(this).data('type'); // "description" or "content"
+			// 	const selection = window.getSelection();
+
+			// 	// Get the selected range
+			// 	let selectedHtml = '';
+			// 	if (textType == 'specification_details') {
+			// 		selectedHtml = 'Not allowed';
+			// 	}
+			// 	// Set the highlighted text and comment type in the modal
+			// 	$('#highlighted-text').val(selectedHtml); // Save the HTML markup
+			// 	$('#comment-type').val(textType);
+			// });
 
 			$('#content_approval_status').on('change', updateContentRemarksRequirement);
 
@@ -358,7 +371,7 @@
 				alert('An error occurred while saving the comment, please open the console for details.');
 				console.error('Fetch error:', error);
 			});
+		});
 	</script>
-
 </body>
 @endsection
