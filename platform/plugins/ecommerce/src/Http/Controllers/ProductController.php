@@ -443,7 +443,7 @@ class ProductController extends BaseController
                         );
                     }
 
-                    if ($product->changeSpecs) {
+                    if (isset($product->changeSpecs)) {
                         $this->saveSpecifications($product, $request->specs);
                         unset($product->changeSpecs);
                     }
@@ -791,7 +791,7 @@ class ProductController extends BaseController
                         );
                     }
 
-                    if ($product->changeSpecs) {
+                    if (isset($product->changeSpecs)) {
                         $this->saveSpecifications($product, $request->specs);
                         unset($product->changeSpecs);
                     }
@@ -1416,7 +1416,7 @@ class ProductController extends BaseController
                 );
             }
 
-            if ($product->changeSpecs) {
+            if (isset($product->changeSpecs)) {
                 $this->saveSpecifications($product, $request->specs);
                 unset($product->changeSpecs);
             }
@@ -1714,7 +1714,7 @@ class ProductController extends BaseController
                 );
             }
 
-            if ($product->changeSpecs) {
+            if (isset($product->changeSpecs)) {
                 $this->saveSpecifications($product, $request->specs);
                 unset($product->changeSpecs);
             }
