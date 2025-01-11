@@ -30,36 +30,36 @@ class CategoryController extends Controller
     //     return response()->json($categoriesTree);
     // }
     
-// public function index(Request $request)
-// {
-//     $filterId = $request->get('id'); // Optional ID filter
-//     $limit = $request->get('limit', 12); // Default limit to 12
+public function index(Request $request)
+{
+    $filterId = $request->get('id'); // Optional ID filter
+    $limit = $request->get('limit', 12); // Default limit to 12
 
-//     if ($filterId) {
-//         // Fetch the specific category and its children (parent included)
-//         $categories = ProductCategory::where('id', $filterId)
-//             ->orWhere('parent_id', $filterId)
-//             ->get();
-//     } else {
-//         // Fetch all categories if no ID is provided
-//         $categories = ProductCategory::all();
-//     }
+    if ($filterId) {
+        // Fetch the specific category and its children (parent included)
+        $categories = ProductCategory::where('id', $filterId)
+            ->orWhere('parent_id', $filterId)
+            ->get();
+    } else {
+        // Fetch all categories if no ID is provided
+        $categories = ProductCategory::all();
+    }
 
-//     // Transform categories into a parent-child structure
-//     $categoriesTree = $this->buildTree($categories, $filterId, $limit);
+    // Transform categories into a parent-child structure
+    $categoriesTree = $this->buildTree($categories, $filterId, $limit);
 
-//     // Add full URLs for images (both parent and child categories)
-//     foreach ($categoriesTree as $category) {
-//         $category->image = $this->getImageUrl($category->image); // Modify image for parent category
+    // Add full URLs for images (both parent and child categories)
+    foreach ($categoriesTree as $category) {
+        $category->image = $this->getImageUrl($category->image); // Modify image for parent category
         
-//         // Recursively modify images for children and children's children
-//         $this->addImageUrlsRecursively($category);
-//     }
+        // Recursively modify images for children and children's children
+        $this->addImageUrlsRecursively($category);
+    }
 
-//     return response()->json($categoriesTree);
-// }
+    return response()->json($categoriesTree);
+}
 
-public function index(Request $request, $slug)
+public function categoryslug(Request $request, $slug)
 {
     $limit = $request->get('limit', 12); // Default limit to 12
 
