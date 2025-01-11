@@ -7,6 +7,7 @@ use Botble\Base\Casts\SafeContent;
 use Botble\Base\Enums\BaseStatusEnum;
 use Botble\Base\Models\BaseModel;
 use Botble\Base\Models\MetaBox;
+use Botble\Slug\Models\Slug;
 use Botble\Ecommerce\Enums\DiscountTargetEnum;
 use Botble\Ecommerce\Enums\DiscountTypeEnum;
 use Botble\Ecommerce\Enums\ProductTypeEnum;
@@ -212,6 +213,28 @@ class Product extends BaseModel
         );
     }
 
+    public function producttypes(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            ProductTypes::class,
+            'ec_products_product_types_product',
+            'product_id',
+            'producttypes_id'
+        );
+    }
+
+    // In the Product model (e.g., app/Models/Product.php)
+    public function seoMetaData()
+    {
+        return $this->morphOne(MetaBox::class, 'reference')->where('meta_key', 'seo_meta');
+    }
+
+    // In the Product model (e.g., app/Models/Product.php)
+    public function slugData()
+    {
+        return $this->morphOne(Slug::class, 'reference')->where('prefix', 'products');
+    }
+
     public function latestCategorySpecifications()
     {
         return $this->hasManyThrough(
@@ -309,16 +332,6 @@ class Product extends BaseModel
             'tag_id'
         );
     }
-    public function producttypes(): BelongsToMany
-{
-    return $this->belongsToMany(
-        ProductTypes::class,
-        'ec_products_product_types_product',
-        'product_id',
-        'producttypes_id'
-    );
-}
-
 
     public function brand(): BelongsTo
     {
@@ -849,12 +862,6 @@ class Product extends BaseModel
     public function recentlyViewed()
     {
         return $this->hasMany(RecentlyViewedProduct::class, 'product_id');
-    }
-
-    // In the Product model (e.g., app/Models/Product.php)
-    public function seoMeta()
-    {
-        return $this->morphOne(MetaBox::class, 'reference');
     }
 
 }
