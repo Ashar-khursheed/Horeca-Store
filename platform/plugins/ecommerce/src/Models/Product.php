@@ -125,6 +125,7 @@ class Product extends BaseModel
         'variant_3_title' => 'nullable|string|max:255',
         'variant_3_value' => 'nullable|string|max:255',
         'variant_3_products' => 'nullable|string',
+        'google_shopping_category',
 
     ];
 
