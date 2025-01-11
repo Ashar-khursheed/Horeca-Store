@@ -33,7 +33,7 @@ class CategoryController extends Controller
 public function index(Request $request)
 {
     $filterId = $request->get('id'); // Optional ID filter
-    $limit = $request->get('limit', 12); // Default limit to 12
+    $limit = $request->get('limit', 16); // Default limit to 12
 
     if ($filterId) {
         // Fetch the specific category and its children (parent included)
