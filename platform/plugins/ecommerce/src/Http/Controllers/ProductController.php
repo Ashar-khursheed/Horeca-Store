@@ -85,14 +85,12 @@ class ProductController extends BaseController
     StoreProductService $service,
     StoreProductTagService $storeProductTagService ,  StoreProductTypesService $storeProductTypesService  )
     {
-
         // Get the currently authenticated user
-        $user = Auth::user();
+        $user = auth()->user();
+        $userRoles = $user->roles->pluck('name')->all() ?? [];
 
-        // Check if the user has role ID 18 (admin)
-        if ($user && DB::table('role_users')->where('user_id', $user->id)->where('role_id', 18)->exists() )
-
-        {
+        // Check if the user's role ID is 18 (Copywriter)
+        if ($user && in_array('Copywriter', $userRoles)) {
             // Create a new product instance and save to temp_products for admin approval
             DB::table('temp_products')->insert([
                 'name' => $request->input('name'),
@@ -132,7 +130,8 @@ class ProductController extends BaseController
                 ->setPreviousUrl(route('products.index'))
                 ->withCreatedSuccessMessage();
         }
-        else if ($user && DB::table('role_users')->where('user_id', $user->id)->where('role_id', 10)->exists() )
+        // Check if the user's role ID is 10 (Ecommerce Specialist)
+        else if ($user && in_array('Ecommerce Specialist', $userRoles))
         {
 
             $this->validate($request, [
@@ -456,10 +455,7 @@ class ProductController extends BaseController
                     ->setPreviousUrl(route('products.index'))
                     ->setNextUrl(route('products.edit', $product->id))
                     ->withCreatedSuccessMessage();
-        }
-
-
-        else {
+        } else {
             $this->validate($request, [
                 'documents.*' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
                 'titles.*' => 'nullable|string|max:255',

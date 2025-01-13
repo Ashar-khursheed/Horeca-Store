@@ -20,16 +20,31 @@ class ProductApprovalController extends BaseController
 {
 	public function index()
 	{
-		// Fetch all temporary product changes
-		$tempPricingProducts = TempProduct::where('role_id', 22)->orderBy('created_at', 'desc')->get()->map(function ($product) {
-			$product->discount = $product->discount ? json_decode($product->discount) : [];
-			return $product;
-		});
-		// dd($tempPricingProducts->first()->createdBy->name);
-		// dd($tempPricingProducts->toArray());
+		$user = auth()->user();
+		$userRoles = $user->roles->pluck('name')->all() ?? [];
 
-		$tempContentProducts = TempProduct::where('role_id', 18)->orderBy('created_at', 'desc')->get();
-		$tempGraphicsProducts = TempProduct::where('role_id', 19)->orderBy('created_at', 'desc')->get();
+		$tempPricingProducts = collect();
+		$tempContentProducts = collect();
+		$tempGraphicsProducts = collect();
+
+		/* Admin can see all products */
+		if (in_array('admin', $userRoles) || $user->isSuperUser()) {
+			$tempPricingProducts = TempProduct::where('role_id', 22)->orderBy('created_at', 'desc')->get();
+			$tempContentProducts = TempProduct::where('role_id', 18)->orderBy('created_at', 'desc')->get();
+			$tempGraphicsProducts = TempProduct::where('role_id', 19)->orderBy('created_at', 'desc')->get();
+		}
+		/* Pricing Manager can see products of Pricing User */
+		else if (in_array('Pricing Manager', $userRoles)) {
+			$tempPricingProducts = TempProduct::where('role_id', 22)->orderBy('created_at', 'desc')->get();
+		}
+		/* Content Manager can see products of Content User */
+		else if (in_array('Content Manager', $userRoles)) {
+			$tempContentProducts = TempProduct::where('role_id', 18)->orderBy('created_at', 'desc')->get();
+		}
+		/* Graphics Manager can see products of Graphics User */
+		else if (in_array('Graphics Manager', $userRoles)) {
+			$tempGraphicsProducts = TempProduct::where('role_id', 19)->orderBy('created_at', 'desc')->get();
+		}
 
 		$unitOfMeasurements = UnitOfMeasurement::pluck('name', 'id')->toArray();
 		$stores = Store::pluck('name', 'id')->toArray();
@@ -40,8 +55,14 @@ class ProductApprovalController extends BaseController
 			'approved' => 'Ready to Publish',
 			'rejected' => 'Rejected for Corrections',
 		];
-
-		return view('plugins/ecommerce::product-approval.index', compact('tempPricingProducts', 'tempContentProducts', 'tempGraphicsProducts', 'unitOfMeasurements', 'stores', 'approvalStatuses'));
+		return view('plugins/ecommerce::product-approval.index', compact(
+			'tempPricingProducts',
+			'tempContentProducts',
+			'tempGraphicsProducts',
+			'unitOfMeasurements',
+			'stores',
+			'approvalStatuses'
+		));
 	}
 
 	public function approvePricingChanges(Request $request)
