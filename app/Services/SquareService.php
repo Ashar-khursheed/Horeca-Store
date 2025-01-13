@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Services;
-require 'vendor/autoload.php';
+
 use Square\SquareClient;
 use Square\Exceptions\ApiException;
 use Square\Models\CreatePaymentRequest;
