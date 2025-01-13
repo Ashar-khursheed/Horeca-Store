@@ -44,7 +44,10 @@ use App\Http\Controllers\API\CountryController;
  use App\Http\Controllers\API\OrderTrackingController;
  use App\Http\Controllers\API\AddressController;
  use App\Http\Controllers\API\PopularPostsController;
+ use App\Http\Controllers\Api\SquarePaymentController;
 
+ Route::post('/payment-square', [SquarePaymentController::class, 'processPayment']);
+ 
 
 
  Route::get('/popular-posts', [PopularPostsController::class, 'index']);
