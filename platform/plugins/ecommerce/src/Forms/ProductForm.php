@@ -58,29 +58,23 @@ class ProductForm extends FormAbstract
 	{
 		$this->addAssets();
 
-		$user = Auth::user(); // Get the logged-in user
+		$user = auth()->user(); // Get the logged-in user
+		$userRoles = $user->roles->pluck('name')->all() ?? [];
 
-		// Check if the user's role ID is 18
-		$hasContentWritingRole = DB::table('role_users')
-		->where('user_id', $user->id)
-		->where('role_id', 18)
-		->exists();
+		// Check if the user's role ID is 18 (Copywriter)
+		$hasContentWritingRole = in_array('Copywriter', $userRoles);
 
-		// Check if the user's role ID is 19
-		$hasGraphicsRole = DB::table('role_users')
-		->where('user_id', $user->id)
-		->where('role_id', 19)
-		->exists();
+		// Check if the user's role ID is 19 (Graphic Designer)
+		$hasGraphicsRole = in_array('Graphic Designer', $userRoles);
 
-		$productspec = DB::table('role_users')
-		->where('user_id', $user->id)
-		->where('role_id', 6)
-		->exists();
+		// Check if the user's role ID is 22 (Pricing)
+		$hasPricingRole = in_array('Pricing', $userRoles);
 
-		$ecomerceRole = DB::table('role_users')
-		->where('user_id', $user->id)
-		->where('role_id', 10)
-		->exists();
+		// Check if the user's role ID is 6 (Product Specialist)
+		$productspec = in_array('Product Specialist', $userRoles);
+
+		// Check if the user's role ID is 10 (Ecommerce Specialist)
+		$ecomerceRole = in_array('Ecommerce Specialist', $userRoles);
 
 		if ($hasContentWritingRole) {
 
@@ -482,7 +476,7 @@ class ProductForm extends FormAbstract
 				});
 			}
 		}
-		else if($user && DB::table('role_users')->where('user_id', $user->id)->where('role_id', 22)->exists() )
+		else if($hasPricingRole)
 		{
 			$brands = Brand::query()->pluck('name', 'id')->all();
 
