@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use Square\SquareClient;
-use Square\Exceptions\ApiException;
+use Square\Models\Money;
 use Square\Models\CreatePaymentRequest;
+use Square\Environment;
+use Square\Exceptions\ApiException;
 
 class SquareService
 {
@@ -14,30 +16,46 @@ class SquareService
     {
         $this->client = new SquareClient([
             'accessToken' => env('SQUARE_ACCESS_TOKEN'),
-            'environment' => env('SQUARE_ENV', 'sandbox'),
+            'environment' => env('SQUARE_ENVIRONMENT', Environment::SANDBOX),
         ]);
     }
 
-    public function processPayment($nonce, $amount, $currency = 'USD')
+    public function processPayment($nonce, $amount)
     {
         $paymentsApi = $this->client->getPaymentsApi();
 
-        $money = new \Square\Models\Money();
-        $money->setAmount($amount * 100); // Amount in cents
-        $money->setCurrency($currency);
+        // Create a Money object to represent the amount
+        $money = new Money();
+        $money->setAmount((int)($amount * 100)); // Convert dollars to cents
+        $money->setCurrency('USD'); // Set the appropriate currency
 
-        $createPaymentRequest = new CreatePaymentRequest($nonce, uniqid(), $money);
+        // Create a unique idempotency key
+        $idempotencyKey = uniqid();
+
+        // Create a payment request
+        $createPaymentRequest = new CreatePaymentRequest($nonce, $idempotencyKey);
+        $createPaymentRequest->setAmountMoney($money); // Set the amount_money field
 
         try {
+            // Execute the payment request
             $response = $paymentsApi->createPayment($createPaymentRequest);
 
             if ($response->isSuccess()) {
-                return $response->getResult();
+                return [
+                    'success' => true,
+                    'data' => $response->getResult(),
+                ];
             } else {
-                return $response->getErrors();
+                return [
+                    'success' => false,
+                    'errors' => $response->getErrors(),
+                ];
             }
         } catch (ApiException $e) {
-            return $e->getMessage();
+            return [
+                'success' => false,
+                'error' => $e->getMessage(),
+            ];
         }
     }
 }

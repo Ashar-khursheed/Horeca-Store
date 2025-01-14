@@ -15,29 +15,21 @@ class SquarePaymentController extends Controller
         $this->squareService = $squareService;
     }
 
-    public function processPayment($nonce, $amount, $currency = 'USD')
-{
-    $paymentsApi = $this->client->getPaymentsApi();
+    public function processPayment(Request $request)
+    {
+        // Validate request data
+        $request->validate([
+            'nonce' => 'required|string',
+            'amount' => 'required|numeric',
+        ]);
 
-    // Create Money object with amount and currency
-    $money = new \Square\Models\Money();
-    $money->setAmount((int)($amount * 100)); // Convert amount to cents
-    $money->setCurrency($currency);
+        // Retrieve parameters from the request
+        $nonce = $request->input('nonce');
+        $amount = $request->input('amount');
 
-    // Create Payment Request
-    $createPaymentRequest = new \Square\Models\CreatePaymentRequest($nonce, uniqid(), $money);
+        // Process payment using the Square service
+        $response = $this->squareService->processPayment($nonce, $amount);
 
-    try {
-        $response = $paymentsApi->createPayment($createPaymentRequest);
-
-        if ($response->isSuccess()) {
-            return $response->getResult();
-        } else {
-            return $response->getErrors();
-        }
-    } catch (\Square\Exceptions\ApiException $e) {
-        return ['error' => $e->getMessage()];
+        return response()->json($response);
     }
-}
-
 }
