@@ -286,6 +286,19 @@ public function viewCart(Request $request)
 
 
        
+    // public function clearCart(Request $request)
+    // {
+    //     if (Auth::check()) {
+    //         Cart::where('user_id', Auth::id())->delete();
+    //     } else {
+    //         Cart::where('session_id', $request->session()->getId())->delete();
+    //     }
+
+    //     return response()->json([
+    //         'success' => true,
+    //           'messege' => 'Clear Cart Successfully',
+    //     ]);
+    // }
     public function clearCart(Request $request)
     {
         if (Auth::check()) {
