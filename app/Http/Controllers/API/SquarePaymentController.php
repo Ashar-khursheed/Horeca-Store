@@ -69,6 +69,7 @@ class SquarePaymentController extends Controller
         }
     }
     
+    
     public function paymentForm()
 {
     return view('payment.form', [
