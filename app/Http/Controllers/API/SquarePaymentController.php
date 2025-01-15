@@ -22,53 +22,53 @@ class SquarePaymentController extends Controller
         ]);
     }
     public function createPayment(Request $request)
-    {
-        $request->validate([
-            'nonce' => 'required|string',
-            'amount' => 'required|numeric|min:0.5', // Amount in dollars
-            'currency' => 'required|string|size:3',
-        ]);
-    
-        $nonce = $request->input('nonce');
-        $amount = $request->input('amount');
-        $currency = strtoupper($request->input('currency'));
-    
-        try {
-            $paymentsApi = $this->squareClient->getPaymentsApi();
-    
-            // Convert amount from dollars to cents
-            $amountInCents = (int) ($amount * 100);
-    
-            // Create the Money object
-            $money = new Money();
-            $money->setAmount($amountInCents); // Amount in cents
-            $money->setCurrency($currency);
-    
-            // Create the PaymentRequest with the correct structure
-            $paymentRequest = new CreatePaymentRequest($nonce, env('SQUARE_LOCATION_ID'), $money);
-    
-            // Send the payment request
-            $response = $paymentsApi->createPayment($paymentRequest);
-    
-            if ($response->isSuccess()) {
-                return response()->json([
-                    'success' => true,
-                    'payment' => $response->getResult()->getPayment(),
-                ]);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $response->getErrors(),
-                ], 400);
-            }
-        } catch (ApiException $e) {
+{
+    $request->validate([
+        'nonce' => 'required|string',
+        'amount' => 'required|numeric|min:0.5',
+        'currency' => 'required|string|size:3',
+    ]);
+
+    $nonce = $request->input('nonce');
+    $amount = $request->input('amount');
+    $currency = strtoupper($request->input('currency'));
+
+    try {
+        $paymentsApi = $this->squareClient->getPaymentsApi();
+
+        // Convert amount from dollars to cents
+        $amountInCents = (int) ($amount * 100);
+
+        // Create the Money object
+        $money = new Money();
+        $money->setAmount($amountInCents); // Amount in cents
+        $money->setCurrency($currency);
+
+        // Ensure the location ID is passed as a parameter here
+        $paymentRequest = new CreatePaymentRequest($nonce, env('SQUARE_LOCATION_ID'), $money);
+
+        // Send the payment request
+        $response = $paymentsApi->createPayment($paymentRequest);
+
+        if ($response->isSuccess()) {
+            return response()->json([
+                'success' => true,
+                'payment' => $response->getResult()->getPayment(),
+            ]);
+        } else {
             return response()->json([
                 'success' => false,
-                'error' => $e->getMessage(),
-            ], 500);
+                'errors' => $response->getErrors(),
+            ], 400);
         }
+    } catch (ApiException $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+        ], 500);
     }
-    
+}
+
     
     public function paymentForm()
 {
