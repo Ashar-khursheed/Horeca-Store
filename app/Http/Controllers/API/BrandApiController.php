@@ -61,7 +61,8 @@ class BrandApiController extends Controller
                 }
                 
                     // Order products by a column in descending order, e.g., created_at
-    $query->orderBy('created_at', 'desc'); // Added this line to order the products
+    $query->where('status', 'published')
+    ->orderBy('created_at', 'desc'); // Added this line to order the products
             }
         ])
         ->limit(20) // Limit number of brands/products fetched
@@ -140,7 +141,8 @@ class BrandApiController extends Controller
                         });
                     }
                         // Order products by a column in descending order, e.g., created_at
-    $query->orderBy('created_at', 'desc'); // Added this line to order the products
+    $query  ->where('status', 'published')
+    ->orderBy('created_at', 'desc'); // Added this line to order the products
                 }
             ])
             ->limit(20) // Limit number of brands/products fetched
