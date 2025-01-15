@@ -44,9 +44,10 @@ use App\Http\Controllers\API\CountryController;
  use App\Http\Controllers\API\OrderTrackingController;
  use App\Http\Controllers\API\AddressController;
  use App\Http\Controllers\API\PopularPostsController;
+
  use App\Http\Controllers\API\SquarePaymentController;
 
- Route::post('/payment-square', [SquarePaymentController::class, 'processPayment']);
+ Route::post('/payment-square', [SquarePaymentController::class, 'createPayment']);
  
 
 
@@ -80,6 +81,7 @@ Route::middleware('auth:sanctum')->get('/customer-reviews', [UserReviewApiContro
 Route::middleware('auth:sanctum')->post('/add-customer-reviews', [UserReviewApiController::class, 'createReview']);
 Route::middleware('auth:sanctum')->put('/customer-reviews-update/{id}', [UserReviewApiController::class, 'updateReview']);
 Route::middleware('auth:sanctum')->delete('/customer-reviews-delete/{id}', [UserReviewApiController::class, 'deleteReview']);
+
 
 
 Route::middleware('auth:sanctum')->post('/save-for-later', [SaveForLaterController::class, 'saveForLater']);
