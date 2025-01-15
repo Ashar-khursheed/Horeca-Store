@@ -29,7 +29,7 @@
                 nonce: 'test-nonce',
             });
 
-            const response = await fetch('/api/square-payment', {
+            const response = await fetch('/api/payment-square', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
