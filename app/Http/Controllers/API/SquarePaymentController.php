@@ -21,7 +21,6 @@ class SquarePaymentController extends Controller
             'environment' => env('SQUARE_ENV', 'sandbox'),
         ]);
     }
-
     public function createPayment(Request $request)
     {
         $request->validate([
@@ -45,14 +44,8 @@ class SquarePaymentController extends Controller
             $money->setAmount($amountInCents); // Amount in cents
             $money->setCurrency($currency);
     
-            // Create the PaymentRequest with the nested amount_money field
-            $paymentRequest = new CreatePaymentRequest(
-                $nonce,
-                uniqid('payment_'), // Unique payment idempotency key
-                [
-                    'amount_money' => $money,  // Pass the money object here as a nested field
-                ]
-            );
+            // Create the PaymentRequest with the correct structure
+            $paymentRequest = new CreatePaymentRequest($nonce, env('SQUARE_LOCATION_ID'), $money);
     
             // Send the payment request
             $response = $paymentsApi->createPayment($paymentRequest);
@@ -75,6 +68,7 @@ class SquarePaymentController extends Controller
             ], 500);
         }
     }
+    
     public function paymentForm()
 {
     return view('payment.form', [
