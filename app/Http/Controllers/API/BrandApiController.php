@@ -213,7 +213,7 @@ public function getAllBrandProducts(Request $request)
                     }
                         // Order products by a column in descending order, e.g., created_at
         $query  ->where('status', 'published')
-        ->orderBy('created_at', 'desc'); // Added this line to order the products
+        ->orderBy('created_at', 'desc') ->limit(10); // Added this line to order the products
                 }
             ])
             ->limit(5) // Limit number of brands/products fetched
