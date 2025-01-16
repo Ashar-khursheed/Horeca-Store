@@ -268,7 +268,7 @@ public function getAllBrandProducts(Request $request)
     // }
     public function getAllBrandGuestProducts(Request $request)
 {
-    $brands = Cache::remember('guest_brands', 60, function () use ($request) {
+    $brands = Cache::remember('guest_latest_brands', 60, function () use ($request) {
         return Brand::with([
             'products' => function ($query) use ($request) {
                 if ($request->has('search')) {
@@ -292,11 +292,12 @@ public function getAllBrandProducts(Request $request)
                 }
 
                 $query->where('status', 'published')
-                    ->orderBy('created_at', 'desc')
+                    ->orderBy('created_at', 'desc') // Order products by latest
                     ->limit(10); // Limit to 10 products per brand
             }
         ])
-            ->limit(20) // Limit number of brands fetched
+            ->orderBy('created_at', 'desc') // Order brands by latest
+            ->limit(5) // Limit to top 5 latest brands
             ->get();
     });
 
@@ -313,13 +314,25 @@ public function getAllBrandProducts(Request $request)
                         "id" => $product->id,
                         "name" => $product->name,
                         "images" => array_map(function ($image) {
-                            // If the image URL starts with "http", use it directly; otherwise, generate the URL
+                            // If the image URL starts with "http", use it directly
                             if (str_starts_with($image, 'http')) {
                                 return $image;
                             }
 
-                            $imagePath = public_path("storage/products/{$image}");
-                            return file_exists($imagePath) ? asset("storage/products/{$image}") : null;
+                            // Check both possible storage paths
+                            $paths = [
+                                "storage/products/{$image}",
+                                "storage/{$image}",
+                            ];
+
+                            foreach ($paths as $path) {
+                                $fullPath = public_path($path);
+                                if (file_exists($fullPath)) {
+                                    return asset($path);
+                                }
+                            }
+
+                            return null; // Return null if no valid path is found
                         }, $productImages),
                         "sku" => $product->sku ?? '',
                         "price" => $product->price,
