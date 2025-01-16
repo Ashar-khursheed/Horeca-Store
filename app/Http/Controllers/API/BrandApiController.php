@@ -271,6 +271,11 @@ public function getAllBrandProducts(Request $request)
     $brands = Cache::remember('guest_latest_brands', 60, function () use ($request) {
         return Brand::with([
             'products' => function ($query) use ($request) {
+                $query->where('status', 'published')
+                    ->orderBy('created_at', 'desc') // Order products by latest
+                    ->limit(10); // Limit to 10 products per brand
+                
+                // Apply optional filters
                 if ($request->has('search')) {
                     $query->where('name', 'like', '%' . $request->input('search') . '%');
                 }
@@ -290,36 +295,32 @@ public function getAllBrandProducts(Request $request)
                             ->havingRaw('AVG(star) >= ?', [$request->input('rating')]);
                     });
                 }
-
-                $query->where('status', 'published')
-                    ->orderBy('created_at', 'desc') // Order products by latest
-                    ->limit(10); // Limit to 10 products per brand
             }
         ])
-            ->orderBy('created_at', 'desc') // Order brands by latest
-            ->limit(5) // Limit to top 5 latest brands
-            ->get();
+        ->orderBy('created_at', 'desc') // Order brands by latest
+        ->limit(5) // Limit to top 5 latest brands
+        ->get();
     });
 
+    // Return the response
     return response()->json([
         'success' => true,
         'data' => $brands->map(function ($brand) {
             return [
                 'brand_name' => $brand->name,
                 'products' => $brand->products->map(function ($product) {
-                    // Check if 'images' is an array or a collection
+                    // Ensure images are handled properly
                     $productImages = is_array($product->images) ? $product->images : ($product->images ? $product->images->toArray() : []);
-
+                    
                     return [
                         "id" => $product->id,
                         "name" => $product->name,
                         "images" => array_map(function ($image) {
-                            // If the image URL starts with "http", use it directly
                             if (str_starts_with($image, 'http')) {
                                 return $image;
                             }
 
-                            // Check both possible storage paths
+                            // Check both storage paths
                             $paths = [
                                 "storage/products/{$image}",
                                 "storage/{$image}",
