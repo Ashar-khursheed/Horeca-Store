@@ -12,7 +12,7 @@ class CategoryMenuController extends Controller
     /**
      * Retrieve categories with children and their respective data.
      */
-    public function index(Request $request)
+    public function getCategoriesWithChildren(Request $request)
     {
         $filterId = $request->get('id'); // Optional ID filter
         $categories = $filterId
